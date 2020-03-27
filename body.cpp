@@ -16,7 +16,7 @@
 #include <string>
 
 using namespace std;
-// -- konstruktor klasy programu --
+// -- konstruktor klasy programu (odpala się w mainie) --
 body::body(const char * nazwa)
 {
     srand(QDateTime::currentDateTime().toTime_t());
