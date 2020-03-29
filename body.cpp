@@ -16,7 +16,7 @@
 #include <string>
 
 using namespace std;
-// -- konstruktor klasy programu (odpala się w mainie) --
+// -- konstruktor klasy programu --
 body::body(const char * nazwa)
 {
     srand(QDateTime::currentDateTime().toTime_t());
@@ -117,20 +117,38 @@ body::body(const char * nazwa)
     grid.addWidget(&spectral_index, 6, 0);
     grid.addWidget(&quit,7, 0);
     */
+
+    // -- ustalamy teksty naszych labelow --
+    load_data_section_label.setText("Data loading");
+    wiev_data_section_label.setText("Data visualisation");
+    export_data_section_label.setText("Data export");
+    others_section_label.setText("Others");
+
+    // -- dodajemy do głównego paska przycisków --
+    vbox_main.addWidget(&load_data_section_label);
     vbox_main.addWidget(&reload);
     vbox_main.addWidget(&load_data);
+
+    vbox_main.addWidget(&wiev_data_section_label);
     vbox_main.addWidget(&dynamic_spectrum);
     vbox_main.addWidget(&single_spectrum);
+
+    vbox_main.addWidget(&export_data_section_label);
     vbox_main.addWidget(&integrate_button);
     vbox_main.addWidget(&aver_over_velocity);
     vbox_main.addWidget(&aver_over_time);
     vbox_main.addWidget(&spectral_index);
-    vbox_main.addWidget(&calibrate);
     vbox_main.addWidget(&WD);
+
+    vbox_main.addWidget(&others_section_label);
+    vbox_main.addWidget(&calibrate);
     vbox_main.addWidget(&quit);
 
     grid.addLayout(&vbox_main, 0,0,9,1);
     grid.setColumnStretch(0,1);
+
+
+
     // -- dodajemy napis do przycisku --
     dynamic_spectrum.setText("Dynamic spectrum");
     single_spectrum.setText("Single spectrum");
@@ -866,6 +884,7 @@ void body::read_time_series_for_list(QStringList lista_plikow)
       pasek_postepu = pasek_postepu + 1;
       //cout << "zwiekszamy postep paska" << endl;
       postep.setValue(postep.value()+1);
+      QCoreApplication::processEvents();
 
     }
 
@@ -1047,6 +1066,7 @@ void body::read_time_series()
     pasek_postepu = pasek_postepu + 1;
     //cout << "zwiekszamy postep paska" << endl;
     postep.setValue(postep.value()+1);
+    QCoreApplication::processEvents();
 
   }
   lista.close();
@@ -4806,7 +4826,7 @@ void body::calculate_integrate_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (calibration_section_opened == 1 || spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 || spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -4949,7 +4969,7 @@ void body::calculate_spectral_index_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -5088,7 +5108,7 @@ void body::calculate_aver_over_velocity_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || spind_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || spind_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -5231,7 +5251,7 @@ void body::calculate_aver_over_time_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (calibration_section_opened == 1 | integrate_window_opened == 1 || spind_window_opened == 1 || aver_over_velocity_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || spind_window_opened == 1 || aver_over_velocity_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -5997,7 +6017,7 @@ void body::open_cal_layout()
         return;
     }
 
-    if (spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1 || integrate_window_opened == 1)
+    if (wd_section_opened == 1 || spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1 || integrate_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -7083,6 +7103,11 @@ void body::open_dynspectum_layout()
         return;
     }
 
+    if (wd_section_opened == 1)
+    {
+        return;
+    }
+
     if (spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1 || integrate_window_opened == 1 || calibration_section_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
@@ -7127,7 +7152,7 @@ void body::open_dynspectum_layout()
     grid.update();
     window.show();
 
-    wd_section_opened = 0;
+    wd_section_opened = 1;
 
     QPushButton::connect(&cancel, SIGNAL(clicked()), this, SLOT(close_dynspectrum_layout()));
     QPushButton::connect(&WD_start, SIGNAL(clicked()), this, SLOT(export_file_for_dynamic_spectrum()));
@@ -7161,9 +7186,9 @@ void body::close_dynspectrum_layout()
     grid.update();
     vbox_main.update();
 
-    calgridloaded = 0;
+    //calgridloaded = 0;
 
-    calibration_section_opened = 0;
+    wd_section_opened = 0;
 
     QPushButton::disconnect(&cancel, SIGNAL(clicked()), this, SLOT(close_dynspectrum_layout()));
     QPushButton::disconnect(&WD_start, SIGNAL(clicked()), this, SLOT(export_file_for_dynamic_spectrum()));
@@ -7242,4 +7267,7 @@ void body::export_file_for_dynamic_spectrum()
     string message = "";
     message = "Dynamic spectrum over channels " + to_string(min+1) + " -> " + to_string(max+1) + "\n" + "Saved to " + filename;
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+
+    // -- zamykamy sekcje dynspec --
+    close_dynspectrum_layout();
 }

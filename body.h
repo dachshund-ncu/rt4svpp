@@ -167,7 +167,12 @@ public:
     QLabel end_label;
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
-    // -- zaczynamy animacje pobierania danych --
+
+    // -- labele do listy przyciskow --
+    QLabel load_data_section_label;
+    QLabel wiev_data_section_label;
+    QLabel export_data_section_label;
+    QLabel others_section_label;
 
     // -- boole do sprawdzania statusow --
     bool layers_exist = 0;
