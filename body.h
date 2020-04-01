@@ -23,7 +23,11 @@ public:
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout grid; // siatka
+    // -- group boxy --
+    //QVBoxLayout loaders_layout;
+    //QGroupBox loaders;
     QPushButton load_data; // przyciski
+    QPushButton reload;
     QPushButton dynamic_spectrum;
     QPushButton kill_dynspec;
     QPushButton integrate_button;
@@ -47,13 +51,15 @@ public:
     QPushButton make_lcs_button; // robi krzywe blasku z zaznaczonego kwadratu
     QStringList AVRNAMES_from_load;
 
+    // -- do sprawdzania, czy user chce eksportować czas również w formacie pytime --
+    QCheckBox *include_pytime = new QCheckBox ("Include time in isoformat", &window);
+
     // -- Do rotacji widm --
     QPushButton rotate;
     QPushButton rotate_minus;
     QTextEdit number_of_rotated_channels_texted;
     // --------------------------------------
     QPushButton save_rotation;
-    QPushButton reload;
     QFrame ramka; // rama
     QSizePolicy sizepolicy;
     QCPColorGradient gradient;
@@ -209,6 +215,7 @@ public:
     bool flagged_files_on_spectrum = 0;
     bool dyns_first_open = 1;
     bool made_rotation = 0;
+    bool check_if_loading_not_interrupted = 0;
 
     bool caltabs_loaded = 0;
     int xind = 0;
@@ -318,9 +325,13 @@ public:
     vector < double > ERR, VERR, LHCERR, RHCERR;
 
     // --  stale narzedzia --
+    vector < string > pytime_format;
     vector < double > jdlst;
     vector < double > mjdlst;
     vector < double > yrlst;
+    vector < double > hrlst;
+    vector < double > minutelst;
+    vector < double > seclst;
     vector < double > ellst, azlst;
     vector < double > declst, ralst;
     vector < double > freqlst;

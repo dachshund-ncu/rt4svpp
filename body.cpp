@@ -117,15 +117,28 @@ body::body(const char * nazwa)
     grid.addWidget(&spectral_index, 6, 0);
     grid.addWidget(&quit,7, 0);
     */
-
+    QFont f( "Arial", 10, QFont::Bold);
     // -- ustalamy teksty naszych labelow --
     load_data_section_label.setText("Data loading");
+    load_data_section_label.setFont(f);
     wiev_data_section_label.setText("Data visualisation");
+    wiev_data_section_label.setFont(f);
     export_data_section_label.setText("Data export");
+    export_data_section_label.setFont(f);
     others_section_label.setText("Others");
+    others_section_label.setFont(f);
 
+    //loaders.setTitle("loaders");
+    //loaders.setVisible(true);
+    //loaders_layout.addWidget(&reload);
+    //loaders_layout.addWidget(&load_data);
+    //loaders_layout.addStretch(1);
+    //loaders.setLayout(&loaders_layout);
     // -- dodajemy do głównego paska przycisków --
+    //vbox_main.addWidget(butters);
+
     vbox_main.addWidget(&load_data_section_label);
+    //vbox_main.addWidget(&loaders);
     vbox_main.addWidget(&reload);
     vbox_main.addWidget(&load_data);
 
@@ -134,6 +147,7 @@ body::body(const char * nazwa)
     vbox_main.addWidget(&single_spectrum);
 
     vbox_main.addWidget(&export_data_section_label);
+    vbox_main.addWidget(include_pytime);
     vbox_main.addWidget(&integrate_button);
     vbox_main.addWidget(&aver_over_velocity);
     vbox_main.addWidget(&aver_over_time);
@@ -419,6 +433,7 @@ void body::kill_single_spectrum()
 // -- czyta plik o podanej nazwie --
 void body::czytaj(const char* nazwa_pliku23)
 {
+  check_if_loading_not_interrupted = 0;
   // otwieramy obiekt z czytanym plikiem
   avr.open(nazwa_pliku23);
   //avr.clear();
@@ -507,15 +522,17 @@ void body::czytaj(const char* nazwa_pliku23)
   avr >> hour;
   avr >> min;
   avr >> sec;
+  double hour2;
+  double day2;
   //cout << hour << "  " << min << "  " << sec << endl;
-  hour = hour + min / 60.0 + sec / 3600.0;
-  day = day + hour / 24.0;
+  hour2 = hour + min / 60.0 + sec / 3600.0;
+  day2 = day + hour2 / 24.0;
   //string dayp;
   //dayp = bufor.substr(4,2);
   //cout << day << month << year <<endl;
-  jd = JD(year, month, day);
+  jd = JD(year, month, day2);
   mjd = jd - 2400000.5;
-  double decyr = decimalyear(year, month, day);
+  double decyr = decimalyear(year, month, day2);
   // kursor
   avr.seekg(0);
   // --- KONIEC CZYTANIA DATY ---
@@ -637,6 +654,10 @@ void body::czytaj(const char* nazwa_pliku23)
 
   //cout << RHC.size() << endl;
 
+  if (I.size() < 512)
+  {
+      return;
+  }
   // ZAMYKAMY PLIK
   avr.close();
 
@@ -767,7 +788,46 @@ void body::czytaj(const char* nazwa_pliku23)
   dlst.push_back(day);
   mlst.push_back(month);
   ylst.push_back(year);
+  hrlst.push_back(hour);
+  minutelst.push_back(min);
+  seclst.push_back(sec);
   yrlst.push_back(decyr);
+
+  // -- konstruujemy pytime format --
+  string time_in_isoformat, yearstr, monthstr, daystr, hourstr, minutestr, secondstr;
+
+  // zapisujemy czas w isoformacie (YYYY-MM-DD)
+  //year
+  yearstr = to_string((int)year);
+  // month
+  if (to_string((int)month).length() == 1)
+      monthstr = string("0")+to_string((int)month);
+  else
+      monthstr = to_string((int)month);
+  // day
+  if (to_string((int)day).length() == 1)
+      daystr = string("0") + to_string((int)day);
+  else
+      daystr = to_string((int)day);
+  // hour
+  if (to_string((int)hour).length() == 1)
+      hourstr = string("0") + to_string((int)hour);
+  else
+      hourstr = to_string((int)hour);
+  // minute
+  if (to_string((int)min).length() == 1)
+      minutestr = string("0") + to_string((int)min);
+  else
+      minutestr = to_string((int)min);
+  // second
+  if (to_string((int)sec).length() == 1)
+      secondstr = string("0") + to_string(sec);
+  else
+      secondstr = to_string(sec);
+
+  // zapisujemy do time...
+  time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
+  pytime_format.push_back(time_in_isoformat);
 
   // -- i podwojne --
   headerlst.push_back(headertmp);
@@ -793,6 +853,8 @@ void body::czytaj(const char* nazwa_pliku23)
   VERR.clear();
   LHCERR.clear();
   RHCERR.clear();
+
+  check_if_loading_not_interrupted = 1;
 }
 
 // -- czyta pliki z podanej listy plikow --
@@ -813,6 +875,10 @@ void body::read_time_series_for_list(QStringList lista_plikow)
     dlst.clear();
     mlst.clear();
     ylst.clear();
+    hrlst.clear();
+    minutelst.clear();
+    seclst.clear();
+    pytime_format.clear();
 
     // i kontenery tez
     headerlst.clear();
@@ -868,13 +934,18 @@ void body::read_time_series_for_list(QStringList lista_plikow)
       if(!check_if_flagged(bufor_do_listy))
       {
           // jesli check if flagged zwraca false to czytamy
-          //cout << working_directory + "/" + bufor_do_listy << endl;
           this->czytaj((bufor_do_listy).c_str());
+
+          // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
+         if (check_if_loading_not_interrupted == 0)
+             throw 2; // jeśli tak, wyrzucamy exception
+
           avrnames.push_back(bufor_do_listy);
           // wypisujemy podstawowe dane o obserwacji
           cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
          // inkrementujemy marker
           marker = marker + 1;
+
       }
       else
       {
@@ -974,6 +1045,10 @@ void body::read_time_series()
   dlst.clear();
   mlst.clear();
   ylst.clear();
+  hrlst.clear();
+  minutelst.clear();
+  seclst.clear();
+  pytime_format.clear();
 
   // i kontenery tez
   headerlst.clear();
@@ -1048,9 +1123,11 @@ void body::read_time_series()
     if(!check_if_flagged(bufor_do_listy))
     {
         // jesli check if flagged zwraca false to czytamy
-        //cout << working_directory + "/" + bufor_do_listy << endl;
-
         this->czytaj((working_directory + "/" + bufor_do_listy).c_str());
+
+        // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
+       if (check_if_loading_not_interrupted == 0)
+           throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
 
         avrnames.push_back(bufor_do_listy);
         // wypisujemy podstawowe dane o obserwacji
@@ -1066,6 +1143,7 @@ void body::read_time_series()
     pasek_postepu = pasek_postepu + 1;
     //cout << "zwiekszamy postep paska" << endl;
     postep.setValue(postep.value()+1);
+    // by na windowsie też postepowal
     QCoreApplication::processEvents();
 
   }
@@ -1146,7 +1224,7 @@ void body::load_time_series()
     QStringList fileName1;// qstring z nazwa pliku
     QString fileName;
 
-    QFileDialog dialog(&window,tr("Select a list of AVR files or just AVR files"), tr(""), tr("All Files (*)"));
+    QFileDialog dialog(&window,tr("Select a list of AVR files or just AVR files"), tr(""), tr("All Files (*);;AVR files (*AVR.DAT)"));
     dialog.setFileMode(QFileDialog::ExistingFiles);
     if(dialog.exec())
     {
@@ -1446,12 +1524,34 @@ void body::integrate_time_series()
     string filename = working_directory + "/" + srcname + "_integrated_flux_density_" + to_string(min+1) + "_to_" + to_string(max+1) +  ".DAT";
     integ.open(filename.c_str());
     //integ << "# MJD year I V LHC RHC" << endl;
-    integ << "# MJD year I err V err LHC err RHC err" << endl;
-    for(int i = 0; i < Ilst.size(); i++)
+    //integ << "# MJD year I err V err LHC err RHC err" << endl;
+
+    if(include_pytime->isChecked())
     {
-        integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-        //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        // wpisujemy naglowek do pliku
+        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+        //cout << "Zaznaczono pytime" << endl;
     }
+    else
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# MJD year I err V err LHC err RHC err" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+    }
+
     integ.close();
     integrated_fluxlst_I.clear();
     integrated_fluxlst_V.clear();
@@ -4172,12 +4272,26 @@ void body::calculate_aver_over_velocity()
     ofstream integ;
     string filename = working_directory + "/" + srcname + "_averaged_over_velocity_chan_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filename.c_str());
-    integ << "# MJD year I err V err LHC err RHC err" << endl;
-    integ << "# VEL: " << velaver << endl;
-    for(int i = 0; i < Ilst.size(); i++)
+
+    if(include_pytime->isChecked())
     {
-        integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
+        integ << "# VEL: " << velaver << endl;
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        }
     }
+    else
+    {
+        integ << "# MJD year I err V err LHC err RHC err" << endl;
+        integ << "# VEL: " << velaver << endl;
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        }
+    }
+
     integ.close();
     averaged_over_velocity_I.clear();
     averaged_over_velocity_V.clear();
@@ -5467,11 +5581,32 @@ void body::make_lcs_slot()
     ofstream integ;
     string filename = working_directory + "/" + srcname + "_lc_chan_" + to_string(min+1) + ".DAT";
     integ.open(filename.c_str());
+
+    /*
     integ << "# MJD year I err V err LHC err RHC err" << endl;
     integ << "# VEL: " << velaver << endl;
     for(int i = 0; i < Ilst.size(); i++)
     {
         integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+    }
+    */
+    if(include_pytime->isChecked())
+    {
+        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
+        integ << "# VEL: " << velaver << endl;
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        }
+    }
+    else
+    {
+        integ << "# MJD year I err V err LHC err RHC err" << endl;
+        integ << "# VEL: " << velaver << endl;
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        }
     }
     integ.close();
     averaged_over_velocity_I.clear();
@@ -7248,19 +7383,40 @@ void body::export_file_for_dynamic_spectrum()
     ofstream fle_for_wd;
     // otwieramy
     fle_for_wd.open(filename.c_str());
-    // zapisujemy do pliku
-    fle_for_wd << "# " << filename << endl;
-    fle_for_wd << "# i MJD year channel velocity I e V e LHC e RHC e" << endl;
 
-    // podwójna pętla zapisu
-    for(int i = 0; i < Ilst.size(); i++) // po epokach
+    if(include_pytime->isChecked())
     {
-        for (int e = min; e <= max;e++)
+        // zapisujemy do pliku
+        fle_for_wd << "# " << filename << endl;
+        fle_for_wd << "# i time_in_isoformat MJD year channel velocity I e V e LHC e RHC e" << endl;
+
+        // podwójna pętla zapisu
+        for(int i = 0; i < Ilst.size(); i++) // po epokach
         {
-            fle_for_wd << fixed << setprecision(11) << i+1 << " " << mjdlst[i] << " " << yrlst[i] << " " << CHANlst[i][e] << " " << VELlst[i][e] << " " << Ilst[i][e] << " " << ERRlst[i][e] << " " << Vlst[i][e] << " " << VERRlst[i][e] << " " << LHClst[i][e] << " " << LHCERRlst[i][e] << " " << RHClst[i][e] << " " << RHCERRlst[i][e] << "\n";
+            for (int e = min; e <= max;e++)
+            {
+                fle_for_wd << fixed << setprecision(11) << i+1 << " " << pytime_format[i] << " " << mjdlst[i] << " " << yrlst[i] << " " << CHANlst[i][e] << " " << VELlst[i][e] << " " << Ilst[i][e] << " " << ERRlst[i][e] << " " << Vlst[i][e] << " " << VERRlst[i][e] << " " << LHClst[i][e] << " " << LHCERRlst[i][e] << " " << RHClst[i][e] << " " << RHCERRlst[i][e] << "\n";
+            }
+            fle_for_wd << "\n";
         }
-        fle_for_wd << "\n";
     }
+    else
+    {
+        // zapisujemy do pliku
+        fle_for_wd << "# " << filename << endl;
+        fle_for_wd << "# i MJD year channel velocity I e V e LHC e RHC e" << endl;
+
+        // podwójna pętla zapisu
+        for(int i = 0; i < Ilst.size(); i++) // po epokach
+        {
+            for (int e = min; e <= max;e++)
+            {
+                fle_for_wd << fixed << setprecision(11) << i+1 << " " << mjdlst[i] << " " << yrlst[i] << " " << CHANlst[i][e] << " " << VELlst[i][e] << " " << Ilst[i][e] << " " << ERRlst[i][e] << " " << Vlst[i][e] << " " << VERRlst[i][e] << " " << LHClst[i][e] << " " << LHCERRlst[i][e] << " " << RHClst[i][e] << " " << RHCERRlst[i][e] << "\n";
+            }
+            fle_for_wd << "\n";
+        }
+    }
+
     // zamykamy plik
     fle_for_wd.close();
     // wiadomość końcowa
