@@ -119,11 +119,11 @@ body::body(const char * nazwa)
     */
     QFont f( "Arial", 10, QFont::Bold);
     // -- ustalamy teksty naszych labelow --
-    load_data_section_label.setText("Data loading");
+    load_data_section_label.setText("Loading");
     load_data_section_label.setFont(f);
-    wiev_data_section_label.setText("Data visualisation");
+    wiev_data_section_label.setText("Visualisation");
     wiev_data_section_label.setFont(f);
-    export_data_section_label.setText("Data export");
+    export_data_section_label.setText("Export & analysis");
     export_data_section_label.setFont(f);
     others_section_label.setText("Others");
     others_section_label.setFont(f);
@@ -215,6 +215,7 @@ body::body(const char * nazwa)
         {
             read_time_series();
             list_filename = "lista";
+            display_dynamic_spectrum();
 
         }
         else
@@ -224,6 +225,7 @@ body::body(const char * nazwa)
             {
                 read_time_series();
                 list_filename = "lista";
+                display_dynamic_spectrum();
             }
         }
      }
@@ -244,6 +246,7 @@ body::body(const char * nazwa)
             }
             read_time_series();
             list_filename = string(nazwa);
+            display_dynamic_spectrum();
 
         }
     }
@@ -428,6 +431,8 @@ void body::kill_single_spectrum()
     grid.setColumnStretch(2,0);
     grid.setColumnStretch(3,0);
     grid.setColumnStretch(4,0);
+    list_of_observations->clear();
+    combo_loaded = 0;
 }
 
 // -- czyta plik o podanej nazwie --
@@ -1289,7 +1294,12 @@ void body::load_time_series()
 
     }
 
-
+    if (single_spectrum_opened == 1)
+    {
+        list_of_observations->clear();
+        combo_loaded = 0;
+        display_single_spectrum();
+    }
     loaded_data = 1;
 
 }
@@ -1594,26 +1604,7 @@ void body::display_dynamic_spectrum()
     I_pressed = 1;
     v_pressed = 0;
     //for_hbox->setVisible(true);
-    dynamic_spectrum_pl.setVisible(true);
-    kill_dynspec.setVisible(true);
-    single_dynamic_spectrum.setVisible(true);
-    lcs_dynamic_spectrum.setVisible(true);
-    y_down_border.setVisible(true);
-    y_up_border.setVisible(true);
-    mjd_label.setVisible(true);
-    cocochanel.setVisible(true);
-    x_left_border.setVisible(true);
-    x_right_border.setVisible(true);
-    Ibut.setVisible(true);
-    Vbut.setVisible(true);
-    LHCbut.setVisible(true);
-    RHCbut.setVisible(true);
-    flag.setVisible(true);
-    rotate.setVisible(true);
-    make_lcs_button.setVisible(true);
-    rotate_minus.setVisible(true);
-    save_rotation.setVisible(true);
-    number_of_rotated_channels_texted.setVisible(true);
+
     single_dynamic_spectrum.clearItems();
     lcs_dynamic_spectrum.clearItems();
     // -- kilka rzeczy ustawiamy --
@@ -1701,12 +1692,19 @@ void body::display_dynamic_spectrum()
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
     // -- dodajemy do gridu --
-    if (buttons_on_dynamic_spectrum_connected == 0)
+
+
+
+    // -- dodajemy widgety --
+    // -- dodajemy widgety --
+    if (dynamic_spectrum_opened == 0)
     {
+        //cout << "----> DYNAMIC SPECTRUM Window is opened, so I will just reset axis" << endl;
         y_down_border_shrt->setKey(QKeySequence("d"));
         y_up_border_shrt->setKey(QKeySequence("g"));
         x_down_border_shrt->setKey(QKeySequence("l"));
         x_up_border_shrt->setKey(QKeySequence("p"));
+        reset_dynamic_spectrum->setKey(QKeySequence("b"));
         kill_dynspec.setText("Kill dynamic spectrum --->");
         QObject::connect(&kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
         QObject::connect(&dynamic_spectrum_pl, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(press_map(QMouseEvent *)));
@@ -1727,11 +1725,9 @@ void body::display_dynamic_spectrum()
         QObject::connect(&rotate, SIGNAL(clicked()), this, SLOT(rotate_slot_plus()));
         QObject::connect(&rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
         QObject::connect(&save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
-        buttons_on_dynamic_spectrum_connected = 1;
+        QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(display_dynamic_spectrum()));
     }
-    // -- dodajemy widgety --
-    // -- dodajemy widgety --
-    if (dynamic_spectrum_opened==1)
+    if (dynamic_spectrum_opened == 1)
     {
         cout << "----> DYNAMIC SPECTRUM Window is opened, so I will just reset axis" << endl;
         return;
@@ -1828,6 +1824,28 @@ void body::display_dynamic_spectrum()
     QString rot;
     rot = QString::fromStdString(to_string(number_of_rotated_channels));
     number_of_rotated_channels_texted.setText(rot);
+
+    // -- ustalamy visibilities --
+    dynamic_spectrum_pl.setVisible(true);
+    kill_dynspec.setVisible(true);
+    single_dynamic_spectrum.setVisible(true);
+    lcs_dynamic_spectrum.setVisible(true);
+    y_down_border.setVisible(true);
+    y_up_border.setVisible(true);
+    mjd_label.setVisible(true);
+    cocochanel.setVisible(true);
+    x_left_border.setVisible(true);
+    x_right_border.setVisible(true);
+    Ibut.setVisible(true);
+    Vbut.setVisible(true);
+    LHCbut.setVisible(true);
+    RHCbut.setVisible(true);
+    flag.setVisible(true);
+    rotate.setVisible(true);
+    make_lcs_button.setVisible(true);
+    rotate_minus.setVisible(true);
+    save_rotation.setVisible(true);
+    number_of_rotated_channels_texted.setVisible(true);
 }
 
 // -- zamyka widmo dynamiczne --
@@ -1908,6 +1926,26 @@ void body::kill_dynamic_spectrum()
     grid.setColumnStretch(3,0);
     grid.setColumnStretch(4,0);
     grid.setColumnStretch(5,0);
+    QObject::disconnect(&kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
+    QObject::disconnect(&dynamic_spectrum_pl, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(press_map(QMouseEvent *)));
+    QObject::disconnect(&y_up_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_up()));
+    QObject::disconnect(&y_down_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_down()));
+    QObject::disconnect(y_up_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_y_up()));
+    QObject::disconnect(y_down_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_y_down()));
+    QObject::disconnect(x_up_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_x_right()));
+    QObject::disconnect(x_down_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_x_left()));
+    QObject::disconnect(&x_right_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_right()));
+    QObject::disconnect(&x_left_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_left()));
+    QObject::disconnect(&Ibut, SIGNAL(clicked()), this, SLOT(set_I_on_dynamic_spectrum()));
+    QObject::disconnect(&LHCbut, SIGNAL(clicked()), this, SLOT(set_LHC_on_dynamic_spectrum()));
+    QObject::disconnect(&RHCbut, SIGNAL(clicked()), this, SLOT(set_RHC_on_dynamic_spectrum()));
+    QObject::disconnect(&Vbut, SIGNAL(clicked()), this, SLOT(set_V_on_dynamic_spectrum()));
+    QObject::disconnect(&make_lcs_button, SIGNAL(clicked()), this, SLOT(make_lcs_slot()));
+    QObject::disconnect(&flag, SIGNAL(clicked()), this, SLOT(flag_slot()));
+    QObject::disconnect(&rotate, SIGNAL(clicked()), this, SLOT(rotate_slot_plus()));
+    QObject::disconnect(&rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
+    QObject::disconnect(&save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
+    QObject::disconnect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(display_dynamic_spectrum()));
     //ew = QSize()
     //QSize ew = QSize(QW)
     //dynamic_spectrum_pl.setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -5023,7 +5061,12 @@ void body::calculate_integrate_for_time_series_with_buttons()
     //window_for_integrate.setGeometry(300,300,300,300);
 
     bool chan4int_loaded = read_chan4int();
-    if (chan4int_loaded == 1)
+    if(dynamic_spectrum_opened == 1)
+    {
+        starting_channel.setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        ending_channel.setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+    }
+    else if (chan4int_loaded == 1)
     {
         starting_channel.setText(QString::fromStdString(to_string(chan4int_start)));
         ending_channel.setText(QString::fromStdString(to_string(chan4int_end)));
@@ -5307,12 +5350,23 @@ void body::calculate_aver_over_velocity_for_time_series_with_buttons()
     //bool chan4int_loaded = read_chan4int();
 
     bool chan4int_loaded = read_chan4int();
+    /*
     if (chan4int_loaded == 1)
     {
         starting_channel.setText(QString::fromStdString(to_string(chan4int_start)));
         ending_channel.setText(QString::fromStdString(to_string(chan4int_end)));
     }
-
+    */
+    if(dynamic_spectrum_opened == 1)
+    {
+        starting_channel.setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        ending_channel.setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+    }
+    else if (chan4int_loaded == 1)
+    {
+        starting_channel.setText(QString::fromStdString(to_string(chan4int_start)));
+        ending_channel.setText(QString::fromStdString(to_string(chan4int_end)));
+    }
     QPushButton::connect(&cancel, SIGNAL(clicked()), this, SLOT(close_window_for_aver_over_velocity()));
     QPushButton::connect(&make_int, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity()));
 
@@ -5635,9 +5689,14 @@ bool body::check_if_flagged(string avr_filename)
 
     for (int i = 0; i < flagged_avr_files.size(); i++)
     {
+        // albo zwykłe nazwy plików - jak wybieramy z listy
         if (avr_filename == flagged_avr_files[i])
             return true; // jesli znajdziemy na liscie nasza obserwacje - konczymy
+        // albo nazwy z pełną ścieżką - jak wybieramy same pliki
+        if (avr_filename == working_directory + "/" + flagged_avr_files[i])
+            return true; // jesli znajdziemy na liscie nasza obserwacje - konczymy
     }
+
 
     return false;
 }
@@ -7291,6 +7350,12 @@ void body::open_dynspectum_layout()
 
     QPushButton::connect(&cancel, SIGNAL(clicked()), this, SLOT(close_dynspectrum_layout()));
     QPushButton::connect(&WD_start, SIGNAL(clicked()), this, SLOT(export_file_for_dynamic_spectrum()));
+
+    if(dynamic_spectrum_opened== 1)
+    {
+        start_chanwd.setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        end_chanwd.setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+    }
 }
 
 void body::close_dynspectrum_layout()

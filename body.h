@@ -134,6 +134,7 @@ public:
     QShortcut * y_up_border_shrt = new QShortcut(&window);
     QShortcut * x_down_border_shrt = new QShortcut(&window);
     QShortcut * x_up_border_shrt = new QShortcut(&window);
+    QShortcut * reset_dynamic_spectrum = new QShortcut(&window);
     QGroupBox * obsparams = new QGroupBox();
     QCPItemRect * rectangle = new QCPItemRect(&dynamic_spectrum_pl);
     QLabel mjd_label;
