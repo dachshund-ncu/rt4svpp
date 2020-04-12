@@ -68,6 +68,10 @@ body::body(const char * nazwa)
     caltab_r1_path.setMaximumSize(10000,30);
     toggle_calibration_button.setMaximumSize(10000,10000);
     WD.setMaximumSize(10000,10000);
+    open_rms_section.setMaximumSize(10000,10000);
+    kill_rms_section.setMaximumSize(10000,10000);
+    recalculate_integration.setMaximumSize(10000,10000);
+
 
     load_data.setMinimumSize(0,0);
     dynamic_spectrum.setMinimumSize(0,0);
@@ -105,6 +109,9 @@ body::body(const char * nazwa)
     start_calibration.setMinimumSize(0,0);
     toggle_calibration_button.setMinimumSize(0,0);
     WD.setMinimumSize(0,0);
+    open_rms_section.setMinimumSize(0,0);
+    kill_rms_section.setMinimumSize(0,0);
+    recalculate_integration.setMinimumSize(0,0);
     //x_right_border.setMaximumSize(10000,10000);
     // -- dodajemy do layoutu przyciski --
     /*
@@ -145,6 +152,7 @@ body::body(const char * nazwa)
     vbox_main.addWidget(&wiev_data_section_label);
     vbox_main.addWidget(&dynamic_spectrum);
     vbox_main.addWidget(&single_spectrum);
+    vbox_main.addWidget(&open_rms_section);
 
     vbox_main.addWidget(&export_data_section_label);
     vbox_main.addWidget(include_pytime);
@@ -183,6 +191,7 @@ body::body(const char * nazwa)
     load_caltab_r1.setText("Load RHC caltab");
     start_calibration.setText("START");
     WD.setText("Export file for dynamic spectrum");
+    open_rms_section.setText("RMS, Tsys, Sint vs time");
 
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
@@ -206,7 +215,7 @@ body::body(const char * nazwa)
     QObject::connect(&reload, SIGNAL(clicked()), this, SLOT(reload_slot()));
     QObject::connect(&calibrate, SIGNAL(clicked()), this, SLOT(open_cal_layout()));
     QObject::connect(&WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
-
+    QObject::connect(&open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
     // -- probojemy czytac liste --
     if (strncmp(nazwa, "", 300) == 0)
     {
@@ -253,6 +262,12 @@ body::body(const char * nazwa)
 
     // -- pokazujemy okno --
 
+    I_on_rms->setVisible(false);
+    V_on_rms->setVisible(false);
+    LHC_on_rms->setVisible(false);
+    RHC_on_rms->setVisible(false);
+    show_pts->setVisible(false);
+    show_lns->setVisible(false);
     window.show();
 }
 
@@ -267,6 +282,12 @@ void body::display_single_spectrum()
     {
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
         QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
+        return;
+    }
+    else if (rms_section_opened == 1)
+    {
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
         return;
     }
     spectrum.clearGraphs();
@@ -400,7 +421,7 @@ void body::kill_single_spectrum()
     grid.removeWidget(&save_plots_on_single_spectrum);
     grid.removeWidget(&display_plot_on_single_spectrum);
     grid.removeWidget(&erase_last_graph);
-
+    grid.removeWidget(&set_default_range_button);
     vbox_main.removeWidget(&kill_singspec);
 
 
@@ -433,6 +454,7 @@ void body::kill_single_spectrum()
     grid.setColumnStretch(4,0);
     list_of_observations->clear();
     combo_loaded = 0;
+    window.setGeometry(window.x(), window.y(),300,720);
 }
 
 // -- czyta plik o podanej nazwie --
@@ -553,6 +575,16 @@ void body::czytaj(const char* nazwa_pliku23)
   //headertmp = "";
   avr.seekg(0);
 
+  // --- ZAPELNIAMY TSYS ---
+  double tsystmp;
+  string bufortsystmp;
+  for(int i = 0; i < 6; i++)
+  {
+    getline(avr, bufortsystmp);
+  }
+  avr >> tsystmp;
+  avr.seekg(0);
+  tsyslst.push_back(tsystmp);
 
   // --- ZAPEŁNIAMY KONTERERY ---
   vector < double > tab; // do jednej linii w pliku
@@ -884,6 +916,7 @@ void body::read_time_series_for_list(QStringList lista_plikow)
     minutelst.clear();
     seclst.clear();
     pytime_format.clear();
+    tsyslst.clear();
 
     // i kontenery tez
     headerlst.clear();
@@ -1054,6 +1087,7 @@ void body::read_time_series()
   minutelst.clear();
   seclst.clear();
   pytime_format.clear();
+  tsyslst.clear();
 
   // i kontenery tez
   headerlst.clear();
@@ -1513,6 +1547,17 @@ void body::integrate_time_series()
     chan4int_start = min;
     chan4int_end = max;
 
+    // -- czyścimy tablice --
+    // czyscimy tablice z int
+    integrated_fluxlst_I.clear();
+    integrated_fluxlst_V.clear();
+    integrated_fluxlst_LHC.clear();
+    integrated_fluxlst_RHC.clear();
+    integrated_fluxlst_I_er.clear();
+    integrated_fluxlst_V_er.clear();
+    integrated_fluxlst_LHC_er.clear();
+    integrated_fluxlst_RHC_er.clear();
+
     // -- integrujemy --
     for(unsigned int i = 0; i < Ilst.size(); i++)
     {
@@ -1563,10 +1608,10 @@ void body::integrate_time_series()
     }
 
     integ.close();
-    integrated_fluxlst_I.clear();
-    integrated_fluxlst_V.clear();
-    integrated_fluxlst_LHC.clear();
-    integrated_fluxlst_RHC.clear();
+    //integrated_fluxlst_I.clear();
+    //integrated_fluxlst_V.clear();
+    //integrated_fluxlst_LHC.clear();
+    //integrated_fluxlst_RHC.clear();
     //integrated_fluxlst_I_er.clear();
     //integrated_fluxlst_V_er.clear();
     //integrated_fluxlst_LHC_er.clear();
@@ -1596,9 +1641,14 @@ void body::display_dynamic_spectrum()
         //cout << "Please, close SINGLE SPECTRUM window" << endl;
         return;
     }
-
-
-
+    else if (rms_section_opened == 1)
+    {
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
+        return;
+    }
+    // ee
+    //dynamic_spectrum_pl.setOpenGl(true);
     lhc_pressed = 0;
     rhc_pressed = 0;
     I_pressed = 1;
@@ -1631,6 +1681,8 @@ void body::display_dynamic_spectrum()
         dynamic_spectrum_pl.moveLayer(rectangle ->layer(), colorMap->layer(), QCustomPlot::limAbove );
         layers_exist = 1;
     }
+
+
     //dynamic_spectrum_pl.setInteractions(QCP::iRangeZoom);
     /*
     dynamic_spectrum_pl.axisRect()->setRangeDrag(Qt::Vertical);
@@ -1666,16 +1718,31 @@ void body::display_dynamic_spectrum()
     }
 
     // -- skala kolorow --
+
     /*
     if (color_scale_indicator == 0)
     {
-        dynamic_spectrum_pl.plotLayout()->addElement(0,1,colorScale);
-        colorMap->setColorScale(colorScale);
+        //color_scale_plot.plotLayout()->remove(0);
+        color_scale_plot->axisRect()->setupFullAxesBox(true);
+        color_scale_plot->plotLayout()->addElement(0,1,colorScale);
+        //grid.addWidget(&colorScale, 1,1,7,3);
         color_scale_indicator = 1;
     }
+    color_scale_plot->setInteractions(QCP::iRangeDrag);//|QCP::iRangeZoom);
+    colorScale->setParent(&dynamic_spectrum_pl);
+    //colorScale->set
+    QMargins my_margins;
+    my_margins.setTop(0);
+    my_margins.setBottom(0);
+    //colorScale->setMargins(my_margins);
+    colorMap->setColorScale(colorScale);
+    colorScale->setType(QCPAxis::atBottom);
 
-    colorScale->setType(QCPAxis::atTop);
-    colorScale->axis()->setLabel("Flux Density (Jy)");
+    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
+    //colorScale->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
+
+
+    //colorScale->axis()->setLabel("Flux Density (Jy)");
     */
     // -- color gradient --
     gradient.loadPreset(QCPColorGradient::gpJet);
@@ -1686,8 +1753,7 @@ void body::display_dynamic_spectrum()
     colorMap -> setTightBoundary(false);
     // -- cos jeszcze lul --
 
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
+
 
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
@@ -1735,6 +1801,7 @@ void body::display_dynamic_spectrum()
 
     //grid.addWidget(&kill_dynspec, 8,0);
     vbox_main.addWidget(&kill_dynspec);
+    //grid.addWidget(color_scale_plot, 0, 1, 1, 3);
     grid.addWidget(&dynamic_spectrum_pl, 0,1,8,3);
     grid.addWidget(&single_dynamic_spectrum, 0,4,4,2);
     grid.addWidget(&lcs_dynamic_spectrum, 4,4,4,2);
@@ -6663,6 +6730,12 @@ void body::calibrate_method()
         {
             update_dynamic_spectrum();
         }
+        else if (rms_section_opened == 1)
+        {
+            set_plot_on_rms_vs_time();
+            set_plot_on_int_vs_time();
+            //set_plot_on_tsys_vs_time();
+        }
         //calibrate_single(23);
         calibration_done = 1;
         start_calibration.setDown(true);
@@ -6710,6 +6783,12 @@ void body::calibrate_method()
         if (dynamic_spectrum_opened == 1)
         {
             update_dynamic_spectrum();
+        }
+        else if (rms_section_opened == 1)
+        {
+            set_plot_on_rms_vs_time();
+            set_plot_on_int_vs_time();
+            //set_plot_on_tsys_vs_time();
         }
         //calibrate_single(23);
         calibration_done = 0;
@@ -7491,4 +7570,897 @@ void body::export_file_for_dynamic_spectrum()
 
     // -- zamykamy sekcje dynspec --
     close_dynspectrum_layout();
+}
+
+void body::open_rms_section_slot()
+{
+    if (loaded_data == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+
+    if (dynamic_spectrum_opened == 1)
+    {
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
+        return;
+    }
+    else if (single_spectrum_opened == 1)
+    {
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        QMessageBox::information(&window, tr("Error!"), tr("Please, close the SINGLE SPECTRUM window"));
+        return;
+    }
+    else if (rms_section_opened == 1)
+    {
+        set_plot_on_rms_vs_time();
+        set_plot_on_int_vs_time();
+        set_plot_on_tsys_vs_time();
+        show_points_or_lines();
+        return;
+    }
+    // dodajemy do grida
+    grid.addWidget(&rms_vs_time, 0,1,5,2);
+    grid.addWidget(&tsys_vs_time, 5,1,4,2);
+    grid.addWidget(&int_vs_time, 0,3,5,2);
+    grid.addLayout(&preferences_on_rms, 5,3,4,1);
+    grid.addLayout(&exporting_on_rms, 5,4,4,1);
+
+    // labele
+    stokes_parameters.setText("Stokes parameters");
+    integration_parameters_label.setText("Integration parameters");
+    exporting_rms_section_label.setText("Exporting");
+    export_rms_vs_tme.setText("Export rms vs time");
+    export_tsys_vs_tme.setText("Export Tsys vs time");
+    export_tint_vs_tme.setText("Export Integrated flux vs time");
+    export_all_vs_tme.setText("Export all of the above");
+    graph_params_label.setText("Plot properties");
+    // fonty w labelach
+    QFont f( "Arial", 10, QFont::Bold);
+    stokes_parameters.setFont(f);
+    integration_parameters_label.setFont(f);
+    exporting_rms_section_label.setFont(f);
+    graph_params_label.setFont(f);
+
+    // checkboxy
+    //I_on_rms->setVisible(true);
+    //V_on_rms->setVisible(true);
+    //LHC_on_rms->setVisible(true);
+    //RHC_on_rms->setVisible(true);
+    checkboxes_of_pol.addWidget(I_on_rms);
+    checkboxes_of_pol.addWidget(V_on_rms);
+    checkboxes_of_pol.addWidget(LHC_on_rms);
+    checkboxes_of_pol.addWidget(RHC_on_rms);
+    preferences_on_rms.addWidget(&stokes_parameters);
+    preferences_on_rms.addLayout(&checkboxes_of_pol);
+
+    // kanały
+    //rms_int_start_label.setVisible(true);
+    //rms_int_end_label.setVisible(true);
+    //rms_int_start.setVisible(true);
+    //rms_int_end.setVisible(true);
+    //recalculate_integration.setVisible(true);
+    rms_int_start_label.setText("Integration start channel");
+    rms_int_end_label.setText("Integration end channel");
+    rms_int_start.setText("500");
+    rms_int_end.setText("1500");
+    rms_int_start.setMaximumSize(100, 40);
+    rms_int_end.setMaximumSize(100, 40);
+    recalculate_integration.setText("Recalculate integration");
+    start_chan.addWidget(&rms_int_start_label);
+    start_chan.addWidget(&rms_int_start,Qt::AlignHCenter);
+    end_chan.addWidget(&rms_int_end_label);
+    end_chan.addWidget(&rms_int_end, Qt::AlignHCenter);
+    preferences_on_rms.addWidget(&integration_parameters_label);
+    preferences_on_rms.addLayout(&start_chan);
+    preferences_on_rms.addLayout(&end_chan);
+    preferences_on_rms.addWidget(&recalculate_integration);
+
+    // przyciski do eksportowania
+    export_rms_vs_tme.setMaximumSize(10000,10000);
+    export_tsys_vs_tme.setMaximumSize(10000,10000);
+    export_tint_vs_tme.setMaximumSize(10000,10000);
+    export_all_vs_tme.setMaximumSize(10000,10000);
+    exporting_on_rms.addWidget(&exporting_rms_section_label);
+    exporting_on_rms.addWidget(&export_rms_vs_tme);
+    exporting_on_rms.addWidget(&export_tsys_vs_tme);
+    exporting_on_rms.addWidget(&export_tint_vs_tme);
+    exporting_on_rms.addWidget(&export_all_vs_tme);
+    // dodatkowo - manipulowanie grafiką
+    exporting_on_rms.addWidget(&graph_params_label);
+    exporting_on_rms.addWidget(show_pts);
+    exporting_on_rms.addWidget(show_lns);
+
+    // ustalamy szerokość kolumn
+    grid.setColumnStretch(1,1);
+    grid.setColumnStretch(2,1);
+    grid.setColumnStretch(3,1);
+    grid.setColumnStretch(4,1);
+
+    // dodajemy amykający button do głównego panelu
+    kill_rms_section.setText("Kill Tsys, Sint and RMS section --->");
+    vbox_main.addWidget(&kill_rms_section);
+
+    // pojawia się i znika
+    // -- graphy -
+    rms_vs_time.setVisible(true);
+    tsys_vs_time.setVisible(true);
+    int_vs_time.setVisible(true);
+    // -- checkboxy --
+    I_on_rms->setVisible(true);
+    V_on_rms->setVisible(true);
+    LHC_on_rms->setVisible(true);
+    RHC_on_rms->setVisible(true);
+    show_pts->setVisible(true);
+    show_lns->setVisible(true);
+    // -- labele --
+    stokes_parameters.setVisible(true);
+    integration_parameters_label.setVisible(true);
+    exporting_rms_section_label.setVisible(true);
+    rms_int_start_label.setVisible(true);
+    rms_int_end_label.setVisible(true);
+    graph_params_label.setVisible(true);
+    // -- txt ctrle --
+    rms_int_start.setVisible(true);
+    rms_int_end.setVisible(true);
+    // -- buttony --
+    recalculate_integration.setVisible(true);
+    export_rms_vs_tme.setVisible(true);
+    export_tsys_vs_tme.setVisible(true);
+    export_tint_vs_tme.setVisible(true);
+    export_all_vs_tme.setVisible(true);
+    kill_rms_section.setVisible(true);
+
+    // - zaznaczamy checkbox I -
+    I_on_rms->setChecked(true);
+    show_pts->setChecked(true);
+    // connectujemy
+    QPushButton::connect(&kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
+
+    QObject::connect(I_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
+    QObject::connect(V_on_rms, SIGNAL(clicked()), this, SLOT(V_on_rms_checkbox_checked_slot()));
+    QObject::connect(LHC_on_rms, SIGNAL(clicked()), this, SLOT(LHC_on_rms_checkbox_checked_slot()));
+    QObject::connect(RHC_on_rms, SIGNAL(clicked()), this, SLOT(RHC_on_rms_checkbox_checked_slot()));
+    QObject::connect(show_pts, SIGNAL(clicked()), this, SLOT(show_points_or_lines()));
+    QObject::connect(show_lns, SIGNAL(clicked()), this, SLOT(show_points_or_lines()));
+    QPushButton::connect(&export_rms_vs_tme, SIGNAL(clicked()), this, SLOT(exp_rms_vs_time()));
+    QPushButton::connect(&export_tint_vs_tme, SIGNAL(clicked()), this, SLOT(exp_sint_vs_time()));
+    QPushButton::connect(&recalculate_integration, SIGNAL(clicked()), this, SLOT(recalculate_integration_on_rms_slot()));
+    QPushButton::connect(&export_all_vs_tme, SIGNAL(clicked()), this, SLOT(exp_all()));
+    QPushButton::connect(&export_tsys_vs_tme, SIGNAL(clicked()), this, SLOT(exp_tsys_vs_time()));
+    window.setGeometry(window.x(), window.y(),1360,720);
+    window.show();
+    grid.update();
+
+    set_plot_on_rms_vs_time();
+    set_plot_on_int_vs_time();
+    set_plot_on_tsys_vs_time();
+    show_points_or_lines();
+    //preferences_on_rms.update();
+
+    rms_section_opened = 1;
+}
+
+void body::close_rms_section_slot()
+{
+    // ustalamy visibilities
+    // -- graphy -
+    rms_vs_time.setVisible(false);
+    tsys_vs_time.setVisible(false);
+    int_vs_time.setVisible(false);
+    // -- checkboxy --
+    I_on_rms->setVisible(false);
+    V_on_rms->setVisible(false);
+    LHC_on_rms->setVisible(false);
+    RHC_on_rms->setVisible(false);
+    show_pts->setVisible(false);
+    show_lns->setVisible(false);
+    // -- labele --
+    stokes_parameters.setVisible(false);
+    integration_parameters_label.setVisible(false);
+    exporting_rms_section_label.setVisible(false);
+    rms_int_start_label.setVisible(false);
+    rms_int_end_label.setVisible(false);
+    graph_params_label.setVisible(false);
+    // -- txt ctrle --
+    rms_int_start.setVisible(false);
+    rms_int_end.setVisible(false);
+    // -- buttony --
+    recalculate_integration.setVisible(false);
+    export_rms_vs_tme.setVisible(false);
+    export_tsys_vs_tme.setVisible(false);
+    export_tint_vs_tme.setVisible(false);
+    export_all_vs_tme.setVisible(false);
+    kill_rms_section.setVisible(false);
+
+    // odpinamy od grida
+    // - gtaphy -
+    grid.removeWidget(&rms_vs_time);
+    grid.removeWidget(&tsys_vs_time);
+    grid.removeWidget(&int_vs_time);
+    // - layouty -
+    grid.removeItem(&preferences_on_rms);
+    grid.removeItem(&exporting_on_rms);
+
+    // odpinamy od layoutow
+    // -- preferences_on_rms --
+    start_chan.removeWidget(&rms_int_start_label);
+    start_chan.removeWidget(&rms_int_start);
+    end_chan.removeWidget(&rms_int_end_label);
+    end_chan.removeWidget(&rms_int_end);
+    checkboxes_of_pol.removeWidget(I_on_rms);
+    checkboxes_of_pol.removeWidget(V_on_rms);
+    checkboxes_of_pol.removeWidget(LHC_on_rms);
+    checkboxes_of_pol.removeWidget(RHC_on_rms);
+    preferences_on_rms.removeWidget(&stokes_parameters);
+    preferences_on_rms.removeItem(&checkboxes_of_pol);
+    preferences_on_rms.removeWidget(&integration_parameters_label);
+    preferences_on_rms.removeItem(&start_chan);
+    preferences_on_rms.removeItem(&end_chan);
+    preferences_on_rms.removeWidget(&recalculate_integration);
+    // -- exporting_on_rms --
+    exporting_on_rms.removeWidget(&exporting_rms_section_label);
+    exporting_on_rms.removeWidget(&export_rms_vs_tme);
+    exporting_on_rms.removeWidget(&export_tsys_vs_tme);
+    exporting_on_rms.removeWidget(&export_tint_vs_tme);
+    exporting_on_rms.removeWidget(&export_all_vs_tme);
+    exporting_on_rms.removeWidget(&graph_params_label);
+    exporting_on_rms.removeWidget(show_pts);
+    exporting_on_rms.removeWidget(show_lns);
+
+    // -- usuwamy przycisk z vbox_main --
+    vbox_main.removeWidget(&kill_rms_section);
+    // ustalamy wygląd okna
+    window.setGeometry(window.x(), window.y(),300,720);
+    grid.setColumnStretch(0,1);
+    grid.setColumnStretch(1,0);
+    grid.setColumnStretch(2,0);
+    grid.setColumnStretch(3,0);
+    grid.setColumnStretch(4,0);
+    grid.setColumnStretch(5,0);
+    // robimy replot okna
+    grid.update();
+    window.setLayout(&grid);
+    window.show();
+    window.setGeometry(window.x(), window.y(),300,720);
+    // disconnectujemy metodę zamykania sekcji
+    QPushButton::disconnect(&kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
+    QObject::disconnect(I_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
+    QObject::disconnect(V_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
+    QObject::disconnect(LHC_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
+    QObject::disconnect(RHC_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
+    QObject::disconnect(show_pts, SIGNAL(clicked()), this, SLOT(show_points_or_lines()));
+    QObject::disconnect(show_lns, SIGNAL(clicked()), this, SLOT(show_points_or_lines()));
+    QPushButton::disconnect(&recalculate_integration, SIGNAL(clicked()), this, SLOT(recalculate_integration_on_rms_slot()));
+    QPushButton::disconnect(&export_rms_vs_tme, SIGNAL(clicked()), this, SLOT(exp_rms_vs_time()));
+    QPushButton::disconnect(&export_tint_vs_tme, SIGNAL(clicked()), this, SLOT(exp_sint_vs_time()));
+    QPushButton::disconnect(&export_all_vs_tme, SIGNAL(clicked()), this, SLOT(exp_all()));
+    QPushButton::disconnect(&export_tsys_vs_tme, SIGNAL(clicked()), this, SLOT(exp_tsys_vs_time()));
+    rms_section_opened = 0;
+}
+
+void body::set_plot_on_rms_vs_time()
+{
+    rms_vs_time.clearGraphs();
+    // wektor z danymi
+    QVector < double > xI(Ilst.size()), yI(Ilst.size()), yV(Ilst.size()), yLHC(Ilst.size()), yRHC(Ilst.size());
+
+    // zapelniamy wektory
+    for(unsigned int i = 0; i < Ilst.size(); i++)
+    {
+        xI[i] = mjdlst[i];
+        yI[i] = ERRlst[i][0];
+        yV[i] = VERRlst[i][0];
+        yLHC[i] = LHCERRlst[i][0];
+        yRHC[i] = RHCERRlst[i][0];
+    }
+    // -- graphy --
+    // -- dodajemy grafike (I) --
+    rms_vs_time.addGraph();
+    if(I_on_rms->isChecked())
+    {
+        rms_vs_time.graph(0)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(0)->setVisible(false);
+    }
+    rms_vs_time.graph(0)->setName("I");
+    rms_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    rms_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    rms_vs_time.addGraph();
+    if(V_on_rms->isChecked())
+    {
+        rms_vs_time.graph(1)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(1)->setVisible(false);
+    }
+    rms_vs_time.graph(1)->setName("V");
+    rms_vs_time.graph(1)->setPen(QPen(Qt::black));
+    rms_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    rms_vs_time.addGraph();
+    if(LHC_on_rms->isChecked())
+    {
+        rms_vs_time.graph(2)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(2)->setVisible(false);
+    }
+    rms_vs_time.graph(2)->setName("LHC");
+    rms_vs_time.graph(2)->setPen(QPen(Qt::red));
+    rms_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    rms_vs_time.addGraph();
+    if(RHC_on_rms->isChecked())
+    {
+        rms_vs_time.graph(3)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(3)->setVisible(false);
+    }
+    rms_vs_time.graph(3)->setName("RHC");
+    rms_vs_time.graph(3)->setPen(QPen(Qt::green));
+    rms_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+
+    // -- legenda --
+    rms_vs_time.legend->setVisible(true);
+    QFont f( "Arial", 10, QFont::Bold);
+    rms_vs_time.legend->setFont(f);
+
+    // -- dodajemy do grafiki dane --
+    rms_vs_time.graph(0)->setData(xI,yI);
+    rms_vs_time.graph(1)->setData(xI,yV);
+    rms_vs_time.graph(2)->setData(xI,yLHC);
+    rms_vs_time.graph(3)->setData(xI,yRHC);
+
+    // -- zarzadzamy labelami --
+    rms_vs_time.xAxis->setLabel("MJD");
+    rms_vs_time.yAxis->setLabel("RMS");
+    // -- zarzadzamy rangeami --
+    //spectrum.xAxis->setRange(*min_element(x.begin(), x.end()), *max_element(x.begin(), x.end()));
+    //spectrum.yAxis->setRange(*min_element(y.begin(), y.end()), *max_element(y.begin(), y.end()));
+    double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
+    rms_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    rms_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    // -- pokazujemy ticki na gornej osi --
+    rms_vs_time.xAxis2->setVisible(true);
+    rms_vs_time.yAxis2->setVisible(true);
+    rms_vs_time.xAxis2->setTickLabels(false);
+    rms_vs_time.yAxis2->setTickLabels(false);
+    // -- dodajemy interakcje --
+    rms_vs_time.setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    rms_vs_time.axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    rms_vs_time.axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    rms_vs_time.axisRect()->setRangeZoomAxes(rms_vs_time.xAxis, rms_vs_time.yAxis);
+    rms_vs_time.setSelectionRectMode(QCP::srmZoom);
+    rms_vs_time.replot();
+}
+
+void body::set_plot_on_tsys_vs_time()
+{
+    tsys_vs_time.clearGraphs();
+    // wektor z danymi
+    QVector < double > xI(Ilst.size()), yI(Ilst.size());
+
+    // zapelniamy wektory
+    for(unsigned int i = 0; i < Ilst.size(); i++)
+    {
+        xI[i] = mjdlst[i];
+        yI[i] = tsyslst[i];
+    }
+    // -- graphy --
+    // -- dodajemy grafike (I) --
+    tsys_vs_time.addGraph();
+
+    tsys_vs_time.graph(0)->setName("I");
+    tsys_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    tsys_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+    tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+
+    // -- dodajemy do grafiki dane --
+    tsys_vs_time.graph(0)->setData(xI,yI);
+
+    // -- zarzadzamy labelami --
+    tsys_vs_time.xAxis->setLabel("MJD");
+    tsys_vs_time.yAxis->setLabel("Tsys (K)");
+
+    // -- zarzadzamy rangeami --
+    double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
+    tsys_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    tsys_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    // -- pokazujemy ticki na gornej osi --
+    tsys_vs_time.xAxis2->setVisible(true);
+    tsys_vs_time.yAxis2->setVisible(true);
+    tsys_vs_time.xAxis2->setTickLabels(false);
+    tsys_vs_time.yAxis2->setTickLabels(false);
+    // -- dodajemy interakcje --
+    tsys_vs_time.setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    tsys_vs_time.axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    tsys_vs_time.axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    tsys_vs_time.axisRect()->setRangeZoomAxes(tsys_vs_time.xAxis, tsys_vs_time.yAxis);
+    tsys_vs_time.setSelectionRectMode(QCP::srmZoom);
+    tsys_vs_time.replot();
+}
+
+void body::set_plot_on_int_vs_time()
+{
+    // czyscimy tablice z int
+    integrated_fluxlst_I.clear();
+    integrated_fluxlst_V.clear();
+    integrated_fluxlst_LHC.clear();
+    integrated_fluxlst_RHC.clear();
+    integrated_fluxlst_I_er.clear();
+    integrated_fluxlst_V_er.clear();
+    integrated_fluxlst_LHC_er.clear();
+    integrated_fluxlst_RHC_er.clear();
+
+    // liczymy calke z widma
+    unsigned int min, max;
+    QString mins,maxs;
+    mins = rms_int_start.toPlainText();
+    maxs = rms_int_end.toPlainText();
+
+    // -- sprawdzamy, czy text edity sa wypelnione --
+    if (mins.toStdString() == "" || maxs.toStdString() == "")
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        return;
+    }
+
+    // -- konwertujemy tera wartosci z text edit na inty--
+    try
+    {
+        min = stoi(mins.toStdString())-1;
+        max = stoi(maxs.toStdString())-1;
+    }
+    catch(...)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        return;
+    }
+
+    // -- obsługujemy kilka przypadków błędnego wpisania paramatrów --
+    // początkowy channel większy od końcowego
+    if (min > max)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
+        return;
+    }
+    // początkowy channel mniejszy od zera
+    if (min < 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
+        return;
+    }
+    // koncowy channel większy od maksymalnej ilości kanałów
+    if (max > Ilst[0].size()-1)
+        max = Ilst[0].size()-1;
+
+    chan4int_start = min;
+    chan4int_end = max;
+
+    // -- integrujemy --
+    for(unsigned int i = 0; i < Ilst.size(); i++)
+    {
+        integrate_single(min, max, i);
+        integrated_fluxlst_I.push_back(integrated_flux_I);
+        integrated_fluxlst_V.push_back(integrated_flux_V);
+        integrated_fluxlst_LHC.push_back(integrated_flux_LHC);
+        integrated_fluxlst_RHC.push_back(integrated_flux_RHC);
+        integrated_fluxlst_I_er.push_back(integrated_flux_I_er);
+        integrated_fluxlst_V_er.push_back(integrated_flux_V_er);
+        integrated_fluxlst_LHC_er.push_back(integrated_flux_LHC_er);
+        integrated_fluxlst_RHC_er.push_back(integrated_flux_RHC_er);
+    }
+
+    // -- clearujemy grafiki --
+    int_vs_time.clearGraphs();
+    // -- wektory Q do wykresow --
+    int nobs = integrated_fluxlst_I.size();
+    QVector < double > xI(nobs), yI(nobs),yV(nobs),yLHC(nobs),yRHC(nobs),yI_er(nobs), yV_er(nobs), yLHC_er(nobs), yRHC_er(nobs);
+    for(int i = 0; i < integrated_fluxlst_I.size(); i++)
+    {
+        xI[i] = mjdlst[i];
+        yI[i] = integrated_fluxlst_I[i];
+        yV[i] = integrated_fluxlst_V[i];
+        yLHC[i] = integrated_fluxlst_LHC[i];
+        yRHC[i] = integrated_fluxlst_RHC[i];
+        yI_er[i] = integrated_fluxlst_I_er[i];
+        yV_er[i] = integrated_fluxlst_V_er[i];
+        yLHC_er[i] = integrated_fluxlst_LHC_er[i];
+        yRHC_er[i] = integrated_fluxlst_RHC_er[i];
+    }
+
+    // -- graphy --
+    // -- dodajemy grafike (I) --
+    int_vs_time.addGraph();
+    if(I_on_rms->isChecked())
+    {
+        int_vs_time.graph(0)->setVisible(true);
+    }
+    else
+    {
+        int_vs_time.graph(0)->setVisible(false);
+    }
+    int_vs_time.graph(0)->setName("I");
+    int_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    int_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    int_vs_time.addGraph();
+    if(V_on_rms->isChecked())
+    {
+        int_vs_time.graph(1)->setVisible(true);
+    }
+    else
+    {
+        int_vs_time.graph(1)->setVisible(false);
+    }
+    int_vs_time.graph(1)->setName("V");
+    int_vs_time.graph(1)->setPen(QPen(Qt::black));
+    int_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    int_vs_time.addGraph();
+    if(LHC_on_rms->isChecked())
+    {
+        int_vs_time.graph(2)->setVisible(true);
+    }
+    else
+    {
+        int_vs_time.graph(2)->setVisible(false);
+    }
+    int_vs_time.graph(2)->setName("LHC");
+    int_vs_time.graph(2)->setPen(QPen(Qt::red));
+    int_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    // -- dodajemy grafike (V) --
+    int_vs_time.addGraph();
+    if(RHC_on_rms->isChecked())
+    {
+        int_vs_time.graph(3)->setVisible(true);
+    }
+    else
+    {
+        int_vs_time.graph(3)->setVisible(false);
+    }
+    int_vs_time.graph(3)->setName("RHC");
+    int_vs_time.graph(3)->setPen(QPen(Qt::green));
+    int_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+
+    // -- legenda --
+    int_vs_time.legend->setVisible(false);
+    QFont f( "Arial", 10, QFont::Bold);
+    int_vs_time.legend->setFont(f);
+
+    // -- dodajemy do grafiki dane --
+    int_vs_time.graph(0)->setData(xI,yI);
+    int_vs_time.graph(1)->setData(xI,yV);
+    int_vs_time.graph(2)->setData(xI,yLHC);
+    int_vs_time.graph(3)->setData(xI,yRHC);
+    /*
+    // -- errorbary --
+    // I
+    QCPErrorBars * errorBars_tint_I = new QCPErrorBars(int_vs_time.xAxis, int_vs_time.yAxis);
+    errorBars_tint_I->setAntialiased(false);
+    errorBars_tint_I->setDataPlottable(int_vs_time.graph(0));
+    errorBars_tint_I->setPen(QPen(QColor(180,180,180)));
+    errorBars_tint_I->setData(yI_er);
+    cout << yI_er[0] << endl;
+    // V
+    QCPErrorBars * errorBars_tint_V = new QCPErrorBars(int_vs_time.xAxis, int_vs_time.yAxis);
+    errorBars_tint_V->setAntialiased(false);
+    errorBars_tint_V->setDataPlottable(int_vs_time.graph(1));
+    errorBars_tint_V->setPen(QPen(QColor(180,180,180)));
+    errorBars_tint_V->setData(yV_er);
+    // LHC
+    QCPErrorBars * errorBars_tint_LHC = new QCPErrorBars(int_vs_time.xAxis, int_vs_time.yAxis);
+    errorBars_tint_LHC->setAntialiased(false);
+    errorBars_tint_LHC->setDataPlottable(int_vs_time.graph(2));
+    errorBars_tint_LHC->setPen(QPen(QColor(180,180,180)));
+    errorBars_tint_LHC->setData(yLHC_er);
+    // RHC
+    QCPErrorBars * errorBars_tint_RHC = new QCPErrorBars(int_vs_time.xAxis, int_vs_time.yAxis);
+    errorBars_tint_RHC->setAntialiased(false);
+    errorBars_tint_RHC->setDataPlottable(int_vs_time.graph(3));
+    errorBars_tint_RHC->setPen(QPen(QColor(180,180,180)));
+    errorBars_tint_RHC->setData(yRHC_er);
+    */
+    // -- zarzadzamy labelami --
+    int_vs_time.xAxis->setLabel("MJD");
+    int_vs_time.yAxis->setLabel("Integrated flux");
+    // -- zarzadzamy rangeami --
+    //spectrum.xAxis->setRange(*min_element(x.begin(), x.end()), *max_element(x.begin(), x.end()));
+    //spectrum.yAxis->setRange(*min_element(y.begin(), y.end()), *max_element(y.begin(), y.end()));
+    double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
+    int_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    int_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    // -- pokazujemy ticki na gornej osi --
+    int_vs_time.xAxis2->setVisible(true);
+    int_vs_time.yAxis2->setVisible(true);
+    int_vs_time.xAxis2->setTickLabels(false);
+    int_vs_time.yAxis2->setTickLabels(false);
+    // -- dodajemy interakcje --
+    int_vs_time.setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    int_vs_time.axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    int_vs_time.axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    int_vs_time.axisRect()->setRangeZoomAxes(int_vs_time.xAxis, int_vs_time.yAxis);
+    int_vs_time.setSelectionRectMode(QCP::srmZoom);
+    int_vs_time.replot();
+}
+
+void body::I_on_rms_checkbox_checked_slot()
+{
+    if(I_on_rms->isChecked())
+    {
+        rms_vs_time.graph(0)->setVisible(true);
+        int_vs_time.graph(0)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(0)->setVisible(false);
+        int_vs_time.graph(0)->setVisible(false);
+    }
+    rms_vs_time.replot();
+    int_vs_time.replot();
+}
+
+void body::V_on_rms_checkbox_checked_slot()
+{
+    if(V_on_rms->isChecked())
+    {
+        rms_vs_time.graph(1)->setVisible(true);
+        int_vs_time.graph(1)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(1)->setVisible(false);
+        int_vs_time.graph(1)->setVisible(false);
+    }
+    rms_vs_time.replot();
+    int_vs_time.replot();
+}
+
+void body::LHC_on_rms_checkbox_checked_slot()
+{
+    if(LHC_on_rms->isChecked())
+    {
+        rms_vs_time.graph(2)->setVisible(true);
+        int_vs_time.graph(2)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(2)->setVisible(false);
+        int_vs_time.graph(2)->setVisible(false);
+    }
+    rms_vs_time.replot();
+    int_vs_time.replot();
+}
+
+void body::RHC_on_rms_checkbox_checked_slot()
+{
+    if(RHC_on_rms->isChecked())
+    {
+        rms_vs_time.graph(3)->setVisible(true);
+        int_vs_time.graph(3)->setVisible(true);
+    }
+    else
+    {
+        rms_vs_time.graph(3)->setVisible(false);
+        int_vs_time.graph(3)->setVisible(false);
+    }
+    rms_vs_time.replot();
+    int_vs_time.replot();
+}
+
+void body::recalculate_integration_on_rms_slot()
+{
+    set_plot_on_int_vs_time();
+    show_points_or_lines();
+}
+
+void body::show_points_or_lines()
+{
+    if(show_pts->isChecked())
+    {
+        // rms vs time
+        rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        // int vs time
+        int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        // tsys vs time
+        tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    }
+    else
+    {
+        // rms vs time
+        rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        // int vs time
+        int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+        // tsys vs time
+        tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 4));
+    }
+
+    if(show_lns->isChecked())
+    {
+        // rms vs time
+        rms_vs_time.graph(0)->setLineStyle(QCPGraph::lsLine);
+        rms_vs_time.graph(1)->setLineStyle(QCPGraph::lsLine);
+        rms_vs_time.graph(2)->setLineStyle(QCPGraph::lsLine);
+        rms_vs_time.graph(3)->setLineStyle(QCPGraph::lsLine);
+        // int vs time
+        int_vs_time.graph(0)->setLineStyle(QCPGraph::lsLine);
+        int_vs_time.graph(1)->setLineStyle(QCPGraph::lsLine);
+        int_vs_time.graph(2)->setLineStyle(QCPGraph::lsLine);
+        int_vs_time.graph(3)->setLineStyle(QCPGraph::lsLine);
+        // tsys vs time
+        tsys_vs_time.graph(0)->setLineStyle(QCPGraph::lsLine);
+    }
+    else
+    {
+        // rms vs time
+        rms_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+        rms_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
+        rms_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
+        rms_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
+        // int vs time
+        int_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+        int_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
+        int_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
+        int_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
+        // tsys vs time
+        tsys_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
+    }
+
+    // replotujemy
+    rms_vs_time.replot();
+    int_vs_time.replot();
+    tsys_vs_time.replot();
+}
+
+void body::exp_sint_vs_time()
+{
+    // -- zapisujemy do pliku --
+    min_rms_int_channel = chan4int_start;
+    max_rms_int_channel = chan4int_end;
+    ofstream integ;
+    string filename = working_directory + "/" + srcname + "_integrated_flux_density_" + to_string(min_rms_int_channel+1) + "_to_" + to_string(max_rms_int_channel+1) +  ".DAT";
+    integ.open(filename.c_str());
+
+    if(include_pytime->isChecked())
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+        //cout << "Zaznaczono pytime" << endl;
+    }
+    else
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# MJD year I err V err LHC err RHC err" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+    }
+
+    integ.close();
+    string message = "";
+    message = "Integrated over channels " + to_string(min_rms_int_channel+1) + " -> " + to_string(max_rms_int_channel+1) + "\n" + "Saved to " + filename;
+    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+}
+
+void body::exp_rms_vs_time()
+{
+    ofstream integ;
+    string filename = working_directory + "/" + srcname + "_rms_vs_time.DAT";
+    integ.open(filename.c_str());
+
+    if(include_pytime->isChecked())
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# time_in_isoformat MJD year RMS_I RMS_V RMS_LHC RMS_RHC" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << ERRlst[i][0] << "   " << VERRlst[i][0] << "  " << LHCERRlst[i][0] << "   " << RHCERRlst[i][0] << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+        //cout << "Zaznaczono pytime" << endl;
+    }
+    else
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# MJD year RMS_I RMS_V RMS_LHC RMS_RHC" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << ERRlst[i][0] << "   " << VERRlst[i][0] << "  " << LHCERRlst[i][0] << "   " << RHCERRlst[i][0] << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+    }
+    integ.close();
+    string message = "";
+    message = "Saved RMS vs time to " + filename;
+    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+
+}
+
+void body::exp_all()
+{
+    exp_sint_vs_time();
+    exp_rms_vs_time();
+    exp_tsys_vs_time();
+}
+
+void body::exp_tsys_vs_time()
+{
+    ofstream integ;
+    string filename = working_directory + "/" + srcname + "_tsys_vs_time.DAT";
+    integ.open(filename.c_str());
+
+    if(include_pytime->isChecked())
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# time_in_isoformat MJD year Tsys (K)" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+        //cout << "Zaznaczono pytime" << endl;
+    }
+    else
+    {
+        // wpisujemy naglowek do pliku
+        integ << "# MJD year Tsys (K)" << endl;
+        // petla zapisujaca
+        for(int i = 0; i < Ilst.size(); i++)
+        {
+            // wrzucamy wszystko do pliku
+            integ << fixed << setprecision(11) << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+        }
+    }
+    integ.close();
+    string message = "";
+    message = "Saved Tsys vs time to " + filename;
+    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+
 }

@@ -114,9 +114,69 @@ public:
     QLabel start_channelwd;
     QLabel end_channelwd;
 
+    // -- do robienia sekcji rms vs czas --
+    // - buttony -
+    QPushButton open_rms_section;
+    QPushButton kill_rms_section;
+    QPushButton recalculate_integration;
+    QPushButton export_rms_vs_tme;
+    QPushButton export_tint_vs_tme;
+    QPushButton export_tsys_vs_tme;
+    QPushButton export_all_vs_tme;
+
+
+    // - wykresy -
+    QCustomPlot rms_vs_time;
+    QCustomPlot tsys_vs_time;
+    QCustomPlot int_vs_time;
+
+    // - checkboxy -
+    //QCheckBox *include_pytime = new QCheckBox ("Include time in isoformat", &window);
+    QCheckBox * I_on_rms = new QCheckBox ("I", &window);
+    QCheckBox * V_on_rms = new QCheckBox ("V", &window);
+    QCheckBox * LHC_on_rms = new QCheckBox ("LHC", &window);
+    QCheckBox * RHC_on_rms = new QCheckBox ("RHC", &window);
+    QCheckBox * show_pts = new QCheckBox ("Show points", &window);
+    QCheckBox * show_lns = new QCheckBox ("Show lines", &window);
+    //QCheckBox  I_on_rms;
+    //QCheckBox  V_on_rms;
+    //QCheckBox  LHC_on_rms;
+    //QCheckBox  RHC_on_rms;
+
+
+    // - text edity -
+    QTextEdit rms_int_start;
+    QTextEdit rms_int_end;
+    QLabel rms_int_start_label;
+    QLabel rms_int_end_label;
+    QLabel rms_vs_time_label;
+    QLabel tsys_vs_time_label;
+    QLabel int_vs_time_label;
+    QLabel stokes_parameters;
+    QLabel integration_parameters_label;
+    QLabel exporting_rms_section_label;
+    QLabel graph_params_label;
+
+    // -inty - do przechowywania channelow -
+    int min_rms_int_channel = 500;
+    int max_rms_int_channel = 1500;
+    // - layouty -
+    QVBoxLayout preferences_on_rms;
+    QHBoxLayout checkboxes_of_pol;
+    QHBoxLayout start_chan;
+    QHBoxLayout end_chan;
+    QVBoxLayout exporting_on_rms;
+
+    // - kontnery -
+    vector < double > I_sint, V_sint, LHC_sint, RHC_sint, I_sint_e, V_sint_e, LHC_sint_e, RHC_sint_e;
+
+    // boole
+    bool rms_section_opened = 0;
+
     // -- ISTOTNE - widgety do umieszczania wykresow --
     QCustomPlot spectrum;
     QCustomPlot dynamic_spectrum_pl;
+    //QCustomPlot  * color_scale_plot = new QCustomPlot(&dynamic_spectrum_pl);
     QCustomPlot single_dynamic_spectrum;
     QCustomPlot lcs_dynamic_spectrum;
     QCPItemLine * x_axis_line = new QCPItemLine(&dynamic_spectrum_pl);
@@ -125,9 +185,9 @@ public:
 
     QCPItemLine * vel_line = new QCPItemLine(&single_dynamic_spectrum);
     QCPItemLine * epoch_line = new QCPItemLine(&lcs_dynamic_spectrum);
-    QCPColorMap *colorMap = new QCPColorMap(dynamic_spectrum_pl.xAxis, dynamic_spectrum_pl.yAxis);
-    QCPColorScale *colorScale = new QCPColorScale(&dynamic_spectrum_pl);
-    QCPMarginGroup *marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
+    QCPColorMap * colorMap = new QCPColorMap(dynamic_spectrum_pl.xAxis, dynamic_spectrum_pl.yAxis);
+    QCPColorScale * colorScale = new QCPColorScale(&dynamic_spectrum_pl);
+    QCPMarginGroup * marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
 
     QCPErrorBars *errorBars = new QCPErrorBars(lcs_dynamic_spectrum.xAxis, lcs_dynamic_spectrum.yAxis);
     QShortcut * y_down_border_shrt = new QShortcut(&window);
@@ -283,6 +343,19 @@ public slots:
     void open_dynspectum_layout();
     void close_dynspectrum_layout();
     void export_file_for_dynamic_spectrum();
+
+    void open_rms_section_slot();
+    void close_rms_section_slot();
+    void I_on_rms_checkbox_checked_slot();
+    void V_on_rms_checkbox_checked_slot();
+    void LHC_on_rms_checkbox_checked_slot();
+    void RHC_on_rms_checkbox_checked_slot();
+    void recalculate_integration_on_rms_slot();
+    void show_points_or_lines();
+    void exp_sint_vs_time();
+    void exp_rms_vs_time();
+    void exp_tsys_vs_time();
+    void exp_all();
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
@@ -327,6 +400,7 @@ public:
 
     // --  stale narzedzia --
     vector < string > pytime_format;
+    vector < double > tsyslst;
     vector < double > jdlst;
     vector < double > mjdlst;
     vector < double > yrlst;
@@ -413,6 +487,10 @@ public:
     vector < double > min_w_index(int min_epoch, int max_epoch,vector < double > time_series, vector < double > error);
     vector < int > added_obsers_to_single_spectrum;
 
+    void set_plot_on_rms_vs_time();
+    void set_plot_on_tsys_vs_time();
+    void set_plot_on_int_vs_time();
+    void calculate_sint_for_rms_window();
     //void read_chan4int();
 
 };
