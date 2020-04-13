@@ -123,13 +123,24 @@ public:
     QPushButton export_tint_vs_tme;
     QPushButton export_tsys_vs_tme;
     QPushButton export_all_vs_tme;
+    QPushButton show_selected_spectrum;
 
 
     // - wykresy -
     QCustomPlot rms_vs_time;
     QCustomPlot tsys_vs_time;
     QCustomPlot int_vs_time;
-
+    // -- do crosshair --
+    QCPItemLine * rms_x_axis_line = new QCPItemLine(&rms_vs_time);
+    QCPItemLine * rms_y_axis_line = new QCPItemLine(&rms_vs_time);
+    QCPItemLine * tint_x_axis_line = new QCPItemLine(&int_vs_time);
+    QCPItemLine * tint_y_axis_line = new QCPItemLine(&int_vs_time);
+    QCPItemLine * tsys_x_axis_line = new QCPItemLine(&tsys_vs_time);
+    QCPItemLine * tsys_y_axis_line = new QCPItemLine(&tsys_vs_time);
+    // labele
+    QCPItemText * rms_csh_label = new QCPItemText(&rms_vs_time);
+    QCPItemText * tint_csh_label = new QCPItemText(&int_vs_time);
+    QCPItemText * tsys_csh_label = new QCPItemText(&tsys_vs_time);
     // - checkboxy -
     //QCheckBox *include_pytime = new QCheckBox ("Include time in isoformat", &window);
     QCheckBox * I_on_rms = new QCheckBox ("I", &window);
@@ -138,6 +149,8 @@ public:
     QCheckBox * RHC_on_rms = new QCheckBox ("RHC", &window);
     QCheckBox * show_pts = new QCheckBox ("Show points", &window);
     QCheckBox * show_lns = new QCheckBox ("Show lines", &window);
+    QCheckBox * rect_zoom = new QCheckBox ("Rectangle zoom", &window);
+    QCheckBox * selection_of_point = new QCheckBox ("Select spect. to show", &window);
     //QCheckBox  I_on_rms;
     //QCheckBox  V_on_rms;
     //QCheckBox  LHC_on_rms;
@@ -165,6 +178,8 @@ public:
     QHBoxLayout checkboxes_of_pol;
     QHBoxLayout start_chan;
     QHBoxLayout end_chan;
+    QHBoxLayout show_ptslns;
+    QHBoxLayout selection_modes;
     QVBoxLayout exporting_on_rms;
 
     // - kontnery -
@@ -172,6 +187,17 @@ public:
 
     // boole
     bool rms_section_opened = 0;
+
+    // do dodatkowego okna z widmem
+    QWidget popup_window; // okno
+    QGridLayout grid_of_popup_window; // siatka
+    QCustomPlot spectrum_on_popup_window;
+    QPushButton flag_on_popup_window;
+    QPushButton close_popup_window;
+    QLabel label_on_popup_window;
+    bool popup_window_opened = 0;
+
+
 
     // -- ISTOTNE - widgety do umieszczania wykresow --
     QCustomPlot spectrum;
@@ -356,6 +382,16 @@ public slots:
     void exp_rms_vs_time();
     void exp_tsys_vs_time();
     void exp_all();
+    void cross_hair_rms_vs_time(QMouseEvent * event);
+    void cross_hair_tsys_vs_time(QMouseEvent * event);
+    void cross_hair_tint_vs_time(QMouseEvent * event);
+    void set_unset_rect_zoom();
+    void show_spectrum_on_select_rms(QMouseEvent * event);
+    void show_spectrum_on_select_tint(QMouseEvent * event);
+    void show_spectrum_on_select_tsys(QMouseEvent * event);
+    void selection_point_on_rms_slot_for_graph_visibility();
+    void open_popup_window();
+    void close_popup_window_slot();
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
@@ -470,6 +506,7 @@ public:
     void calibrate_method();
     void update_dynamic_spectrum();
 
+    void set_label_on_popup_window();
     bool read_calconfig();
 
     int find_epoch_in_caltab(int index_of_epoch, string type_of_caltab);
@@ -491,6 +528,7 @@ public:
     void set_plot_on_tsys_vs_time();
     void set_plot_on_int_vs_time();
     void calculate_sint_for_rms_window();
+    void select_on_rms_section(double x);
     //void read_chan4int();
 
 };
