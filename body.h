@@ -150,7 +150,7 @@ public:
     QCheckBox * show_pts = new QCheckBox ("Show points", &window);
     QCheckBox * show_lns = new QCheckBox ("Show lines", &window);
     QCheckBox * rect_zoom = new QCheckBox ("Rectangle zoom", &window);
-    QCheckBox * selection_of_point = new QCheckBox ("Select spect. to show", &window);
+    QCheckBox * selection_of_point = new QCheckBox ("Select", &window);
     //QCheckBox  I_on_rms;
     //QCheckBox  V_on_rms;
     //QCheckBox  LHC_on_rms;

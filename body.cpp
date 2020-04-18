@@ -287,14 +287,16 @@ void body::display_single_spectrum()
     if (dynamic_spectrum_opened == 1)
     {
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
-        return;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
+        kill_dynamic_spectrum();
+        //return;
     }
     else if (rms_section_opened == 1)
     {
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
-        return;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
+        close_rms_section_slot();
+        //return;
     }
     spectrum.clearGraphs();
     spectrum.replot();
@@ -1641,15 +1643,17 @@ void body::display_dynamic_spectrum()
 
     if (single_spectrum_opened == 1)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close SINGLE SPECTRUM window"));
+        kill_single_spectrum();
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close SINGLE SPECTRUM window"));
         //cout << "Please, close SINGLE SPECTRUM window" << endl;
-        return;
+        //return;
     }
     else if (rms_section_opened == 1)
     {
+        close_rms_section_slot();
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
-        return;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
+        //return;
     }
     // ee
     //dynamic_spectrum_pl.setOpenGl(true);
@@ -7588,15 +7592,17 @@ void body::open_rms_section_slot()
 
     if (dynamic_spectrum_opened == 1)
     {
+        kill_dynamic_spectrum();
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
-        return;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
+        //return;
     }
     else if (single_spectrum_opened == 1)
     {
+        kill_single_spectrum();
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close the SINGLE SPECTRUM window"));
-        return;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the SINGLE SPECTRUM window"));
+        //return;
     }
     else if (rms_section_opened == 1)
     {
@@ -8005,12 +8011,38 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.replot();
     set_unset_rect_zoom();
     // graph do zaznaczania
+    // I
     rms_vs_time.addGraph();
     rms_vs_time.graph(4)->setName("Selected");
     rms_vs_time.graph(4)->setPen(QPen(Qt::red));
     rms_vs_time.graph(4)->setLineStyle(QCPGraph::lsNone);
     rms_vs_time.graph(4)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
     rms_vs_time.graph(4)->setVisible(false);
+    rms_vs_time.graph(4)->removeFromLegend();
+    // V
+    rms_vs_time.addGraph();
+    rms_vs_time.graph(5)->setName("Selected");
+    rms_vs_time.graph(5)->setPen(QPen(Qt::red));
+    rms_vs_time.graph(5)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(5)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    rms_vs_time.graph(5)->setVisible(false);
+    rms_vs_time.graph(5)->removeFromLegend();
+    // LHC
+    rms_vs_time.addGraph();
+    rms_vs_time.graph(6)->setName("Selected");
+    rms_vs_time.graph(6)->setPen(QPen(Qt::blue));
+    rms_vs_time.graph(6)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(6)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    rms_vs_time.graph(6)->setVisible(false);
+    rms_vs_time.graph(6)->removeFromLegend();
+    // RHC
+    rms_vs_time.addGraph();
+    rms_vs_time.graph(7)->setName("Selected");
+    rms_vs_time.graph(7)->setPen(QPen(Qt::red));
+    rms_vs_time.graph(7)->setLineStyle(QCPGraph::lsNone);
+    rms_vs_time.graph(7)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    rms_vs_time.graph(7)->setVisible(false);
+    rms_vs_time.graph(7)->removeFromLegend();
 }
 
 void body::set_plot_on_tsys_vs_time()
@@ -8060,6 +8092,7 @@ void body::set_plot_on_tsys_vs_time()
     tsys_vs_time.replot();
     set_unset_rect_zoom();
     // graph do zaznaczania
+    // I
     tsys_vs_time.addGraph();
     tsys_vs_time.graph(1)->setPen(QPen(Qt::red));
     tsys_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
@@ -8275,11 +8308,33 @@ void body::set_plot_on_int_vs_time()
     int_vs_time.setCursor(QCursor(Qt::CrossCursor));
     int_vs_time.replot();
     set_unset_rect_zoom();
+    // I
     int_vs_time.addGraph();
     int_vs_time.graph(4)->setPen(QPen(Qt::red));
     int_vs_time.graph(4)->setLineStyle(QCPGraph::lsNone);
     int_vs_time.graph(4)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
     int_vs_time.graph(4)->setVisible(false);
+    // V
+    int_vs_time.addGraph();
+    int_vs_time.graph(5)->setName("Selected");
+    int_vs_time.graph(5)->setPen(QPen(Qt::red));
+    int_vs_time.graph(5)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(5)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    int_vs_time.graph(5)->setVisible(false);
+    // LHC
+    int_vs_time.addGraph();
+    int_vs_time.graph(6)->setName("Selected");
+    int_vs_time.graph(6)->setPen(QPen(Qt::blue));
+    int_vs_time.graph(6)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(6)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    int_vs_time.graph(6)->setVisible(false);
+    // RHC
+    int_vs_time.addGraph();
+    int_vs_time.graph(7)->setName("Selected");
+    int_vs_time.graph(7)->setPen(QPen(Qt::red));
+    int_vs_time.graph(7)->setLineStyle(QCPGraph::lsNone);
+    int_vs_time.graph(7)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    int_vs_time.graph(7)->setVisible(false);
 }
 
 void body::I_on_rms_checkbox_checked_slot()
@@ -8288,6 +8343,11 @@ void body::I_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(0)->setVisible(true);
         int_vs_time.graph(0)->setVisible(true);
+        if (selection_of_point->isChecked())
+        {
+            rms_vs_time.graph(4)->setVisible(true);
+            int_vs_time.graph(4)->setVisible(true);
+        }
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(0)->setVisible(true);
     }
@@ -8295,6 +8355,8 @@ void body::I_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(0)->setVisible(false);
         int_vs_time.graph(0)->setVisible(false);
+        rms_vs_time.graph(4)->setVisible(false);
+        int_vs_time.graph(4)->setVisible(false);
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(0)->setVisible(false);
     }
@@ -8311,6 +8373,11 @@ void body::V_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(1)->setVisible(true);
         int_vs_time.graph(1)->setVisible(true);
+        if (selection_of_point->isChecked())
+        {
+            rms_vs_time.graph(5)->setVisible(true);
+            int_vs_time.graph(5)->setVisible(true);
+        }
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(1)->setVisible(true);
     }
@@ -8318,6 +8385,8 @@ void body::V_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(1)->setVisible(false);
         int_vs_time.graph(1)->setVisible(false);
+        rms_vs_time.graph(5)->setVisible(false);
+        int_vs_time.graph(5)->setVisible(false);
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(1)->setVisible(false);
     }
@@ -8333,6 +8402,11 @@ void body::LHC_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(2)->setVisible(true);
         int_vs_time.graph(2)->setVisible(true);
+        if (selection_of_point->isChecked())
+        {
+            rms_vs_time.graph(6)->setVisible(true);
+            int_vs_time.graph(6)->setVisible(true);
+        }
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(2)->setVisible(true);
     }
@@ -8340,6 +8414,8 @@ void body::LHC_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(2)->setVisible(false);
         int_vs_time.graph(2)->setVisible(false);
+        rms_vs_time.graph(6)->setVisible(false);
+        int_vs_time.graph(6)->setVisible(false);
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(2)->setVisible(false);
     }
@@ -8355,6 +8431,11 @@ void body::RHC_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(3)->setVisible(true);
         int_vs_time.graph(3)->setVisible(true);
+        if (selection_of_point->isChecked())
+        {
+            rms_vs_time.graph(7)->setVisible(true);
+            int_vs_time.graph(7)->setVisible(true);
+        }
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(3)->setVisible(true);
     }
@@ -8362,6 +8443,8 @@ void body::RHC_on_rms_checkbox_checked_slot()
     {
         rms_vs_time.graph(3)->setVisible(false);
         int_vs_time.graph(3)->setVisible(false);
+        rms_vs_time.graph(7)->setVisible(false);
+        int_vs_time.graph(7)->setVisible(false);
         if(popup_window_opened == 1)
             spectrum_on_popup_window.graph(3)->setVisible(false);
     }
@@ -8787,15 +8870,39 @@ void body::selection_point_on_rms_slot_for_graph_visibility()
 {
     if(!selection_of_point->isChecked())
     {
-        int_vs_time.graph(4)->setVisible(false);
         tsys_vs_time.graph(1)->setVisible(false);
+        int_vs_time.graph(4)->setVisible(false);
         rms_vs_time.graph(4)->setVisible(false);
+        int_vs_time.graph(5)->setVisible(false);
+        rms_vs_time.graph(5)->setVisible(false);
+        int_vs_time.graph(6)->setVisible(false);
+        rms_vs_time.graph(6)->setVisible(false);
+        int_vs_time.graph(7)->setVisible(false);
+        rms_vs_time.graph(7)->setVisible(false);
     }
     else
     {
-        int_vs_time.graph(4)->setVisible(true);
         tsys_vs_time.graph(1)->setVisible(true);
-        rms_vs_time.graph(4)->setVisible(true);
+        if(I_on_rms->isChecked())
+        {
+            int_vs_time.graph(4)->setVisible(true);
+            rms_vs_time.graph(4)->setVisible(true);
+        }
+        if(V_on_rms->isChecked())
+        {
+            int_vs_time.graph(5)->setVisible(true);
+            rms_vs_time.graph(5)->setVisible(true);
+        }
+        if(LHC_on_rms->isChecked())
+        {
+            int_vs_time.graph(6)->setVisible(true);
+            rms_vs_time.graph(6)->setVisible(true);
+        }
+        if(RHC_on_rms->isChecked())
+        {
+            int_vs_time.graph(7)->setVisible(true);
+            rms_vs_time.graph(7)->setVisible(true);
+        }
     }
     tsys_vs_time.replot();
     rms_vs_time.replot();
@@ -8830,16 +8937,16 @@ void body::select_on_rms_section(double x)
 
     // dodajemy markery zaznaczenia:
     // int_vs_time
-    QVector < double > Xp(4), Yp(4);
+    QVector < double > Xp(1), Yp(1), YpV(1), YpLHC(1), YpRHC(1);
     Xp[0] = mjdlst[xind];
-    Xp[1] = mjdlst[xind];
-    Xp[2] = mjdlst[xind];
-    Xp[3] = mjdlst[xind];
     Yp[0] = integrated_fluxlst_I[xind];
-    Yp[1] = integrated_fluxlst_V[xind];
-    Yp[2] = integrated_fluxlst_LHC[xind];
-    Yp[3] = integrated_fluxlst_RHC[xind];
+    YpV[0] = integrated_fluxlst_V[xind];
+    YpLHC[0] = integrated_fluxlst_LHC[xind];
+    YpRHC[0] = integrated_fluxlst_RHC[xind];
     int_vs_time.graph(4)->setData(Xp,Yp);
+    int_vs_time.graph(5)->setData(Xp,YpV);
+    int_vs_time.graph(6)->setData(Xp,YpLHC);
+    int_vs_time.graph(7)->setData(Xp,YpRHC);
     int_vs_time.replot();
     //tsys_vs_time
     QVector < double > Ytsys(1), Xtsys(1);
@@ -8848,16 +8955,16 @@ void body::select_on_rms_section(double x)
     tsys_vs_time.graph(1)->setData(Xtsys,Ytsys);
     tsys_vs_time.replot();
     //rms_vs_time
-    QVector < double > Xrms_sl(4), Yrms_sl(4);
+    QVector < double > Xrms_sl(1), Yrms_sl(1), Yrms_slV(1), Yrms_slLHC(1), Yrms_slRHC(1);
     Xrms_sl[0] = mjdlst[xind];
-    Xrms_sl[1] = mjdlst[xind];
-    Xrms_sl[2] = mjdlst[xind];
-    Xrms_sl[3] = mjdlst[xind];
     Yrms_sl[0] = ERRlst[xind][0];
-    Yrms_sl[1] = VERRlst[xind][0];
-    Yrms_sl[2] = LHCERRlst[xind][0];
-    Yrms_sl[3] = RHCERRlst[xind][0];
+    Yrms_slV[0] = VERRlst[xind][0];
+    Yrms_slLHC[0] = LHCERRlst[xind][0];
+    Yrms_slRHC[0] = RHCERRlst[xind][0];
     rms_vs_time.graph(4)->setData(Xrms_sl,Yrms_sl);
+    rms_vs_time.graph(5)->setData(Xrms_sl,Yrms_slV);
+    rms_vs_time.graph(6)->setData(Xrms_sl,Yrms_slLHC);
+    rms_vs_time.graph(7)->setData(Xrms_sl,Yrms_slRHC);
     rms_vs_time.replot();
 }
 
@@ -8867,35 +8974,33 @@ void body::open_popup_window()
  // wykres zajmuje 5 w y i 4 w x
  // w 6 w y znajdziemy przyciski
  // w 4 i 5 w x znajdziemy szczegółowe informacje
- if(popup_window_opened==1)
+ if(popup_window_opened==0)
  {
-     return;
+     // -- rozmiary przyciskow --
+     close_popup_window.setMaximumSize(10000,10000);
+     flag_on_popup_window.setMaximumSize(10000,10000);
+     grid_of_popup_window.addWidget(&spectrum_on_popup_window, 0,0,5,5);
+     grid_of_popup_window.addWidget(&close_popup_window, 5,0,1,2);
+     grid_of_popup_window.addWidget(&flag_on_popup_window, 5,2,1,3);
+     grid_of_popup_window.addWidget(&label_on_popup_window, 0,5,6,1);
+     popup_window.setLayout(&grid_of_popup_window);
+     popup_window.setGeometry(window.x(), window.y(),900,500);
+
+
+     // -- rozmiary grida --
+     grid_of_popup_window.setColumnStretch(0,1);
+     grid_of_popup_window.setColumnStretch(1,1);
+     grid_of_popup_window.setColumnStretch(2,1);
+     grid_of_popup_window.setColumnStretch(3,1);
+     grid_of_popup_window.setColumnStretch(4,1);
+     grid_of_popup_window.setColumnStretch(5,1);
+     grid_of_popup_window.setRowStretch(0,3);
+     grid_of_popup_window.setRowStretch(1,3);
+     grid_of_popup_window.setRowStretch(2,3);
+     grid_of_popup_window.setRowStretch(3,3);
+     grid_of_popup_window.setRowStretch(4,3);
+     grid_of_popup_window.setRowStretch(5,1);
  }
-// -- rozmiary przyciskow --
- close_popup_window.setMaximumSize(10000,10000);
- flag_on_popup_window.setMaximumSize(10000,10000);
- grid_of_popup_window.addWidget(&spectrum_on_popup_window, 0,0,5,5);
- grid_of_popup_window.addWidget(&close_popup_window, 5,0,1,2);
- grid_of_popup_window.addWidget(&flag_on_popup_window, 5,2,1,3);
- grid_of_popup_window.addWidget(&label_on_popup_window, 0,5,6,1);
- popup_window.setLayout(&grid_of_popup_window);
- popup_window.setGeometry(300,300,700,500);
-
-
- // -- rozmiary grida --
- grid_of_popup_window.setColumnStretch(0,1);
- grid_of_popup_window.setColumnStretch(1,1);
- grid_of_popup_window.setColumnStretch(2,1);
- grid_of_popup_window.setColumnStretch(3,1);
- grid_of_popup_window.setColumnStretch(4,1);
- grid_of_popup_window.setColumnStretch(5,1);
- grid_of_popup_window.setRowStretch(0,3);
- grid_of_popup_window.setRowStretch(1,3);
- grid_of_popup_window.setRowStretch(2,3);
- grid_of_popup_window.setRowStretch(3,3);
- grid_of_popup_window.setRowStretch(4,3);
- grid_of_popup_window.setRowStretch(5,1);
-
 
 
  // -- teksty na przyciskach --
