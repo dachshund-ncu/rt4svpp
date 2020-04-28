@@ -27,14 +27,176 @@ public:
     //QVBoxLayout loaders_layout;
     //QGroupBox loaders;
     QPushButton load_data; // przyciski
-    QPushButton reload;
+    QPushButton * reload = new QPushButton(&window);
     QPushButton dynamic_spectrum;
     QPushButton kill_dynspec;
-    QPushButton integrate_button;
+
+    // - integrate -
+    // widget
+    QWidget * integrate_widget = new QWidget(&window);
+    // button do glownego vboxa
+    QPushButton * integrate_button = new QPushButton(&window);
+    // butonny do widgetu
+    QPushButton * make_int2 = new QPushButton(integrate_widget);
+    QPushButton * cancel_int = new QPushButton(integrate_widget);
+    // layouty do widgetu
+    QVBoxLayout * integration_layout = new QVBoxLayout(integrate_widget);
+    QHBoxLayout * start_integration_channels = new QHBoxLayout();
+    QHBoxLayout * end_integration_channels = new QHBoxLayout();
+    QHBoxLayout * integration_buttons = new QHBoxLayout();
+    // text edity
+    QTextEdit * starting_channel_int = new QTextEdit(integrate_widget);
+    QTextEdit * ending_channel_int = new QTextEdit(integrate_widget);
+    // labele
+    QLabel * start_label_int = new QLabel(integrate_widget);
+    QLabel * end_label_int = new QLabel(integrate_widget);
+
+    // - aver over velocity -
+    // widget
+    QWidget * aver_over_vel_widget = new QWidget(&window);
+    // button do glownego vboxa
+    QPushButton * aver_over_velocity = new QPushButton(&window);
+    // buttony do widgetu
+    QPushButton * make_aver_over_vel = new QPushButton(aver_over_vel_widget);
+    QPushButton * cancel_aver_over_vel = new QPushButton(aver_over_vel_widget);
+    // layouty do widgetu
+    QVBoxLayout * aver_over_vel_layout = new QVBoxLayout(aver_over_vel_widget);
+    QHBoxLayout * start_aver_over_vel_channels = new QHBoxLayout();
+    QHBoxLayout * end_aver_over_vel_channels = new QHBoxLayout();
+    QHBoxLayout * aver_over_vel_buttons = new QHBoxLayout();
+    // text edity
+    QTextEdit * starting_channel_aov = new QTextEdit(aver_over_vel_widget);
+    QTextEdit * ending_channel_aov = new QTextEdit(aver_over_vel_widget);
+    // labele
+    QLabel * start_label_aov = new QLabel(aver_over_vel_widget);
+    QLabel * end_label_aov = new QLabel(aver_over_vel_widget);
+
+
+    // - aver over time -
+    // widget
+    QWidget * aver_over_time_widget = new QWidget(&window);
+    // button do glownego vboxa
+    QPushButton * aver_over_time = new QPushButton(&window);
+    // buttony do widgetu
+    QPushButton * make_aver_over_time = new QPushButton(aver_over_time_widget);
+    QPushButton * cancel_aver_over_time = new QPushButton(aver_over_time_widget);
+    // layouty do widgetu
+    QVBoxLayout * aver_over_time_layout = new QVBoxLayout(aver_over_time_widget);
+    QHBoxLayout * start_aver_over_time_channels = new QHBoxLayout();
+    QHBoxLayout * end_aver_over_time_channels = new QHBoxLayout();
+    QHBoxLayout * aver_over_time_buttons = new QHBoxLayout();
+    // text edity
+    QTextEdit * starting_channel_time = new QTextEdit(aver_over_time_widget);
+    QTextEdit * ending_channel_time = new QTextEdit(aver_over_time_widget);
+    // labele
+    QLabel * start_label_time = new QLabel(aver_over_time_widget);
+    QLabel * end_label_time = new QLabel(aver_over_time_widget);
+
+    // - spectral index -
+    QWidget * aver_over_spi_widget = new QWidget(&window);
+    // button do glownego vboxa
+    QPushButton * spectral_index = new QPushButton(&window);
+    // buttony do widgetu
+    QPushButton * make_aver_over_spi = new QPushButton(aver_over_spi_widget);
+    QPushButton * cancel_aver_over_spi = new QPushButton(aver_over_spi_widget);
+    // layouty do widgetu
+    QVBoxLayout * aver_over_spi_layout = new QVBoxLayout(aver_over_spi_widget);
+    QHBoxLayout * start_aver_over_spi_channels = new QHBoxLayout();
+    QHBoxLayout * end_aver_over_spi_channels = new QHBoxLayout();
+    QHBoxLayout * aver_over_spi_buttons = new QHBoxLayout();
+    // text edity
+    QTextEdit * starting_channel_spi = new QTextEdit(aver_over_spi_widget);
+    QTextEdit * ending_channel_spi = new QTextEdit(aver_over_spi_widget);
+    // labele
+    QLabel * start_label_spi = new QLabel(aver_over_spi_widget);
+    QLabel * end_label_spi = new QLabel(aver_over_spi_widget);
+
+    // - ex_dynsp -
+    QWidget * ex_dynsp_widget = new QWidget(&window);
+    // button do glownego vboxa
+    QPushButton * WD = new QPushButton(&window);
+    // buttony do widgetu
+    QPushButton * make_ex_dynsp = new QPushButton(ex_dynsp_widget);
+    QPushButton * cancel_ex_dynsp = new QPushButton(ex_dynsp_widget);
+    // layouty do widgetu
+    QVBoxLayout * ex_dynsp_layout = new QVBoxLayout(ex_dynsp_widget);
+    QHBoxLayout * start_ex_dynsp_channels = new QHBoxLayout();
+    QHBoxLayout * end_ex_dynsp_channels = new QHBoxLayout();
+    QHBoxLayout * ex_dynsp_buttons = new QHBoxLayout();
+    // text edity
+    QTextEdit * starting_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
+    QTextEdit * ending_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
+    // labele
+    QLabel * start_label_ex_dynsp = new QLabel(ex_dynsp_widget);
+    QLabel * end_label_ex_dynsp = new QLabel(ex_dynsp_widget);
+
+
+    // - calibrate -
+    // - widget -
+    QWidget * calibrate_widget = new QWidget(&window);
+    // - button do glownego vboxa -
+    QPushButton * calibrate = new QPushButton(&window);
+    // buttony do widgetu
+    QPushButton * load_caltab_l1 = new QPushButton(calibrate_widget);
+    QPushButton * load_caltab_r1 = new QPushButton(calibrate_widget);
+    QPushButton * start_calibration = new QPushButton(calibrate_widget);
+    QPushButton * cancel_calib = new QPushButton(calibrate_widget);
+    // layouty
+    QVBoxLayout * calibrate_layout = new QVBoxLayout(calibrate_widget);
+    QHBoxLayout * L1 = new QHBoxLayout();
+    QHBoxLayout * R1 = new QHBoxLayout();
+    QHBoxLayout * calbtns = new QHBoxLayout();
+    // labele
+    QLabel * caltab_l1_path = new QLabel(calibrate_widget); // tekst pokazujacy czy zaladowano caltab
+    QLabel * caltab_r1_path = new QLabel(calibrate_widget); // tekst pokazujacy czy zaladowano caltab
+
+    // texty
+
+    // stringi
+    string caltab_LHC_path;
+    string caltab_RHC_path;
+    // boole
+    bool calibration_section_opened = 0;
+    bool calgridloaded = 0;
+    bool lhc_loaded = 0;
+    bool rhc_loaded = 0;
+    bool cal_toggled = 0;
+    bool calibration_done = 0;
+    // kontenery
+    vector < double > CALTAB_L1_epochs;
+    vector < double > CALTAB_L1;
+    vector < double > CALTAB_R1_epochs;
+    vector < double > CALTAB_R1;
+    vector < double > calcoefs_lhc;
+    vector < double > calcoefs_rhc;
+
+    // funkcje
+    double find_cal_coefficent(double epoch);
+
+    //QWidget window_for_integrate;
+    QPushButton make_int;
+    QPushButton make_aver;
+    QPushButton make_aver_time;
+    QPushButton cancel;
+    QTextEdit starting_channel;
+    QTextEdit ending_channel;
+    QHBoxLayout start;
+    QHBoxLayout end;
+    QHBoxLayout butterbean;
+    QVBoxLayout integrate_layout;
+    QLabel start_label;
+    QLabel end_label;
+    deque < QCPItemRect * > flagi;
+    int flags_number = 0;
+
+    // -- labele do listy przyciskow --
+    QLabel load_data_section_label;
+    QLabel wiev_data_section_label;
+    QLabel export_data_section_label;
+    QLabel others_section_label;
+
+
     QPushButton quit;
-    QPushButton aver_over_velocity;
-    QPushButton aver_over_time;
-    QPushButton spectral_index;
     QPushButton single_spectrum;
     QPushButton kill_singspec;
     QPushButton y_down_border;
@@ -64,43 +226,9 @@ public:
     QSizePolicy sizepolicy;
     QCPColorGradient gradient;
 
-    // -- do kalibracji nieskalibrowanych obserwacji --
-    // buttony
-    QPushButton calibrate; // w menu glownym
-    QPushButton load_caltab_l1; // bedzie ladowac tablice do rhc
-    QPushButton load_caltab_r1; // bedzie ladowac tablice do lhc
-    QPushButton start_calibration; // bedzie startowac kalibracje
-    QPushButton toggle_calibration_button; // bedzie robić on/off kalibracji
-    // texty
-    QLabel caltab_l1_path; // tekst pokazujacy czy zaladowano caltab
-    QLabel caltab_r1_path; // tekst pokazujacy czy zaladowano caltab
-    // stringi
-    string caltab_LHC_path;
-    string caltab_RHC_path;
-    // boole
-    bool calibration_section_opened = 0;
-    bool calgridloaded = 0;
-    bool lhc_loaded = 0;
-    bool rhc_loaded = 0;
-    bool cal_toggled = 0;
-    bool calibration_done = 0;
-    // kontenery
-    vector < double > CALTAB_L1_epochs;
-    vector < double > CALTAB_L1;
-    vector < double > CALTAB_R1_epochs;
-    vector < double > CALTAB_R1;
-    vector < double > calcoefs_lhc;
-    vector < double > calcoefs_rhc;
-    // layouty
-    QHBoxLayout L1;
-    QHBoxLayout R1;
-    QHBoxLayout calbtns;
-    QVBoxLayout calibrate_layout;
-    // funkcje
-    double find_cal_coefficent(double epoch);
+
     
     // -- do robienia pliku z widmem dynamicznym --
-    QPushButton WD;
     QPushButton WD_start;
 
     bool wd_section_opened = 0;
@@ -174,13 +302,13 @@ public:
     int min_rms_int_channel = 500;
     int max_rms_int_channel = 1500;
     // - layouty -
-    QVBoxLayout preferences_on_rms;
-    QHBoxLayout checkboxes_of_pol;
-    QHBoxLayout start_chan;
-    QHBoxLayout end_chan;
-    QHBoxLayout show_ptslns;
-    QHBoxLayout selection_modes;
-    QVBoxLayout exporting_on_rms;
+    QVBoxLayout * preferences_on_rms = new QVBoxLayout(rms_section_widget);
+    QHBoxLayout * checkboxes_of_pol = new QHBoxLayout(rms_section_widget);
+    QHBoxLayout * start_chan = new QHBoxLayout(rms_section_widget);
+    QHBoxLayout * end_chan = new QHBoxLayout(rms_section_widget);
+    QHBoxLayout * show_ptslns = new QHBoxLayout(rms_section_widget);
+    QHBoxLayout * selection_modes = new QHBoxLayout(rms_section_widget);
+    QVBoxLayout * exporting_on_rms = new QVBoxLayout(rms_section_widget);
 
     // - kontnery -
     vector < double > I_sint, V_sint, LHC_sint, RHC_sint, I_sint_e, V_sint_e, LHC_sint_e, RHC_sint_e;
@@ -189,8 +317,8 @@ public:
     bool rms_section_opened = 0;
 
     // do dodatkowego okna z widmem
-    QWidget popup_window; // okno
-    QGridLayout grid_of_popup_window; // siatka
+    QWidget popup_window;// = new QWidget(&window); // okno
+    QGridLayout  * grid_of_popup_window = new QGridLayout(&popup_window); // siatka
     QCustomPlot spectrum_on_popup_window;
     QPushButton flag_on_popup_window;
     QPushButton close_popup_window;
@@ -200,6 +328,19 @@ public:
 
 
     // -- ISTOTNE - widgety do umieszczania wykresow --
+    // - wykresy -
+    QWidget * dynamic_spectrum_widget = new QWidget(&window);
+    QWidget * single_spectrum_widget = new QWidget(&window);
+    QWidget * rms_section_widget = new QWidget(&window);
+
+    // - gridy -
+    QGridLayout * grid_dynamic_spectrum_widget  = new QGridLayout(dynamic_spectrum_widget);
+    QGridLayout * grid_single_spectrum_widget = new QGridLayout(single_spectrum_widget);
+    QGridLayout * grid_rms_section_widget = new QGridLayout(rms_section_widget);
+
+    // bole
+    bool geometry_window_set = 0;
+    // -- ploty --
     QCustomPlot spectrum;
     QCustomPlot dynamic_spectrum_pl;
     //QCustomPlot  * color_scale_plot = new QCustomPlot(&dynamic_spectrum_pl);
@@ -243,29 +384,7 @@ public:
     QVBoxLayout * vbox_single = new QVBoxLayout();
     QComboBox * list_of_observations = new QComboBox();
 
-    // -- layout do integrate --
-    //QWidget window_for_integrate;
-    QPushButton make_int;
-    QPushButton make_spind;
-    QPushButton make_aver;
-    QPushButton make_aver_time;
-    QPushButton cancel;
-    QTextEdit starting_channel;
-    QTextEdit ending_channel;
-    QHBoxLayout start;
-    QHBoxLayout end;
-    QHBoxLayout butterbean;
-    QVBoxLayout integrate_layout;
-    QLabel start_label;
-    QLabel end_label;
-    deque < QCPItemRect * > flagi;
-    int flags_number = 0;
 
-    // -- labele do listy przyciskow --
-    QLabel load_data_section_label;
-    QLabel wiev_data_section_label;
-    QLabel export_data_section_label;
-    QLabel others_section_label;
 
     // -- boole do sprawdzania statusow --
     bool layers_exist = 0;
@@ -326,7 +445,22 @@ public slots:
     void load_time_series();
     void integrate_time_series();
     void kill_single_spectrum();
+
+    void set_dynamic_spectrum_widget();
+    void plot_dynamic_spectrum();
     void display_dynamic_spectrum();
+
+    //void set_dynamic_spectrum_widget();
+    void set_single_spectrum_widget();
+    void plot_single_spectrum();
+
+    void set_integrate_widget();
+    void set_aver_over_vel_widget();
+    void set_aver_over_time_widget();
+    void set_spectral_index_widget();
+    void set_wd_widget();
+    void set_calibrate_widget();
+
     void kill_dynamic_spectrum();
     void press_map(QMouseEvent * event);
     void set_max_range_on_dynamic_specrum_y_up();
@@ -361,7 +495,6 @@ public slots:
 
     void open_cal_layout();
     void close_cal_layout();
-    void toggle_calibration();
     void load_l1_caltab_button();
     void load_r1_caltab_button();
     void calibrate_button();
@@ -370,6 +503,7 @@ public slots:
     void close_dynspectrum_layout();
     void export_file_for_dynamic_spectrum();
 
+    void set_rms_section_widget();
     void open_rms_section_slot();
     void close_rms_section_slot();
     void I_on_rms_checkbox_checked_slot();

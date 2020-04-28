@@ -18,14 +18,14 @@ int main(int argc, char *argv[])
     if (argc > 1)
     {
         body okno(argv[1]);
-         return program.exec();
+        return program.exec();
+
     }
     else
     {
         body okno;
-         return program.exec();
+        return program.exec();
     }
     // -- probojemy czytac podane w argumencie --
-
     //return program.exec();
 }
