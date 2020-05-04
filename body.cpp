@@ -40,37 +40,37 @@ body::body(const char * nazwa)
     selection_of_point->setVisible(false);
 
     // -- sizepolicy --
-    load_data.setMaximumSize(10000,10000);
-    dynamic_spectrum.setMaximumSize(10000,10000);
-    kill_dynspec.setMaximumSize(10000,10000);
-    kill_singspec.setMaximumSize(10000,10000);
+    load_data->setMaximumSize(10000,10000);
+    dynamic_spectrum->setMaximumSize(10000,10000);
+    kill_dynspec->setMaximumSize(10000,10000);
+    kill_singspec->setMaximumSize(10000,10000);
     integrate_button->setMaximumSize(10000,10000);
-    quit.setMaximumSize(10000,10000);
+    quit->setMaximumSize(10000,10000);
     aver_over_velocity->setMaximumSize(10000,10000);
     aver_over_time->setMaximumSize(10000,10000);
     spectral_index->setMaximumSize(10000,10000);
-    y_down_border.setMaximumSize(10000,30);
-    y_up_border.setMaximumSize(10000,30);
-    x_left_border.setMaximumSize(10000,30);
-    x_right_border.setMaximumSize(10000,30);
-    Ibut.setMaximumSize(10000,30);
-    Vbut.setMaximumSize(10000,30);
-    LHCbut.setMaximumSize(10000,30);
-    RHCbut.setMaximumSize(10000,30);
-    single_spectrum.setMaximumSize(10000,10000);
+    y_down_border->setMaximumSize(10000,30);
+    y_up_border->setMaximumSize(10000,30);
+    x_left_border->setMaximumSize(10000,30);
+    x_right_border->setMaximumSize(10000,30);
+    Ibut->setMaximumSize(10000,30);
+    Vbut->setMaximumSize(10000,30);
+    LHCbut->setMaximumSize(10000,30);
+    RHCbut->setMaximumSize(10000,30);
+    single_spectrum->setMaximumSize(10000,10000);
     spectral_index->setMaximumSize(10000,10000);
     list_of_observations->setMaximumSize(10000,10000);
-    save_plots_on_single_spectrum.setMaximumSize(10000,10000);
-    display_plot_on_single_spectrum.setMaximumSize(10000,10000);
-    set_default_range_button.setMaximumSize(10000,10000);
-    erase_last_graph.setMaximumSize(10000,10000);
-    flag.setMaximumSize(10000,30);
-    rotate.setMaximumSize(10000,30);
-    make_lcs_button.setMaximumSize(10000,30);
+    save_plots_on_single_spectrum->setMaximumSize(10000,10000);
+    display_plot_on_single_spectrum->setMaximumSize(10000,10000);
+    set_default_range_button->setMaximumSize(10000,10000);
+    erase_last_graph->setMaximumSize(10000,10000);
+    flag->setMaximumSize(10000,30);
+    rotate->setMaximumSize(10000,30);
+    make_lcs_button->setMaximumSize(10000,30);
     reload->setMaximumSize(10000,10000);
-    rotate_minus.setMaximumSize(10000,30);
-    save_rotation.setMaximumSize(10000,30);
-    number_of_rotated_channels_texted.setMaximumSize(100,30);
+    rotate_minus->setMaximumSize(10000,30);
+    save_rotation->setMaximumSize(10000,30);
+    number_of_rotated_channels_texted->setMaximumSize(100,30);
     calibrate->setMaximumSize(10000,10000);
     load_caltab_l1->setMaximumSize(10000,30);
     load_caltab_r1->setMaximumSize(10000,30);
@@ -78,71 +78,62 @@ body::body(const char * nazwa)
     caltab_l1_path->setMaximumSize(10000,30);
     caltab_r1_path->setMaximumSize(10000,30);
     WD->setMaximumSize(10000,10000);
-    open_rms_section.setMaximumSize(10000,10000);
-    kill_rms_section.setMaximumSize(10000,10000);
-    recalculate_integration.setMaximumSize(10000,10000);
+    open_rms_section->setMaximumSize(10000,10000);
+    kill_rms_section->setMaximumSize(10000,10000);
+    recalculate_integration->setMaximumSize(10000,10000);
 
 
-    load_data.setMinimumSize(0,0);
-    dynamic_spectrum.setMinimumSize(0,0);
-    kill_dynspec.setMinimumSize(0,0);
+    load_data->setMinimumSize(0,0);
+    dynamic_spectrum->setMinimumSize(0,0);
+    kill_dynspec->setMinimumSize(0,0);
     integrate_button->setMinimumSize(0,0);
-    quit.setMinimumSize(0,0);
+    quit->setMinimumSize(0,0);
     aver_over_velocity->setMinimumSize(0,0);
     aver_over_time->setMinimumSize(0,0);
     spectral_index->setMinimumSize(0,0);
-    y_down_border.setMinimumSize(0,0);
-    y_up_border.setMinimumSize(0,0);
-    x_left_border.setMinimumSize(0,0);
-    x_right_border.setMinimumSize(0,0);
-    Ibut.setMinimumSize(0,0);
-    Vbut.setMinimumSize(0,0);
-    LHCbut.setMinimumSize(0,0);
-    RHCbut.setMinimumSize(0,0);
-    single_spectrum.setMinimumSize(0,0);
+    y_down_border->setMinimumSize(0,0);
+    y_up_border->setMinimumSize(0,0);
+    x_left_border->setMinimumSize(0,0);
+    x_right_border->setMinimumSize(0,0);
+    Ibut->setMinimumSize(0,0);
+    Vbut->setMinimumSize(0,0);
+    LHCbut->setMinimumSize(0,0);
+    RHCbut->setMinimumSize(0,0);
+    single_spectrum->setMinimumSize(0,0);
     spectral_index->setMinimumSize(0,0);
-    kill_singspec.setMinimumSize(0,0);
-    save_plots_on_single_spectrum.setMinimumSize(0,0);
-    display_plot_on_single_spectrum.setMinimumSize(0,0);
-    set_default_range_button.setMinimumSize(0,0);
-    erase_last_graph.setMinimumSize(0,0);
-    flag.setMinimumSize(0,0);
-    rotate.setMinimumSize(0,0);
-    make_lcs_button.setMinimumSize(0,0);
+    kill_singspec->setMinimumSize(0,0);
+    save_plots_on_single_spectrum->setMinimumSize(0,0);
+    display_plot_on_single_spectrum->setMinimumSize(0,0);
+    set_default_range_button->setMinimumSize(0,0);
+    erase_last_graph->setMinimumSize(0,0);
+    flag->setMinimumSize(0,0);
+    rotate->setMinimumSize(0,0);
+    make_lcs_button->setMinimumSize(0,0);
     reload->setMinimumSize(0,0);
-    rotate_minus.setMinimumSize(0,0);
-    save_rotation.setMinimumSize(0,0);
-    number_of_rotated_channels_texted.setMinimumSize(0,0);
+    rotate_minus->setMinimumSize(0,0);
+    save_rotation->setMinimumSize(0,0);
+    number_of_rotated_channels_texted->setMinimumSize(0,0);
     calibrate->setMinimumSize(0,0);
     load_caltab_l1->setMinimumSize(0,0);
     load_caltab_r1->setMinimumSize(0,0);
     start_calibration->setMinimumSize(0,0);
     WD->setMinimumSize(0,0);
-    open_rms_section.setMinimumSize(0,0);
-    kill_rms_section.setMinimumSize(0,0);
-    recalculate_integration.setMinimumSize(0,0);
-    //x_right_border.setMaximumSize(10000,10000);
-    // -- dodajemy do layoutu przyciski --
-    /*
-    grid.addWidget(&load_data, 0, 0);
-    grid.addWidget(&dynamic_spectrum, 1, 0);
-    grid.addWidget(&single_spectrum, 2, 0);
-    grid.addWidget(&integrate_button,3, 0);
-    grid.addWidget(&aver_over_velocity,4, 0);
-    grid.addWidget(&aver_over_time,5, 0);
-    grid.addWidget(&spectral_index, 6, 0);
-    grid.addWidget(&quit,7, 0);
-    */
+    open_rms_section->setMinimumSize(0,0);
+    kill_rms_section->setMinimumSize(0,0);
+    recalculate_integration->setMinimumSize(0,0);
+
+    // - font (do labelow) -
     QFont f( "Arial", 10, QFont::Bold);
+
     // -- ustalamy teksty naszych labelow --
-    load_data_section_label.setText("Loading");
-    load_data_section_label.setFont(f);
-    wiev_data_section_label.setText("Visualisation");
-    wiev_data_section_label.setFont(f);
-    export_data_section_label.setText("Export & analysis");
-    export_data_section_label.setFont(f);
-    others_section_label.setText("Others");
-    others_section_label.setFont(f);
+    load_data_section_label->setText("Loading");
+    load_data_section_label->setFont(f);
+    wiev_data_section_label->setText("Visualisation");
+    wiev_data_section_label->setFont(f);
+    export_data_section_label->setText("Export & analysis");
+    export_data_section_label->setFont(f);
+    others_section_label->setText("Others");
+    others_section_label->setFont(f);
 
     //loaders.setTitle("loaders");
     //loaders.setVisible(true);
@@ -153,17 +144,17 @@ body::body(const char * nazwa)
     // -- dodajemy do głównego paska przycisków --
     //vbox_main.addWidget(butters);
 
-    vbox_main.addWidget(&load_data_section_label);
+    vbox_main.addWidget(load_data_section_label);
     //vbox_main.addWidget(&loaders);
     vbox_main.addWidget(reload);
-    vbox_main.addWidget(&load_data);
+    vbox_main.addWidget(load_data);
 
-    vbox_main.addWidget(&wiev_data_section_label);
-    vbox_main.addWidget(&dynamic_spectrum);
-    vbox_main.addWidget(&single_spectrum);
-    vbox_main.addWidget(&open_rms_section);
+    vbox_main.addWidget(wiev_data_section_label);
+    vbox_main.addWidget(dynamic_spectrum);
+    vbox_main.addWidget(single_spectrum);
+    vbox_main.addWidget(open_rms_section);
 
-    vbox_main.addWidget(&export_data_section_label);
+    vbox_main.addWidget(export_data_section_label);
     vbox_main.addWidget(include_pytime);
     vbox_main.addWidget(integrate_button);
     vbox_main.addWidget(aver_over_velocity);
@@ -171,50 +162,49 @@ body::body(const char * nazwa)
     vbox_main.addWidget(spectral_index);
     vbox_main.addWidget(WD);
 
-    vbox_main.addWidget(&others_section_label);
+    vbox_main.addWidget(others_section_label);
     vbox_main.addWidget(calibrate);
-    vbox_main.addWidget(&quit);
+    vbox_main.addWidget(quit);
 
-    grid.addLayout(&vbox_main, 0,0,9,1);
-    grid.setColumnStretch(0,1);
+    grid->addLayout(&vbox_main, 0,0,9,1);
+    grid->setColumnStretch(0,1);
 
 
     // -- dodajemy napis do przycisku --
-    dynamic_spectrum.setText("Dynamic spectrum");
-    single_spectrum.setText("Single spectrum");
-    load_data.setText("Load AVR files");
+    dynamic_spectrum->setText("Dynamic spectrum");
+    single_spectrum->setText("Single spectrum");
+    load_data->setText("Load AVR files");
     integrate_button->setText("Integrate");
-    quit.setText("Quit");
+    quit->setText("Quit");
     aver_over_time->setText("Aver over time");
     aver_over_velocity->setText("Aver over velocity");
     spectral_index->setText("Spectral index");
-    make_lcs_button.setText("Make lc");
-    rotate.setText("Rotate +");
-    rotate_minus.setText("Rotate -");
-    save_rotation.setText("Save rotation");
-    flag.setText("Flag");
+    make_lcs_button->setText("Make lc");
+    rotate->setText("Rotate +");
+    rotate_minus->setText("Rotate -");
+    save_rotation->setText("Save rotation");
+    flag->setText("Flag");
     reload->setText("Reload");
     calibrate->setText("Calibrate");
     load_caltab_l1->setText("Load LHC caltab");
     load_caltab_r1->setText("Load RHC caltab");
     start_calibration->setText("START");
     WD->setText("Export file for dynamic spectrum");
-    open_rms_section.setText("RMS, Tsys, Sint vs time");
+    open_rms_section->setText("RMS, Tsys, Sint vs time");
 
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
     // -- dodajemy layout do okna --
-    window.setLayout(&grid);
 
 
     // -- connectujemy przycisk do slotu --
     //QObject::connect(&quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection); // wylaczanie &QApplication::closeAllWindows
-    QObject::connect(&quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
-    QObject::connect(&load_data, SIGNAL(clicked()), this, SLOT(load_time_series()));
+    QObject::connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
+    QObject::connect(load_data, SIGNAL(clicked()), this, SLOT(load_time_series()));
     //QObject::connect(&integrate_button, SIGNAL(clicked()), this, SLOT(integrate_time_series()));
     QObject::connect(integrate_button, SIGNAL(clicked()), this, SLOT(calculate_integrate_for_time_series_with_buttons()));
-    QObject::connect(&single_spectrum, SIGNAL(clicked()), this, SLOT(display_single_spectrum()));
-    QObject::connect(&dynamic_spectrum, SIGNAL(clicked()), this, SLOT(display_dynamic_spectrum()));
+    QObject::connect(single_spectrum, SIGNAL(clicked()), this, SLOT(display_single_spectrum()));
+    QObject::connect(dynamic_spectrum, SIGNAL(clicked()), this, SLOT(display_dynamic_spectrum()));
     //QObject::connect(&aver_over_velocity, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity()));
     QObject::connect(aver_over_velocity, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity_for_time_series_with_buttons()));
     QObject::connect(aver_over_time, SIGNAL(clicked()), this, SLOT(calculate_aver_over_time_for_time_series_with_buttons()));
@@ -224,8 +214,7 @@ body::body(const char * nazwa)
     QObject::connect(reload, SIGNAL(clicked()), this, SLOT(reload_slot()));
     QObject::connect(calibrate, SIGNAL(clicked()), this, SLOT(open_cal_layout()));
     QObject::connect(WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
-    QObject::connect(&open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
-
+    QObject::connect(open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
     // -- setujemy widgety roznych sekcji --
     set_single_spectrum_widget();
     set_dynamic_spectrum_widget();
@@ -236,7 +225,6 @@ body::body(const char * nazwa)
     set_spectral_index_widget();
     set_wd_widget();
     set_calibrate_widget();
-
 
     // -- probojemy czytac liste --
     if (strncmp(nazwa, "", 300) == 0)
@@ -297,7 +285,10 @@ void body::set_dynamic_spectrum_widget()
 {
     //dynamic_spectrum_widget.setParent(&window);
     dynamic_spectrum_widget->setVisible(false);
+    kill_dynspec->setVisible(false);
+
     // layery
+
     dynamic_spectrum_pl.addLayer("linex");
     dynamic_spectrum_pl.addLayer("liney");
     dynamic_spectrum_pl.addLayer("pixmap");
@@ -330,66 +321,64 @@ void body::set_dynamic_spectrum_widget()
     x_down_border_shrt->setKey(QKeySequence("l"));
     x_up_border_shrt->setKey(QKeySequence("p"));
     reset_dynamic_spectrum->setKey(QKeySequence("b"));
-    kill_dynspec.setText("Kill dynamic spectrum --->");
-    QObject::connect(&kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
+    kill_dynspec->setText("Kill dynamic spectrum --->");
+    QObject::connect(kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
     QObject::connect(&dynamic_spectrum_pl, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(press_map(QMouseEvent *)));
-    QObject::connect(&y_up_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_up()));
-    QObject::connect(&y_down_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_down()));
+    QObject::connect(y_up_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_up()));
+    QObject::connect(y_down_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_y_down()));
     QObject::connect(y_up_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_y_up()));
     QObject::connect(y_down_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_y_down()));
     QObject::connect(x_up_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_x_right()));
     QObject::connect(x_down_border_shrt, SIGNAL(activated()), this, SLOT(set_max_range_on_dynamic_specrum_x_left()));
-    QObject::connect(&x_right_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_right()));
-    QObject::connect(&x_left_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_left()));
-    QObject::connect(&Ibut, SIGNAL(clicked()), this, SLOT(set_I_on_dynamic_spectrum()));
-    QObject::connect(&LHCbut, SIGNAL(clicked()), this, SLOT(set_LHC_on_dynamic_spectrum()));
-    QObject::connect(&RHCbut, SIGNAL(clicked()), this, SLOT(set_RHC_on_dynamic_spectrum()));
-    QObject::connect(&Vbut, SIGNAL(clicked()), this, SLOT(set_V_on_dynamic_spectrum()));
-    QObject::connect(&make_lcs_button, SIGNAL(clicked()), this, SLOT(make_lcs_slot()));
-    QObject::connect(&flag, SIGNAL(clicked()), this, SLOT(flag_slot()));
-    QObject::connect(&rotate, SIGNAL(clicked()), this, SLOT(rotate_slot_plus()));
-    QObject::connect(&rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
-    QObject::connect(&save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
+    QObject::connect(x_right_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_right()));
+    QObject::connect(x_left_border, SIGNAL(clicked()), this, SLOT(set_max_range_on_dynamic_specrum_x_left()));
+    QObject::connect(Ibut, SIGNAL(clicked()), this, SLOT(set_I_on_dynamic_spectrum()));
+    QObject::connect(LHCbut, SIGNAL(clicked()), this, SLOT(set_LHC_on_dynamic_spectrum()));
+    QObject::connect(RHCbut, SIGNAL(clicked()), this, SLOT(set_RHC_on_dynamic_spectrum()));
+    QObject::connect(Vbut, SIGNAL(clicked()), this, SLOT(set_V_on_dynamic_spectrum()));
+    QObject::connect(make_lcs_button, SIGNAL(clicked()), this, SLOT(make_lcs_slot()));
+    QObject::connect(flag, SIGNAL(clicked()), this, SLOT(flag_slot()));
+    QObject::connect(rotate, SIGNAL(clicked()), this, SLOT(rotate_slot_plus()));
+    QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
+    QObject::connect(save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
     QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(plot_dynamic_spectrum()));
-
     // -- umieszczamy je wszystkie w widgecie --
     grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 0,0,8,6);
     grid_dynamic_spectrum_widget->addWidget(&single_dynamic_spectrum, 0,6,4,4);
     grid_dynamic_spectrum_widget->addWidget(&lcs_dynamic_spectrum, 4,6,4,4);
 
-    hbox->addWidget(&Ibut);
-    hbox->addWidget(&Vbut);
-    hbox->addWidget(&LHCbut);
-    hbox->addWidget(&RHCbut);
-    hbox->addWidget(&y_down_border);
-    hbox->addWidget(&y_up_border);
-    hbox->addWidget(&x_left_border);
-    hbox->addWidget(&x_right_border);
-    operations->addWidget(&number_of_rotated_channels_texted);
-    operations->addWidget(&flag);
-    operations->addWidget(&rotate);
-    operations->addWidget(&save_rotation);
-    operations->addWidget(&rotate_minus);
-    operations->addWidget(&make_lcs_button);
+    hbox->addWidget(Ibut);
+    hbox->addWidget(Vbut);
+    hbox->addWidget(LHCbut);
+    hbox->addWidget(RHCbut);
+    hbox->addWidget(y_down_border);
+    hbox->addWidget(y_up_border);
+    hbox->addWidget(x_left_border);
+    hbox->addWidget(x_right_border);
+    operations->addWidget(number_of_rotated_channels_texted);
+    operations->addWidget(flag);
+    operations->addWidget(rotate);
+    operations->addWidget(save_rotation);
+    operations->addWidget(rotate_minus);
+    operations->addWidget(make_lcs_button);
     hbox->setSpacing(1);
     operations->setSpacing(1);
-    on_dyn_spec_buttons.addLayout(operations);
-    on_dyn_spec_buttons.addLayout(hbox);
+    on_dyn_spec_buttons->addLayout(operations);
+    on_dyn_spec_buttons->addLayout(hbox);
 
-    grid_dynamic_spectrum_widget->addLayout(&on_dyn_spec_buttons,8,0,1,6);
+    grid_dynamic_spectrum_widget->addLayout(on_dyn_spec_buttons,8,0,1,6);
     grid_dynamic_spectrum_widget->addWidget(&mjd_label, 8,6);
     grid_dynamic_spectrum_widget->addWidget(&cocochanel, 8,8);
-
     // -- teksty na przyciskach --
-    y_down_border.setText("Down");
-    y_up_border.setText("Up");
-    x_left_border.setText("|->");
-    x_right_border.setText("<-|");
-    Ibut.setText("I");
-    Vbut.setText("V");
-    LHCbut.setText("LHC");
-    RHCbut.setText("RHC");
-    kill_dynspec.setText("Kill dynamic spectrum --->");
+    y_down_border->setText("Down");
+    y_up_border->setText("Up");
+    x_left_border->setText("|->");
+    x_right_border->setText("<-|");
+    Ibut->setText("I");
+    Vbut->setText("V");
+    LHCbut->setText("LHC");
+    RHCbut->setText("RHC");
+    kill_dynspec->setText("Kill dynamic spectrum --->");
 
     grid_dynamic_spectrum_widget->setColumnStretch(0,1);
     grid_dynamic_spectrum_widget->setColumnStretch(1,1);
@@ -408,29 +397,29 @@ void body::set_single_spectrum_widget()
 {
     //single_spectrum_widget.setParent(&window);
     single_spectrum_widget->setVisible(false);
-
+    kill_singspec->setVisible(false);
     // -- tworzymy przycisk - do ubijania ramki --
-    kill_singspec.setText("Kill single spectrum --->");
-    save_plots_on_single_spectrum.setText("Save plots from single spectrum");
-    display_plot_on_single_spectrum.setText("Display plot on single spectrum");
-    set_default_range_button.setText("Set default range");
-    erase_last_graph.setText("Erase last graph");
+    kill_singspec->setText("Kill single spectrum --->");
+    save_plots_on_single_spectrum->setText("Save plots from single spectrum");
+    display_plot_on_single_spectrum->setText("Display plot on single spectrum");
+    set_default_range_button->setText("Set default range");
+    erase_last_graph->setText("Erase last graph");
 
     // -- connectujemy z metodami
     //QObject::connect(list_of_observations, SIGNAL(activated()), this, SLOT(combo_box_display()));
-    QObject::connect(&kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
-    QObject::connect(&display_plot_on_single_spectrum, SIGNAL(clicked()), this, SLOT(combo_box_display()));
-    QObject::connect(&set_default_range_button, SIGNAL(clicked()), this, SLOT(set_default_range()));
-    QObject::connect(&erase_last_graph, SIGNAL(clicked()), this, SLOT(remove_selected_graph()));
-    QObject::connect(&save_plots_on_single_spectrum, SIGNAL(clicked()), this, SLOT(save_plots_from_single_spectrum()));
+    QObject::connect(kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
+    QObject::connect(display_plot_on_single_spectrum, SIGNAL(clicked()), this, SLOT(combo_box_display()));
+    QObject::connect(set_default_range_button, SIGNAL(clicked()), this, SLOT(set_default_range()));
+    QObject::connect(erase_last_graph, SIGNAL(clicked()), this, SLOT(remove_selected_graph()));
+    QObject::connect(save_plots_on_single_spectrum, SIGNAL(clicked()), this, SLOT(save_plots_from_single_spectrum()));
 
     // -- dodajemy do grida --
     grid_single_spectrum_widget->addWidget(&spectrum, 0,0,9,4);
     grid_single_spectrum_widget->addWidget(list_of_observations, 0,4,1,1);
-    grid_single_spectrum_widget->addWidget(&save_plots_on_single_spectrum, 1,4,1,1);
-    grid_single_spectrum_widget->addWidget(&display_plot_on_single_spectrum, 2,4,1,1);
-    grid_single_spectrum_widget->addWidget(&set_default_range_button, 3,4,1,1);
-    grid_single_spectrum_widget->addWidget(&erase_last_graph, 4,4,1,1);
+    grid_single_spectrum_widget->addWidget(save_plots_on_single_spectrum, 1,4,1,1);
+    grid_single_spectrum_widget->addWidget(display_plot_on_single_spectrum, 2,4,1,1);
+    grid_single_spectrum_widget->addWidget(set_default_range_button, 3,4,1,1);
+    grid_single_spectrum_widget->addWidget(erase_last_graph, 4,4,1,1);
 
     grid_single_spectrum_widget->setColumnStretch(0,3);
     grid_single_spectrum_widget->setColumnStretch(1,3);
@@ -447,23 +436,23 @@ void body::set_rms_section_widget()
     //
     //rms_section_widget.setParent(&window);
     rms_section_widget->setVisible(false);
-
+    kill_rms_section->setVisible(false);
     // labele
-    stokes_parameters.setText("Stokes parameters");
-    integration_parameters_label.setText("Integration parameters");
-    exporting_rms_section_label.setText("Exporting");
-    export_rms_vs_tme.setText("Export rms vs time");
-    export_tsys_vs_tme.setText("Export Tsys vs time");
-    export_tint_vs_tme.setText("Export Integrated flux vs time");
-    export_all_vs_tme.setText("Export all of the above");
-    graph_params_label.setText("Plot properties");
-    kill_rms_section.setText("Kill --->");
+    stokes_parameters->setText("Stokes parameters");
+    integration_parameters_label->setText("Integration parameters");
+    exporting_rms_section_label->setText("Exporting");
+    export_rms_vs_tme->setText("Export rms vs time");
+    export_tsys_vs_tme->setText("Export Tsys vs time");
+    export_tint_vs_tme->setText("Export Integrated flux vs time");
+    export_all_vs_tme->setText("Export all of the above");
+    graph_params_label->setText("Plot properties");
+    kill_rms_section->setText("Kill --->");
     // fonty w labelach
     QFont f( "Arial", 10, QFont::Bold);
-    stokes_parameters.setFont(f);
-    integration_parameters_label.setFont(f);
-    exporting_rms_section_label.setFont(f);
-    graph_params_label.setFont(f);
+    stokes_parameters->setFont(f);
+    integration_parameters_label->setFont(f);
+    exporting_rms_section_label->setFont(f);
+    graph_params_label->setFont(f);
 
     // dodajemy do grida
     grid_rms_section_widget->addWidget(&rms_vs_time, 0,0,5,2);
@@ -476,7 +465,7 @@ void body::set_rms_section_widget()
     checkboxes_of_pol->addWidget(V_on_rms);
     checkboxes_of_pol->addWidget(LHC_on_rms);
     checkboxes_of_pol->addWidget(RHC_on_rms);
-    preferences_on_rms->addWidget(&stokes_parameters);
+    preferences_on_rms->addWidget(stokes_parameters);
     preferences_on_rms->addLayout(checkboxes_of_pol);
 
     // kanały
@@ -486,36 +475,36 @@ void body::set_rms_section_widget()
     rms_int_end.setText("1500");
     rms_int_start.setMaximumSize(100, 40);
     rms_int_end.setMaximumSize(100, 40);
-    recalculate_integration.setText("Recalculate integration");
-    show_selected_spectrum.setText("Show selected spectrum");
+    recalculate_integration->setText("Recalculate integration");
+    show_selected_spectrum->setText("Show selected spectrum");
     start_chan->addWidget(&rms_int_start_label);
     start_chan->addWidget(&rms_int_start,Qt::AlignHCenter);
     end_chan->addWidget(&rms_int_end_label);
     end_chan->addWidget(&rms_int_end, Qt::AlignHCenter);
-    preferences_on_rms->addWidget(&integration_parameters_label);
+    preferences_on_rms->addWidget(integration_parameters_label);
     preferences_on_rms->addLayout(start_chan);
     preferences_on_rms->addLayout(end_chan);
-    preferences_on_rms->addWidget(&recalculate_integration);
+    preferences_on_rms->addWidget(recalculate_integration);
 
     // przyciski do eksportowania
-    export_rms_vs_tme.setMaximumSize(10000,10000);
-    export_tsys_vs_tme.setMaximumSize(10000,10000);
-    export_tint_vs_tme.setMaximumSize(10000,10000);
-    export_all_vs_tme.setMaximumSize(10000,10000);
-    exporting_on_rms->addWidget(&exporting_rms_section_label);
-    exporting_on_rms->addWidget(&export_rms_vs_tme);
-    exporting_on_rms->addWidget(&export_tsys_vs_tme);
-    exporting_on_rms->addWidget(&export_tint_vs_tme);
-    exporting_on_rms->addWidget(&export_all_vs_tme);
+    export_rms_vs_tme->setMaximumSize(10000,10000);
+    export_tsys_vs_tme->setMaximumSize(10000,10000);
+    export_tint_vs_tme->setMaximumSize(10000,10000);
+    export_all_vs_tme->setMaximumSize(10000,10000);
+    exporting_on_rms->addWidget(exporting_rms_section_label);
+    exporting_on_rms->addWidget(export_rms_vs_tme);
+    exporting_on_rms->addWidget(export_tsys_vs_tme);
+    exporting_on_rms->addWidget(export_tint_vs_tme);
+    exporting_on_rms->addWidget(export_all_vs_tme);
     // dodatkowo - manipulowanie grafiką
-    exporting_on_rms->addWidget(&graph_params_label);
+    exporting_on_rms->addWidget(graph_params_label);
     show_ptslns->addWidget(show_pts);
     show_ptslns->addWidget(show_lns);
     selection_modes->addWidget(rect_zoom);
     selection_modes->addWidget(selection_of_point);
     exporting_on_rms->addLayout(show_ptslns);
     exporting_on_rms->addLayout(selection_modes);
-    exporting_on_rms->addWidget(&show_selected_spectrum);
+    exporting_on_rms->addWidget(show_selected_spectrum);
 
     // - zaznaczamy checkbox I -
     I_on_rms->setChecked(true);
@@ -523,8 +512,7 @@ void body::set_rms_section_widget()
     rect_zoom->setChecked(true);
     selection_of_point->setChecked(true);
     // connectujemy
-    QPushButton::connect(&kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
-
+    QPushButton::connect(kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
     QObject::connect(I_on_rms, SIGNAL(clicked()), this, SLOT(I_on_rms_checkbox_checked_slot()));
     QObject::connect(V_on_rms, SIGNAL(clicked()), this, SLOT(V_on_rms_checkbox_checked_slot()));
     QObject::connect(LHC_on_rms, SIGNAL(clicked()), this, SLOT(LHC_on_rms_checkbox_checked_slot()));
@@ -533,12 +521,12 @@ void body::set_rms_section_widget()
     QObject::connect(show_lns, SIGNAL(clicked()), this, SLOT(show_points_or_lines()));
     QObject::connect(rect_zoom, SIGNAL(clicked()), this, SLOT(set_unset_rect_zoom()));
     QObject::connect(selection_of_point, SIGNAL(clicked()), this, SLOT(selection_point_on_rms_slot_for_graph_visibility()));
-    QPushButton::connect(&export_rms_vs_tme, SIGNAL(clicked()), this, SLOT(exp_rms_vs_time()));
-    QPushButton::connect(&export_tint_vs_tme, SIGNAL(clicked()), this, SLOT(exp_sint_vs_time()));
-    QPushButton::connect(&recalculate_integration, SIGNAL(clicked()), this, SLOT(recalculate_integration_on_rms_slot()));
-    QPushButton::connect(&export_all_vs_tme, SIGNAL(clicked()), this, SLOT(exp_all()));
-    QPushButton::connect(&export_tsys_vs_tme, SIGNAL(clicked()), this, SLOT(exp_tsys_vs_time()));
-    QPushButton::connect(&show_selected_spectrum, SIGNAL(clicked()), this, SLOT(open_popup_window()));
+    QPushButton::connect(export_rms_vs_tme, SIGNAL(clicked()), this, SLOT(exp_rms_vs_time()));
+    QPushButton::connect(export_tint_vs_tme, SIGNAL(clicked()), this, SLOT(exp_sint_vs_time()));
+    QPushButton::connect(recalculate_integration, SIGNAL(clicked()), this, SLOT(recalculate_integration_on_rms_slot()));
+    QPushButton::connect(export_all_vs_tme, SIGNAL(clicked()), this, SLOT(exp_all()));
+    QPushButton::connect(export_tsys_vs_tme, SIGNAL(clicked()), this, SLOT(exp_tsys_vs_time()));
+    QPushButton::connect(show_selected_spectrum, SIGNAL(clicked()), this, SLOT(open_popup_window()));
 
 
     // cross - hairy
@@ -842,23 +830,23 @@ void body::display_single_spectrum()
 
 
     // -- dodajemy widget do głównego gridu --
-    grid.addWidget(single_spectrum_widget, 0,1,9,5);
+    grid->addWidget(single_spectrum_widget, 0,1,9,5);
 
     // -- dodajemy kill singspec do vboxa --
-    vbox_main.addWidget(&kill_singspec);
+    vbox_main.addWidget(kill_singspec);
 
     // -- ustalamy szerokości kolumny --
-    grid.setColumnStretch(1,1);
-    grid.setColumnStretch(2,1);
-    grid.setColumnStretch(3,1);
-    grid.setColumnStretch(4,1);
-    grid.setColumnStretch(5,1);
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,1);
+    grid->setColumnStretch(3,1);
+    grid->setColumnStretch(4,1);
+    grid->setColumnStretch(5,1);
 
     // -- ustalamy geometrię okna --
 
 
     // -- updatujemy nasze kochane rzeczy --
-    grid.update();
+    grid->update();
     window.show();
 
     // -- zapelniamy wstepnie single spectrum --
@@ -866,7 +854,7 @@ void body::display_single_spectrum()
 
     // -- ustawiamy visibility naszego widgetu --
     single_spectrum_widget->setVisible(true);
-    kill_singspec.setVisible(true);
+    kill_singspec->setVisible(true);
 
     // -- ustawiamy boola, informujacego co jest akurat otwarte --
     single_spectrum_opened=1;
@@ -911,10 +899,6 @@ void body::plot_single_spectrum()
     spectrum.yAxis2->setVisible(true);
     spectrum.xAxis2->setTickLabels(false);
     spectrum.yAxis2->setTickLabels(false);
-    save_plots_on_single_spectrum.setVisible(true);
-    display_plot_on_single_spectrum.setVisible(true);
-    set_default_range_button.setVisible(true);
-    erase_last_graph.setVisible(true);
 
     // -- dodajemy interakcje --
     spectrum.setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
@@ -942,64 +926,23 @@ void body::plot_single_spectrum()
 // - zamyka sekcję "single spectrum"
 void body::kill_single_spectrum()
 {
-    grid.removeWidget(single_spectrum_widget);
-    vbox_main.removeWidget(&kill_singspec);
+    // - odpinamy od grida -
+    grid->removeWidget(single_spectrum_widget);
+    // - odpinamy od vboxa -
+    vbox_main.removeWidget(kill_singspec);
+    // - znikamy -
     single_spectrum_widget->setVisible(false);
-    kill_singspec.setVisible(false);
+    kill_singspec->setVisible(false);
     // - ustawiamy widoczność -
     single_spectrum_opened=0;
     // - clearujemy list_of_obs -
     list_of_observations->clear();
-    // - setujemy szerokosci kolumny -
     // -- ustalamy szerokości kolumny --
-    grid.setColumnStretch(1,1);
-    grid.setColumnStretch(2,1);
-    grid.setColumnStretch(3,1);
-    grid.setColumnStretch(4,1);
-    grid.setColumnStretch(5,1);
-    /*
-    // -- usuwamy widgety z layoutu --
-    grid.removeWidget(&spectrum);
-    //grid.removeWidget(&kill_singspec);
-    grid.removeWidget(list_of_observations);
-    grid.removeWidget(&save_plots_on_single_spectrum);
-    grid.removeWidget(&display_plot_on_single_spectrum);
-    grid.removeWidget(&erase_last_graph);
-    grid.removeWidget(&set_default_range_button);
-    vbox_main.removeWidget(&kill_singspec);
-
-
-    // -- czyscimy plotno --
-    //spectrum.graph(0)->data().clear();
-    //spectrum.clearGraphs();
-    spectrum.replot();
-    // -- ukrywamy widgety --
-    spectrum.setVisible(false);
-    kill_singspec.setVisible(false);
-    list_of_observations->setVisible(false);
-    save_plots_on_single_spectrum.setVisible(false);
-    display_plot_on_single_spectrum.setVisible(false);
-    set_default_range_button.setVisible(false);
-    erase_last_graph.setVisible(false);
-    spectrum.clearGraphs();
-    // -- zmieniamy rozmiar okna --
-    window.setGeometry(window.x(), window.y(),300,720);
-    window.setLayout(&grid);
-    grid.update();
-    window.show();
-    single_spectrum_opened=0;
-    n_graphs_on_single_spec = 0;
-    spectrum.replot();
-    numbers_of_epochs_on_single_spec.clear();
-    grid.setColumnStretch(0,1);
-    grid.setColumnStretch(1,0);
-    grid.setColumnStretch(2,0);
-    grid.setColumnStretch(3,0);
-    grid.setColumnStretch(4,0);
-    list_of_observations->clear();
-    combo_loaded = 0;
-    window.setGeometry(window.x(), window.y(),300,720);
-    */
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,1);
+    grid->setColumnStretch(3,1);
+    grid->setColumnStretch(4,1);
+    grid->setColumnStretch(5,1);
 }
 
 // -- czyta plik AVR o podanej w argumencie nazwie --
@@ -2262,26 +2205,26 @@ void body::display_dynamic_spectrum()
         return;
     }
     // -- dodajemy widget do grida --
-    grid.addWidget(dynamic_spectrum_widget, 0,1,9,5);
+    grid->addWidget(dynamic_spectrum_widget, 0,1,9,5);
 
     // -- dodajemy do vbox maina przycisk killujacy dynspec --
-    vbox_main.addWidget(&kill_dynspec);
+    vbox_main.addWidget(kill_dynspec);
 
     // -- ustalamy szerokości kolumny --
-    grid.setColumnStretch(1,3);
-    grid.setColumnStretch(2,3);
-    grid.setColumnStretch(3,3);
-    grid.setColumnStretch(4,3);
-    grid.setColumnStretch(5,3);
+    grid->setColumnStretch(1,3);
+    grid->setColumnStretch(2,3);
+    grid->setColumnStretch(3,3);
+    grid->setColumnStretch(4,3);
+    grid->setColumnStretch(5,3);
 
     // -- plotujemy dynamic spectrum --
     plot_dynamic_spectrum();
 
     // -- ustawiamy, ktory z przyciskow do pol. jest wcisniety --
-    Ibut.setDown(true);
-    LHCbut.setDown(false);
-    RHCbut.setDown(false);
-    Vbut.setDown(false);
+    Ibut->setDown(true);
+    LHCbut->setDown(false);
+    RHCbut->setDown(false);
+    Vbut->setDown(false);
     lhc_pressed = 0;
     rhc_pressed = 0;
     I_pressed = 1;
@@ -2293,13 +2236,13 @@ void body::display_dynamic_spectrum()
     // ustalamy ilość rotowanych kanałów
     QString rot;
     rot = QString::fromStdString(to_string(number_of_rotated_channels));
-    number_of_rotated_channels_texted.setText(rot);
+    number_of_rotated_channels_texted->setText(rot);
 
     // wywolujemy metode, symulujaca klikniecie w 0,0
     press_map_met();
 
     // -- pokazujemy widget z dynamic spectrum --
-    kill_dynspec.setVisible(true);
+    kill_dynspec->setVisible(true);
     dynamic_spectrum_widget->setVisible(true);
 }
 
@@ -2310,18 +2253,18 @@ void body::kill_dynamic_spectrum()
     dynamic_spectrum_widget->setVisible(false);
 
     // -- odpinamy od grida --
-    grid.removeWidget(dynamic_spectrum_widget);
+    grid->removeWidget(dynamic_spectrum_widget);
 
     // -- odpinamy przycisk od vboxa --
-    vbox_main.removeWidget(&kill_dynspec);
-    kill_dynspec.setVisible(false);
+    vbox_main.removeWidget(kill_dynspec);
+    kill_dynspec->setVisible(false);
 
     // -- ustalamy szerokości kolumn --
-    grid.setColumnStretch(1,1);
-    grid.setColumnStretch(2,1);
-    grid.setColumnStretch(3,1);
-    grid.setColumnStretch(4,1);
-    grid.setColumnStretch(5,1);
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,1);
+    grid->setColumnStretch(3,1);
+    grid->setColumnStretch(4,1);
+    grid->setColumnStretch(5,1);
 
     // -- ustalamy boola --
     dynamic_spectrum_opened = 0;
@@ -3233,10 +3176,10 @@ void body::set_I_on_dynamic_spectrum()
 
     // -- buttony i boole --
     window.show();
-    Ibut.setDown(true);
-    LHCbut.setDown(false);
-    RHCbut.setDown(false);
-    Vbut.setDown(false);
+    Ibut->setDown(true);
+    LHCbut->setDown(false);
+    RHCbut->setDown(false);
+    Vbut->setDown(false);
     I_pressed = 1;
     lhc_pressed = 0;
     rhc_pressed = 0;
@@ -3495,10 +3438,10 @@ void body::set_V_on_dynamic_spectrum()
 
 
 
-    Ibut.setDown(false);
-    LHCbut.setDown(false);
-    RHCbut.setDown(false);
-    Vbut.setDown(true);
+    Ibut->setDown(false);
+    LHCbut->setDown(false);
+    RHCbut->setDown(false);
+    Vbut->setDown(true);
     I_pressed = 0;
     lhc_pressed = 0;
     rhc_pressed = 0;
@@ -3762,10 +3705,10 @@ void body::set_LHC_on_dynamic_spectrum()
 
 
 
-    Ibut.setDown(false);
-    LHCbut.setDown(true);
-    RHCbut.setDown(false);
-    Vbut.setDown(false);
+    Ibut->setDown(false);
+    LHCbut->setDown(true);
+    RHCbut->setDown(false);
+    Vbut->setDown(false);
     I_pressed = 0;
     lhc_pressed = 1;
     rhc_pressed = 0;
@@ -4026,10 +3969,10 @@ void body::set_RHC_on_dynamic_spectrum()
     single_dynamic_spectrum.replot();
 
 
-    Ibut.setDown(false);
-    LHCbut.setDown(false);
-    RHCbut.setDown(true);
-    Vbut.setDown(false);
+    Ibut->setDown(false);
+    LHCbut->setDown(false);
+    RHCbut->setDown(true);
+    Vbut->setDown(false);
     I_pressed = 0;
     lhc_pressed = 0;
     rhc_pressed = 1;
@@ -5313,31 +5256,31 @@ void body::set_down_IVLHCRHCbuttons()
     // -- buttony i boole --
     if(I_pressed == 1)
     {
-        Ibut.setDown(true);
-        LHCbut.setDown(false);
-        RHCbut.setDown(false);
-        Vbut.setDown(false);
+        Ibut->setDown(true);
+        LHCbut->setDown(false);
+        RHCbut->setDown(false);
+        Vbut->setDown(false);
     }
     else if (lhc_pressed == 1)
     {
-        Ibut.setDown(false);
-        LHCbut.setDown(true);
-        RHCbut.setDown(false);
-        Vbut.setDown(false);
+        Ibut->setDown(false);
+        LHCbut->setDown(true);
+        RHCbut->setDown(false);
+        Vbut->setDown(false);
     }
     else if(rhc_pressed == 1)
     {
-        Ibut.setDown(false);
-        LHCbut.setDown(false);
-        RHCbut.setDown(true);
-        Vbut.setDown(false);
+        Ibut->setDown(false);
+        LHCbut->setDown(false);
+        RHCbut->setDown(true);
+        Vbut->setDown(false);
     }
     else if(v_pressed == 1)
     {
-        Ibut.setDown(false);
-        LHCbut.setDown(false);
-        RHCbut.setDown(false);
-        Vbut.setDown(true);
+        Ibut->setDown(false);
+        LHCbut->setDown(false);
+        RHCbut->setDown(false);
+        Vbut->setDown(true);
     }
 
     window.show();
@@ -5409,7 +5352,7 @@ void body::calculate_spectral_index_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -5459,7 +5402,7 @@ void body::calculate_aver_over_velocity_for_time_series_with_buttons()
     }
 
     // jeśli jest otwarta inna sekcja
-    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || aver_over_time_window_opened == 1 || spind_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || aver_over_time_window_opened == 1 || spind_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -5507,7 +5450,7 @@ void body::calculate_aver_over_time_for_time_series_with_buttons()
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (wd_section_opened == 1 || calibration_section_opened == 1 | integrate_window_opened == 1 || spind_window_opened == 1 || aver_over_velocity_window_opened == 1)
+    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || spind_window_opened == 1 || aver_over_velocity_window_opened == 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
         return;
@@ -6178,7 +6121,7 @@ void body::read_number_of_rotated_channels()
     QString number_in_string;
 
     // Zgrywamy text do stringa
-    number_in_string = number_of_rotated_channels_texted.toPlainText();
+    number_in_string = number_of_rotated_channels_texted->toPlainText();
 
     // -- sprawdzamy, czy text edit jest wypełniony --
     if (number_in_string == "")
@@ -7398,17 +7341,17 @@ void body::open_rms_section_slot()
     selection_of_point->setVisible(true);
 
     // dodajemy do grida widget sekcji
-    grid.addWidget(rms_section_widget, 0, 1, 9, 5);
+    grid->addWidget(rms_section_widget, 0, 1, 9, 5);
 
     // dodajemy zamykający button do głównego panelu
-    vbox_main.addWidget(&kill_rms_section);
+    vbox_main.addWidget(kill_rms_section);
 
     // ustalamy szerokość kolumn
-    grid.setColumnStretch(1,1);
-    grid.setColumnStretch(2,1);
-    grid.setColumnStretch(3,1);
-    grid.setColumnStretch(4,1);
-    grid.setColumnStretch(5,1);
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,1);
+    grid->setColumnStretch(3,1);
+    grid->setColumnStretch(4,1);
+    grid->setColumnStretch(5,1);
 
     rms_section_opened = 1;
 
@@ -7420,10 +7363,10 @@ void body::open_rms_section_slot()
 
     // -- ustalamy visibilities --
     rms_section_widget->setVisible(true);
-    kill_rms_section.setVisible(true);
+    kill_rms_section->setVisible(true);
 
     window.show();
-    grid.update();
+    grid->update();
 }
 
 void body::close_rms_section_slot()
@@ -7440,18 +7383,18 @@ void body::close_rms_section_slot()
 
     // ustalamy visibilities
     rms_section_widget->setVisible(false);
-    kill_rms_section.setVisible(false);
+    kill_rms_section->setVisible(false);
 
     // odpinamy od grida
-    grid.removeWidget(rms_section_widget);
-    vbox_main.removeWidget(&kill_rms_section);
+    grid->removeWidget(rms_section_widget);
+    vbox_main.removeWidget(kill_rms_section);
 
     // ustalamy szerokość kolumn
-    grid.setColumnStretch(1,1);
-    grid.setColumnStretch(2,1);
-    grid.setColumnStretch(3,1);
-    grid.setColumnStretch(4,1);
-    grid.setColumnStretch(5,1);
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,1);
+    grid->setColumnStretch(3,1);
+    grid->setColumnStretch(4,1);
+    grid->setColumnStretch(5,1);
 
     // ustalamy wartość boola
     rms_section_opened = 0;
@@ -8532,14 +8475,14 @@ void body::open_popup_window()
  if(popup_window_opened==0)
  {
      // -- rozmiary przyciskow --
-     close_popup_window.setMaximumSize(10000,10000);
-     flag_on_popup_window.setMaximumSize(10000,10000);
+     close_popup_window->setMaximumSize(10000,10000);
+     flag_on_popup_window->setMaximumSize(10000,10000);
      grid_of_popup_window->addWidget(&spectrum_on_popup_window, 0,0,5,5);
-     grid_of_popup_window->addWidget(&close_popup_window, 5,0,1,2);
-     grid_of_popup_window->addWidget(&flag_on_popup_window, 5,2,1,3);
-     grid_of_popup_window->addWidget(&label_on_popup_window, 0,5,6,1);
+     grid_of_popup_window->addWidget(close_popup_window, 5,0,1,2);
+     grid_of_popup_window->addWidget(flag_on_popup_window, 5,2,1,3);
+     grid_of_popup_window->addWidget(label_on_popup_window, 0,5,6,1);
      //popup_window->setLayout(&grid_of_popup_window);
-     popup_window.setGeometry(window.x(), window.y(),900,500);
+     popup_window->setGeometry(window.x(), window.y(),900,500);
 
 
      // -- rozmiary grida --
@@ -8559,8 +8502,8 @@ void body::open_popup_window()
 
 
  // -- teksty na przyciskach --
- close_popup_window.setText("Close");
- flag_on_popup_window.setText("Flag");
+ close_popup_window->setText("Close");
+ flag_on_popup_window->setText("Flag");
 
  // -- wykres --
  spectrum_on_popup_window.clearGraphs();
@@ -8665,36 +8608,36 @@ void body::open_popup_window()
  spectrum_on_popup_window.replot();
 
  // connectujemy
- QPushButton::connect(&close_popup_window, SIGNAL(clicked()), this, SLOT(close_popup_window_slot()));
- QPushButton::connect(&flag_on_popup_window, SIGNAL(clicked()), this, SLOT(flag_slot()));
+ QPushButton::connect(close_popup_window, SIGNAL(clicked()), this, SLOT(close_popup_window_slot()));
+ QPushButton::connect(flag_on_popup_window, SIGNAL(clicked()), this, SLOT(flag_slot()));
 
  set_label_on_popup_window();
 
 
  popup_window_opened = 1;
- popup_window.setVisible(true);
+ popup_window->setVisible(true);
  spectrum_on_popup_window.setVisible(true);
- close_popup_window.setVisible(true);
- flag_on_popup_window.setVisible(true);
- label_on_popup_window.setVisible(true);
+ close_popup_window->setVisible(true);
+ flag_on_popup_window->setVisible(true);
+ label_on_popup_window->setVisible(true);
 }
 
 void body::close_popup_window_slot()
 {
     //visibilities
     spectrum_on_popup_window.setVisible(false);
-    close_popup_window.setVisible(false);
-    flag_on_popup_window.setVisible(false);
-    label_on_popup_window.setVisible(false);
-    popup_window.setVisible(false);
+    close_popup_window->setVisible(false);
+    flag_on_popup_window->setVisible(false);
+    label_on_popup_window->setVisible(false);
+    popup_window->setVisible(false);
     // odpinamy od grida
     grid_of_popup_window->removeWidget(&spectrum_on_popup_window);
-    grid_of_popup_window->removeWidget(&close_popup_window);
-    grid_of_popup_window->removeWidget(&flag_on_popup_window);
-    grid_of_popup_window->removeWidget(&label_on_popup_window);
+    grid_of_popup_window->removeWidget(close_popup_window);
+    grid_of_popup_window->removeWidget(flag_on_popup_window);
+    grid_of_popup_window->removeWidget(label_on_popup_window);
     // disconnectujemy
-    QPushButton::disconnect(&close_popup_window, SIGNAL(clicked()), this, SLOT(close_popup_window_slot()));
-    QPushButton::disconnect(&flag_on_popup_window, SIGNAL(clicked()), this, SLOT(flag_slot()));
+    QPushButton::disconnect(close_popup_window, SIGNAL(clicked()), this, SLOT(close_popup_window_slot()));
+    QPushButton::disconnect(flag_on_popup_window, SIGNAL(clicked()), this, SLOT(flag_slot()));
     // bool
     popup_window_opened = 0;
 }
@@ -8734,5 +8677,5 @@ void body::set_label_on_popup_window()
     label_to_popup_window += "Sint (LHC): " + to_string(integrated_fluxlst_LHC[xind]) +"\n";
     label_to_popup_window += "Sint (RHC): " + to_string(integrated_fluxlst_RHC[xind]) +"\n";
 
-    label_on_popup_window.setText(QString::fromStdString(label_to_popup_window));
+    label_on_popup_window->setText(QString::fromStdString(label_to_popup_window));
 }
