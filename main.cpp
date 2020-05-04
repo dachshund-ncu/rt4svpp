@@ -17,13 +17,13 @@ int main(int argc, char *argv[])
     // -- tworzymy okno programu --
     if (argc > 1)
     {
-        body okno(argv[1]);
+        body * okno = new body(argv[1]);
         return program.exec();
 
     }
     else
     {
-        body okno;
+        body * okno = new body("");
         return program.exec();
     }
     // -- probojemy czytac podane w argumencie --

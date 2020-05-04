@@ -14,22 +14,32 @@
 #include "qcustomplot.h"
 #include <deque>
 #include <stdlib.h>
+
 using namespace std;
+
 class body : public QObject
 {
+
     Q_OBJECT
+
 public:
-    body(const char * nazwa = "");
+    body(const char * nazwa);
+
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
-    QGridLayout grid; // siatka
+    QGridLayout * grid = new QGridLayout(&window); // siatka
     // -- group boxy --
     //QVBoxLayout loaders_layout;
     //QGroupBox loaders;
-    QPushButton load_data; // przyciski
+    QPushButton * load_data = new QPushButton(&window); // przyciski
     QPushButton * reload = new QPushButton(&window);
-    QPushButton dynamic_spectrum;
-    QPushButton kill_dynspec;
+    QPushButton * dynamic_spectrum = new QPushButton(&window);
+    QPushButton * kill_dynspec = new QPushButton(&window);
+
+    // -- glowne widgety --
+    QWidget * dynamic_spectrum_widget = new QWidget(&window);
+    QWidget * single_spectrum_widget = new QWidget(&window);
+    QWidget * rms_section_widget = new QWidget(&window);
 
     // - integrate -
     // widget
@@ -174,84 +184,69 @@ public:
     double find_cal_coefficent(double epoch);
 
     //QWidget window_for_integrate;
-    QPushButton make_int;
-    QPushButton make_aver;
-    QPushButton make_aver_time;
-    QPushButton cancel;
-    QTextEdit starting_channel;
-    QTextEdit ending_channel;
-    QHBoxLayout start;
-    QHBoxLayout end;
-    QHBoxLayout butterbean;
-    QVBoxLayout integrate_layout;
-    QLabel start_label;
-    QLabel end_label;
+    //QPushButton * make_int = new QPushButton(&window);
+    //QPushButton * make_aver = new QPushButton(&window);
+    //QPushButton * make_aver_time = new QPushButton(&window);
+    //QPushButton * cancel = new QPushButton(&window);
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
     // -- labele do listy przyciskow --
-    QLabel load_data_section_label;
-    QLabel wiev_data_section_label;
-    QLabel export_data_section_label;
-    QLabel others_section_label;
+    QLabel * load_data_section_label = new QLabel(&window);
+    QLabel * wiev_data_section_label = new QLabel(&window);
+    QLabel * export_data_section_label = new QLabel(&window);
+    QLabel * others_section_label = new QLabel(&window);
 
 
-    QPushButton quit;
-    QPushButton single_spectrum;
-    QPushButton kill_singspec;
-    QPushButton y_down_border;
-    QPushButton y_up_border;
-    QPushButton x_left_border;
-    QPushButton x_right_border;
-    QPushButton reset;
-    QPushButton Ibut,Vbut,LHCbut, RHCbut;
-    QPushButton save_plots_on_single_spectrum;
-    QPushButton display_plot_on_single_spectrum;
-    QPushButton set_default_range_button;
-    QPushButton erase_last_graph;
-    QPushButton flag; // do flagowania
-    QPushButton make_lcs_button; // robi krzywe blasku z zaznaczonego kwadratu
-    QStringList AVRNAMES_from_load;
+    QPushButton * quit = new QPushButton(&window);
+    QPushButton * single_spectrum = new QPushButton(&window);
+    QPushButton * kill_singspec = new QPushButton(&window);
 
-    // -- do sprawdzania, czy user chce eksportować czas również w formacie pytime --
-    QCheckBox *include_pytime = new QCheckBox ("Include time in isoformat", &window);
-
+    QPushButton * y_down_border = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * y_up_border = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * x_left_border = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * x_right_border = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * Ibut = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * Vbut = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * LHCbut = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * RHCbut = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * flag = new QPushButton(dynamic_spectrum_widget); // do flagowania
+    QPushButton * make_lcs_button = new QPushButton(dynamic_spectrum_widget); // robi krzywe blasku z zaznaczonego kwadratu
     // -- Do rotacji widm --
-    QPushButton rotate;
-    QPushButton rotate_minus;
-    QTextEdit number_of_rotated_channels_texted;
+    QPushButton * rotate = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * rotate_minus = new QPushButton(dynamic_spectrum_widget);
+    QTextEdit * number_of_rotated_channels_texted = new QTextEdit(dynamic_spectrum_widget);
+    QPushButton * save_rotation = new QPushButton(dynamic_spectrum_widget);
     // --------------------------------------
-    QPushButton save_rotation;
-    QFrame ramka; // rama
     QSizePolicy sizepolicy;
     QCPColorGradient gradient;
 
+    QPushButton * save_plots_on_single_spectrum = new QPushButton(single_spectrum_widget);
+    QPushButton * display_plot_on_single_spectrum = new QPushButton(single_spectrum_widget);
+    QPushButton * set_default_range_button = new QPushButton(single_spectrum_widget);
+    QPushButton * erase_last_graph = new QPushButton(single_spectrum_widget);
+
+    QStringList AVRNAMES_from_load;
+
+    // -- do sprawdzania, czy user chce eksportować czas również w formacie pytime --
+    QCheckBox * include_pytime = new QCheckBox ("Include time in isoformat", &window);
 
     
     // -- do robienia pliku z widmem dynamicznym --
-    QPushButton WD_start;
+    //QPushButton * WD_start = new QPushButton(&window);
 
     bool wd_section_opened = 0;
-    QTextEdit start_chanwd, end_chanwd;
-
-    QVBoxLayout wd_layout;
-    QHBoxLayout btns;
-    QHBoxLayout start_channelwd_label;
-    QHBoxLayout end_channelwd_label;
-
-    QLabel start_channelwd;
-    QLabel end_channelwd;
 
     // -- do robienia sekcji rms vs czas --
     // - buttony -
-    QPushButton open_rms_section;
-    QPushButton kill_rms_section;
-    QPushButton recalculate_integration;
-    QPushButton export_rms_vs_tme;
-    QPushButton export_tint_vs_tme;
-    QPushButton export_tsys_vs_tme;
-    QPushButton export_all_vs_tme;
-    QPushButton show_selected_spectrum;
+    QPushButton * open_rms_section = new QPushButton(&window);
+    QPushButton * kill_rms_section = new QPushButton(&window);
+    QPushButton * recalculate_integration = new QPushButton(rms_section_widget);
+    QPushButton * export_rms_vs_tme = new QPushButton(rms_section_widget);
+    QPushButton * export_tint_vs_tme = new QPushButton(rms_section_widget);
+    QPushButton * export_tsys_vs_tme = new QPushButton(rms_section_widget);
+    QPushButton * export_all_vs_tme = new QPushButton(rms_section_widget);
+    QPushButton * show_selected_spectrum = new QPushButton(rms_section_widget);
 
 
     // - wykresy -
@@ -293,22 +288,22 @@ public:
     QLabel rms_vs_time_label;
     QLabel tsys_vs_time_label;
     QLabel int_vs_time_label;
-    QLabel stokes_parameters;
-    QLabel integration_parameters_label;
-    QLabel exporting_rms_section_label;
-    QLabel graph_params_label;
+    QLabel * stokes_parameters = new QLabel(rms_section_widget);
+    QLabel * integration_parameters_label = new QLabel(rms_section_widget);
+    QLabel * exporting_rms_section_label = new QLabel(rms_section_widget);
+    QLabel * graph_params_label = new QLabel(rms_section_widget);
 
     // -inty - do przechowywania channelow -
     int min_rms_int_channel = 500;
     int max_rms_int_channel = 1500;
     // - layouty -
-    QVBoxLayout * preferences_on_rms = new QVBoxLayout(rms_section_widget);
-    QHBoxLayout * checkboxes_of_pol = new QHBoxLayout(rms_section_widget);
-    QHBoxLayout * start_chan = new QHBoxLayout(rms_section_widget);
-    QHBoxLayout * end_chan = new QHBoxLayout(rms_section_widget);
-    QHBoxLayout * show_ptslns = new QHBoxLayout(rms_section_widget);
-    QHBoxLayout * selection_modes = new QHBoxLayout(rms_section_widget);
-    QVBoxLayout * exporting_on_rms = new QVBoxLayout(rms_section_widget);
+    QVBoxLayout * preferences_on_rms = new QVBoxLayout();
+    QHBoxLayout * checkboxes_of_pol = new QHBoxLayout();
+    QHBoxLayout * start_chan = new QHBoxLayout();
+    QHBoxLayout * end_chan = new QHBoxLayout();
+    QHBoxLayout * show_ptslns = new QHBoxLayout();
+    QHBoxLayout * selection_modes = new QHBoxLayout();
+    QVBoxLayout * exporting_on_rms = new QVBoxLayout();
 
     // - kontnery -
     vector < double > I_sint, V_sint, LHC_sint, RHC_sint, I_sint_e, V_sint_e, LHC_sint_e, RHC_sint_e;
@@ -317,22 +312,17 @@ public:
     bool rms_section_opened = 0;
 
     // do dodatkowego okna z widmem
-    QWidget popup_window;// = new QWidget(&window); // okno
-    QGridLayout  * grid_of_popup_window = new QGridLayout(&popup_window); // siatka
+    QWidget * popup_window = new QWidget();// = new QWidget(&window); // okno
+    QGridLayout  * grid_of_popup_window = new QGridLayout(popup_window); // siatka
     QCustomPlot spectrum_on_popup_window;
-    QPushButton flag_on_popup_window;
-    QPushButton close_popup_window;
-    QLabel label_on_popup_window;
+    QPushButton * flag_on_popup_window = new QPushButton(popup_window);
+    QPushButton * close_popup_window = new QPushButton(popup_window);
+    QLabel * label_on_popup_window = new QLabel(popup_window);
     bool popup_window_opened = 0;
 
 
 
     // -- ISTOTNE - widgety do umieszczania wykresow --
-    // - wykresy -
-    QWidget * dynamic_spectrum_widget = new QWidget(&window);
-    QWidget * single_spectrum_widget = new QWidget(&window);
-    QWidget * rms_section_widget = new QWidget(&window);
-
     // - gridy -
     QGridLayout * grid_dynamic_spectrum_widget  = new QGridLayout(dynamic_spectrum_widget);
     QGridLayout * grid_single_spectrum_widget = new QGridLayout(single_spectrum_widget);
@@ -356,12 +346,12 @@ public:
     QCPColorScale * colorScale = new QCPColorScale(&dynamic_spectrum_pl);
     QCPMarginGroup * marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
 
-    QCPErrorBars *errorBars = new QCPErrorBars(lcs_dynamic_spectrum.xAxis, lcs_dynamic_spectrum.yAxis);
-    QShortcut * y_down_border_shrt = new QShortcut(&window);
-    QShortcut * y_up_border_shrt = new QShortcut(&window);
-    QShortcut * x_down_border_shrt = new QShortcut(&window);
-    QShortcut * x_up_border_shrt = new QShortcut(&window);
-    QShortcut * reset_dynamic_spectrum = new QShortcut(&window);
+    QCPErrorBars * errorBars = new QCPErrorBars(lcs_dynamic_spectrum.xAxis, lcs_dynamic_spectrum.yAxis);
+    QShortcut * y_down_border_shrt = new QShortcut(dynamic_spectrum_widget);
+    QShortcut * y_up_border_shrt = new QShortcut(dynamic_spectrum_widget);
+    QShortcut * x_down_border_shrt = new QShortcut(dynamic_spectrum_widget);
+    QShortcut * x_up_border_shrt = new QShortcut(dynamic_spectrum_widget);
+    QShortcut * reset_dynamic_spectrum = new QShortcut(dynamic_spectrum_widget);
     QGroupBox * obsparams = new QGroupBox();
     QCPItemRect * rectangle = new QCPItemRect(&dynamic_spectrum_pl);
     QLabel mjd_label;
@@ -373,7 +363,7 @@ public:
     //QWidget for_vboxmain;
     //QVBoxLayout * vbox_main = new QVBoxLayout(&for_vboxmain);
     QVBoxLayout vbox_main;
-    QVBoxLayout on_dyn_spec_buttons;
+    QVBoxLayout * on_dyn_spec_buttons = new QVBoxLayout();
 
 
 
