@@ -202,6 +202,7 @@ public:
     QPushButton * single_spectrum = new QPushButton(&window);
     QPushButton * kill_singspec = new QPushButton(&window);
 
+    QCheckBox * set_log_scale = new QCheckBox ("Log scale", &window);
     QPushButton * y_down_border = new QPushButton(dynamic_spectrum_widget);
     QPushButton * y_up_border = new QPushButton(dynamic_spectrum_widget);
     QPushButton * x_left_border = new QPushButton(dynamic_spectrum_widget);
@@ -375,6 +376,8 @@ public:
     QComboBox * list_of_observations = new QComboBox();
 
 
+    bool loaded_from_listfile = 0;
+
 
     // -- boole do sprawdzania statusow --
     bool layers_exist = 0;
@@ -516,6 +519,7 @@ public slots:
     void selection_point_on_rms_slot_for_graph_visibility();
     void open_popup_window();
     void close_popup_window_slot();
+    void calculate_log();
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();

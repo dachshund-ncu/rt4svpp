@@ -38,6 +38,7 @@ body::body(const char * nazwa)
     show_lns->setVisible(false);
     rect_zoom->setVisible(false);
     selection_of_point->setVisible(false);
+    set_log_scale->setVisible(false);
 
     // -- sizepolicy --
     load_data->setMaximumSize(10000,10000);
@@ -288,7 +289,6 @@ void body::set_dynamic_spectrum_widget()
     kill_dynspec->setVisible(false);
 
     // layery
-
     dynamic_spectrum_pl.addLayer("linex");
     dynamic_spectrum_pl.addLayer("liney");
     dynamic_spectrum_pl.addLayer("pixmap");
@@ -310,6 +310,7 @@ void body::set_dynamic_spectrum_widget()
 
 
     // -- ustawiamy nudne rzeczy w plotach --
+    //dynamic_spectrum_pl.setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     dynamic_spectrum_pl.axisRect()->setupFullAxesBox(false);
     dynamic_spectrum_pl.xAxis->setLabel("Observation number");
     dynamic_spectrum_pl.yAxis->setLabel("Vel");
@@ -342,6 +343,7 @@ void body::set_dynamic_spectrum_widget()
     QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
     QObject::connect(save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
     QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(plot_dynamic_spectrum()));
+    QObject::connect(set_log_scale, SIGNAL(clicked()), this, SLOT(calculate_log()));
     // -- umieszczamy je wszystkie w widgecie --
     grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 0,0,8,6);
     grid_dynamic_spectrum_widget->addWidget(&single_dynamic_spectrum, 0,6,4,4);
@@ -361,6 +363,7 @@ void body::set_dynamic_spectrum_widget()
     operations->addWidget(save_rotation);
     operations->addWidget(rotate_minus);
     operations->addWidget(make_lcs_button);
+    operations->addWidget(set_log_scale);
     hbox->setSpacing(1);
     operations->setSpacing(1);
     on_dyn_spec_buttons->addLayout(operations);
@@ -391,6 +394,19 @@ void body::set_dynamic_spectrum_widget()
     grid_dynamic_spectrum_widget->setColumnStretch(8,1);
     grid_dynamic_spectrum_widget->setColumnStretch(9,1);
     //dynamic_spectrum_widget.setLayout(grid_dynamic_spectrum_widget);
+
+    /*
+    // -- colorbar --
+    QCPColorScale * colorbar = new QCPColorScale(&single_dynamic_spectrum);
+    dynamic_spectrum_pl.plotLayout()->addElement(0, 1, colorbar);
+    colorbar->setType(QCPAxis::atRight);
+    colorMap->setColorScale(colorbar);
+    //colorbar->axis()->setLabel("Magnetic Field Strength");
+    // - wyrównujemy dynspec i colorbar -
+    QCPMarginGroup * grupa_marginesowa = new QCPMarginGroup(&dynamic_spectrum_pl);
+    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, grupa_marginesowa);
+    colorbar->setMarginGroup(QCP::msBottom|QCP::msTop, grupa_marginesowa);
+    */
 }
 
 void body::set_single_spectrum_widget()
@@ -1555,6 +1571,7 @@ void body::read_time_series_for_list(QStringList lista_plikow)
     {
         open_rms_section_slot();
     }
+    loaded_from_listfile = 0;
 }
 
 // -- czyta pliki z calej listy --
@@ -1748,6 +1765,7 @@ void body::read_time_series()
   {
       open_rms_section_slot();
   }
+  loaded_from_listfile = 1;
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
@@ -1825,8 +1843,7 @@ void body::load_time_series()
 
     if (single_spectrum_opened == 1)
     {
-        list_of_observations->clear();
-        combo_loaded = 0;
+        kill_single_spectrum();
         display_single_spectrum();
     }
     loaded_data = 1;
@@ -2176,8 +2193,10 @@ void body::plot_dynamic_spectrum()
     colorMap -> rescaleValueAxis();
     colorMap -> setTightBoundary(false);
 
+
+
     // -- na koniec --
-    //dynamic_spectrum_pl.rescaleAxes();
+    dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
 }
 // -- wyswietla widmo dynamiczne --
@@ -2244,11 +2263,18 @@ void body::display_dynamic_spectrum()
     // -- pokazujemy widget z dynamic spectrum --
     kill_dynspec->setVisible(true);
     dynamic_spectrum_widget->setVisible(true);
+
+    // -- pokazujemy nasze kochane checkboxy --
+    set_log_scale->setVisible(true);
+    // -- reskalujemy osie --
+    dynamic_spectrum_pl.rescaleAxes();
 }
 
 // -- zamyka widmo dynamiczne --
 void body::kill_dynamic_spectrum()
 {
+    // -- chowamy checkbox --
+    set_log_scale->setVisible(false);
     // -- chowamy dynamic spectrum --
     dynamic_spectrum_widget->setVisible(false);
 
@@ -5228,26 +5254,32 @@ void body::save_plots_from_single_spectrum()
 {
 
     int count = numbers_of_epochs_on_single_spec.size(); // ilosc wybranych widm
+    string message;
+    message = "Saved to ";
     // -- petla, zapisujaca do plikow --
     for (int i = 0; i < count; i++)
     {
         int epoch = numbers_of_epochs_on_single_spec[i];
         string filename;
-        filename = working_directory + "/" + srcname + "_" + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+        string avrname = avrnames[epoch];
+        avrname.erase(avrname.end()-7, avrname.end());
+        if (loaded_from_listfile == 1)
+            filename = working_directory + "/" + avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+        else
+            filename = avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
         ofstream plik;
         plik.open(filename);
         plik << "# chan vel I er V er LHC er RHC er" << endl;
+        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << endl;
         for (int ee = 0; ee < CHANlst[epoch].size(); ee++)
         {
             plik << fixed << setprecision(11) << CHANlst[epoch][ee] << "   " <<  VELlst[epoch][ee] << "   " << Ilst[epoch][ee] << "   " << ERRlst[epoch][ee] << "   " << Vlst[epoch][ee] <<  "   " << VERRlst[epoch][ee] <<  "   " << LHClst[epoch][ee] <<  "   " << LHCERRlst[epoch][ee] <<  "   " << RHClst[epoch][ee] <<  "   " << RHCERRlst[epoch][ee] << endl;
         }
         plik.close();
         //cout << "----> Saved to " << filename << endl;
-        string message;
-        message = "Saved to " + filename;
-        QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
+        message = message + filename + "\n";
     }
-
+    QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
 }
 
 // -- ustala, który z przycisków I V LHC RHC na widmie dynamicznym powinien być wciśnięty --
@@ -8678,4 +8710,32 @@ void body::set_label_on_popup_window()
     label_to_popup_window += "Sint (RHC): " + to_string(integrated_fluxlst_RHC[xind]) +"\n";
 
     label_on_popup_window->setText(QString::fromStdString(label_to_popup_window));
+}
+
+void body::calculate_log()
+{
+    if (set_log_scale->isChecked())
+    {
+
+        // - liczymy sredni RMS -
+        double suma = 0.0;
+        double ilosc = 0.0;
+        for(int i = 0; i < ERRlst.size(); i++)
+        {
+            suma = suma + ERRlst[i][0];
+            ilosc = ilosc + 1.0;
+        }
+        suma = suma / ilosc;
+        // tworzymy zasieg
+        QCPRange zasieg(3.0*suma, colorMap->dataRange().upper);
+        colorMap->setDataRange(zasieg);
+
+        colorMap->setDataScaleType(QCPAxis::stLogarithmic);
+        dynamic_spectrum_pl.replot();
+    }
+    else
+    {
+        colorMap->setDataScaleType(QCPAxis::stLinear);
+        dynamic_spectrum_pl.replot();
+    }
 }
