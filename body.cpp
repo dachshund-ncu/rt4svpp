@@ -342,7 +342,7 @@ void body::set_dynamic_spectrum_widget()
     QObject::connect(rotate, SIGNAL(clicked()), this, SLOT(rotate_slot_plus()));
     QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotate_slot_minus()));
     QObject::connect(save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
-    QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(plot_dynamic_spectrum()));
+    QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(display_dynamic_spectrum()));
     QObject::connect(set_log_scale, SIGNAL(clicked()), this, SLOT(calculate_log()));
     // -- umieszczamy je wszystkie w widgecie --
     grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 0,0,8,6);
@@ -1572,6 +1572,9 @@ void body::read_time_series_for_list(QStringList lista_plikow)
         open_rms_section_slot();
     }
     loaded_from_listfile = 0;
+
+    // - liczymy sredni rms -
+    calculate_mean_rms();
 }
 
 // -- czyta pliki z calej listy --
@@ -1766,6 +1769,9 @@ void body::read_time_series()
       open_rms_section_slot();
   }
   loaded_from_listfile = 1;
+
+  // - liczymy sredni rms -
+  calculate_mean_rms();
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
@@ -2149,13 +2155,6 @@ void body::plot_dynamic_spectrum()
     single_dynamic_spectrum.clearItems();
     lcs_dynamic_spectrum.clearItems();
 
-    // ustawiamy domyślne parametry
-    // polaryzacje
-    lhc_pressed = 0;
-    rhc_pressed = 0;
-    I_pressed = 1;
-    v_pressed = 0;
-
     // -- kilka rzeczy ustawiamy --
     min_range_vel_index = 0;
     min_obs_number = 0;
@@ -2163,6 +2162,9 @@ void body::plot_dynamic_spectrum()
     max_obs_number = mjdlst.size()-1;
     rozmiar_w_x = mjdlst.size();
     rozmiar_w_y = CHANlst[0].size();
+
+    // -- updatujemy widmo dynamiczne --
+    //update_dynamic_spectrum();
 
     // color mapa
     int nx = mjdlst.size();
@@ -2188,16 +2190,19 @@ void body::plot_dynamic_spectrum()
     // -- color gradient --
     gradient.loadPreset(QCPColorGradient::gpJet);
     colorMap -> setGradient(gradient);
+    colorMap->setDataScaleType(QCPAxis::stLinear);
     colorMap -> rescaleDataRange();
     colorMap -> rescaleKeyAxis();
     colorMap -> rescaleValueAxis();
     colorMap -> setTightBoundary(false);
 
-
+    if (set_log_scale->isChecked())
+        set_log_scale->setChecked(false);
 
     // -- na koniec --
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
+
 }
 // -- wyswietla widmo dynamiczne --
 void body::display_dynamic_spectrum()
@@ -2220,7 +2225,14 @@ void body::display_dynamic_spectrum()
 
     else if (dynamic_spectrum_opened == 1)
     {
-        plot_dynamic_spectrum();
+        // -- kilka rzeczy ustawiamy --
+        min_range_vel_index = 0;
+        min_obs_number = 0;
+        max_range_vel_index = VELlst[0].size()-1;
+        max_obs_number = mjdlst.size()-1;
+        rozmiar_w_x = mjdlst.size();
+        rozmiar_w_y = CHANlst[0].size();
+        update_dynamic_spectrum();
         return;
     }
     // -- dodajemy widget do grida --
@@ -2663,84 +2675,8 @@ void body::set_max_range_on_dynamic_specrum_y_up()
     if (rozmiar_w_y <= 0)
         rozmiar_w_y = 1;
 
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-    double veldif = VELlst[xind][max_range_vel_index] - VELlst[xind][min_range_vel_index];
-    single_dynamic_spectrum.xAxis->setRange(VELlst[xind][min_range_vel_index] - 0.05 * veldif, VELlst[xind][max_range_vel_index] + 0.05 * veldif);
-    single_dynamic_spectrum.replot();
-    window.show();
-    set_down_IVLHCRHCbuttons();
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
 }
 
 // -- obsluguje granice w osi predkosci na widmie dynamicznym (min) --
@@ -2754,84 +2690,8 @@ void body::set_max_range_on_dynamic_specrum_y_down()
     if (rozmiar_w_y <= 0)
         rozmiar_w_y = 1;
 
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-    double veldif = VELlst[xind][max_range_vel_index] - VELlst[xind][min_range_vel_index];
-    single_dynamic_spectrum.xAxis->setRange(VELlst[xind][min_range_vel_index] - 0.05 * veldif, VELlst[xind][max_range_vel_index] + 0.05 * veldif);
-    single_dynamic_spectrum.replot();
-    window.show();
-    set_down_IVLHCRHCbuttons();
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
 }
 
 // -- obsluguje granice w osi czasu na widmie dynamicznym (max) --
@@ -2845,84 +2705,8 @@ void body::set_max_range_on_dynamic_specrum_x_right()
     if (rozmiar_w_x <= 0)
         rozmiar_w_x = 1;
 
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-    lcs_dynamic_spectrum.xAxis->setRange(mjdlst[min_obs_number], mjdlst[max_obs_number]);
-    lcs_dynamic_spectrum.replot();
-    window.show();
-    set_down_IVLHCRHCbuttons();
-    //cout << "zrobione" << endl;
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
 }
 
 // -- obsluguje granice w osi czasu na widmie dynamicznym (in) --
@@ -2936,88 +2720,8 @@ void body::set_max_range_on_dynamic_specrum_x_left()
     if (rozmiar_w_x <= 0)
         rozmiar_w_x = 1;
 
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    //cout << "min: " << min_obs_number << endl;
-    //cout << "max: " << max_obs_number << endl;
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    colorMap -> setTightBoundary(false);
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-    lcs_dynamic_spectrum.xAxis->setRange(mjdlst[min_obs_number], mjdlst[max_obs_number]);
-    lcs_dynamic_spectrum.replot();
-    window.show();
-    set_down_IVLHCRHCbuttons();
-    //cout << "zrobione" << endl;
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
 }
 
 // -- czyta kanały do liczenia rms z pliku 'chan4rms.sv' --
@@ -3083,125 +2787,7 @@ void body::read_chan4rms()
 // -- ustala parametr stokesa 'I' na widmie dynamicznym --
 void body::set_I_on_dynamic_spectrum()
 {
-
-    //cout << rozmiar_w_x << endl;
-    //cout << rozmiar_w_y << endl;
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    double x,y,z;
-    for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-    {
-        for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-        {
-            if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-            else
-                colorMap->data()->setCell(xIndex,yIndex, 0.0);
-        }
-    }
-
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-
-
-    // --- lcs --
-    QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Ilst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
-    }
-    lcs_dynamic_spectrum.graph(0)->setData(epoch, lcs_flux);
-    errorBars->setData(error_lcs);
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    lcs_dynamic_spectrum.xAxis2->setVisible(true);
-    lcs_dynamic_spectrum.yAxis2->setVisible(true);
-    lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
-
-
-    if (lcs_line_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        lcs_line_added = 1;
-    }
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
-    QPen pen3;
-    pen3.setColor(QColor(182,26,26));
-    lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-    // --- single spectrum --
-    QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Ilst[xind][min_range_vel_index+i];
-    }
-
-    single_dynamic_spectrum.replot();
-    single_dynamic_spectrum.graph(0)->setData(velocity,flux);
-    single_dynamic_spectrum.xAxis->setLabel("Vel");
-    single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    single_dynamic_spectrum.xAxis2->setVisible(true);
-    single_dynamic_spectrum.yAxis2->setVisible(true);
-    single_dynamic_spectrum.xAxis2->setTickLabels(false);
-    single_dynamic_spectrum.yAxis2->setTickLabels(false);
-    single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-
-    if (vel_line_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        vel_line_added = 1;
-    }
-    QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
-    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
-
-
-    // -- buttony i boole --
-    window.show();
+    // -- ustalamy zmienne --
     Ibut->setDown(true);
     LHCbut->setDown(false);
     RHCbut->setDown(false);
@@ -3211,259 +2797,14 @@ void body::set_I_on_dynamic_spectrum()
     rhc_pressed = 0;
     v_pressed = 0;
 
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
-
-
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
-
-    */
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
+    // -- aktualizujemy dynspec --
+    update_dynamic_spectrum();
 }
 
 // -- ustala parametr stokesa 'V' na widmie dynamicznym --
 void body::set_V_on_dynamic_spectrum()
 {
-
-    //cout << rozmiar_w_x << endl;
-    //cout << rozmiar_w_y << endl;
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-    {
-        for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-        {
-            if (1 >= 0)
-                colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-            else
-                colorMap->data()->setCell(xIndex,yIndex, 0.0);
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-
-    // --- lcs --
-    QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Vlst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
-    }
-    lcs_dynamic_spectrum.graph(0)->setData(epoch, lcs_flux);
-    errorBars->setData(error_lcs);
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    lcs_dynamic_spectrum.xAxis2->setVisible(true);
-    lcs_dynamic_spectrum.yAxis2->setVisible(true);
-    lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
-
-
-    if (lcs_line_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        lcs_line_added = 1;
-    }
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
-    QPen pen3;
-    pen3.setColor(QColor(182,26,26));
-    lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-
-    // --- single spectrum --
-    QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Vlst[xind][min_range_vel_index+i];
-    }
-
-    single_dynamic_spectrum.replot();
-    single_dynamic_spectrum.graph(0)->setData(velocity,flux);
-    single_dynamic_spectrum.xAxis->setLabel("Vel");
-    single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    single_dynamic_spectrum.xAxis2->setVisible(true);
-    single_dynamic_spectrum.yAxis2->setVisible(true);
-    single_dynamic_spectrum.xAxis2->setTickLabels(false);
-    single_dynamic_spectrum.yAxis2->setTickLabels(false);
-    single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-
-    if (vel_line_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        vel_line_added = 1;
-    }
-    QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
-    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
-
-
-
+    // -- ustalamy zmienne --
     Ibut->setDown(false);
     LHCbut->setDown(false);
     RHCbut->setDown(false);
@@ -3472,265 +2813,16 @@ void body::set_V_on_dynamic_spectrum()
     lhc_pressed = 0;
     rhc_pressed = 0;
     v_pressed = 1;
-    window.show();
 
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
-
-
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
-
-    */
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
-
+    // -- aktualizujemy dynspec --
+    update_dynamic_spectrum();
 }
 
 // -- ustala parametr stokesa 'LHC' na widmie dynamicznym --
 void body::set_LHC_on_dynamic_spectrum()
 {
 
-    //cout << rozmiar_w_x << endl;
-    //cout << rozmiar_w_y << endl;
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    double x,y,z;
-    for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-    {
-        for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-        {
-            if (LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-            else
-                colorMap->data()->setCell(xIndex,yIndex, 0.0);
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-    single_dynamic_spectrum.xAxis->setRange(VELlst[xind][min_range_vel_index], VELlst[xind][max_range_vel_index]);
-    single_dynamic_spectrum.replot();
-
-    // --- lcs --
-    QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = LHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
-    }
-    lcs_dynamic_spectrum.graph(0)->setData(epoch, lcs_flux);
-    errorBars->setData(error_lcs);
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    lcs_dynamic_spectrum.xAxis2->setVisible(true);
-    lcs_dynamic_spectrum.yAxis2->setVisible(true);
-    lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
-
-
-    if (lcs_line_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        lcs_line_added = 1;
-    }
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
-    QPen pen3;
-    pen3.setColor(QColor(182,26,26));
-    lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-
-    // --- single spectrum --
-    QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = LHClst[xind][min_range_vel_index+i];
-    }
-
-    single_dynamic_spectrum.replot();
-    single_dynamic_spectrum.graph(0)->setData(velocity,flux);
-    single_dynamic_spectrum.xAxis->setLabel("Vel");
-    single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    single_dynamic_spectrum.xAxis2->setVisible(true);
-    single_dynamic_spectrum.yAxis2->setVisible(true);
-    single_dynamic_spectrum.xAxis2->setTickLabels(false);
-    single_dynamic_spectrum.yAxis2->setTickLabels(false);
-    single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-
-    if (vel_line_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        vel_line_added = 1;
-    }
-    QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
-    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
-
-
-
+    // -- ustalamy zmienne --
     Ibut->setDown(false);
     LHCbut->setDown(true);
     RHCbut->setDown(false);
@@ -3740,261 +2832,15 @@ void body::set_LHC_on_dynamic_spectrum()
     rhc_pressed = 0;
     v_pressed = 0;
 
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
-
-
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
-
-    */
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
-
-    window.show();
+    // -- aktualizujemy dynspec --
+    update_dynamic_spectrum();
 }
 
 // -- ustala parametr stokesa 'RHC' na widmie dynamicznym --
 void body::set_RHC_on_dynamic_spectrum()
 {
 
-    //cout << rozmiar_w_x << endl;
-    //cout << rozmiar_w_y << endl;
-    //vector < double > tmpvel;
-
-    /*
-    for(int i = min_range_vel_index; i < VELlst[xind][max_range_vel_index]; i++)
-    {
-        rozmiar_w_y = rozmiar_w_y + 1;
-    }
-    */
-    // - ustawiamy informacje na color mapie -
-    colorMap->data()->clear();
-    colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    double x,y,z;
-    for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-    {
-        for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-        {
-            if (RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-            else
-                colorMap->data()->setCell(xIndex,yIndex, 0.0);
-        }
-    }
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
-    colorMap -> rescaleKeyAxis(true);
-    colorMap -> rescaleValueAxis(true);
-    //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
-    dynamic_spectrum_pl.rescaleAxes();
-    dynamic_spectrum_pl.replot();
-
-    // --- lcs --
-    QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = RHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
-    }
-    lcs_dynamic_spectrum.graph(0)->setData(epoch, lcs_flux);
-    errorBars->setData(error_lcs);
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    lcs_dynamic_spectrum.xAxis2->setVisible(true);
-    lcs_dynamic_spectrum.yAxis2->setVisible(true);
-    lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
-
-
-    if (lcs_line_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        lcs_line_added = 1;
-    }
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
-    QPen pen3;
-    pen3.setColor(QColor(182,26,26));
-    lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-
-    // --- single spectrum --
-    QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = RHClst[xind][min_range_vel_index+i];
-    }
-
-    single_dynamic_spectrum.replot();
-    single_dynamic_spectrum.graph(0)->setData(velocity,flux);
-    single_dynamic_spectrum.xAxis->setLabel("Vel");
-    single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-    // -- pokazujemy ticki na gornej osi --
-    single_dynamic_spectrum.xAxis2->setVisible(true);
-    single_dynamic_spectrum.yAxis2->setVisible(true);
-    single_dynamic_spectrum.xAxis2->setTickLabels(false);
-    single_dynamic_spectrum.yAxis2->setTickLabels(false);
-    single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-
-    if (vel_line_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        vel_line_added = 1;
-    }
-    QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
-    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
-
-
+    // -- ustalamy zmienne --
     Ibut->setDown(false);
     LHCbut->setDown(false);
     RHCbut->setDown(true);
@@ -4004,140 +2850,8 @@ void body::set_RHC_on_dynamic_spectrum()
     rhc_pressed = 1;
     v_pressed = 0;
 
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
-
-
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
-
-    */
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
-
-    window.show();
+    // -- aktualizujemy dynspec --
+    update_dynamic_spectrum();
 }
 
 // -- robi to samo, co 'press_map()', jednak bez wciśnięcia - czyta ostatnio zapisane wartości x i y --
@@ -5773,60 +4487,8 @@ void body::rotate_slot_plus()
         RHClst[rotated_epoch][i] = tmprhc[i];
     }
 
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    dynamic_spectrum_pl.replot();
-
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
     // -- dodajemy do listy rotowanych --
     append_to_rotated_lst(rotated_epoch);
 
@@ -5878,59 +4540,8 @@ void body::rotate_slot_minus()
         RHClst[rotated_epoch][i] = tmprhc[i];
     }
 
-    if(I_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(v_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(lhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    else if(rhc_pressed == 1)
-    {
-        for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
-        {
-            for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
-            {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
-                else
-                    colorMap->data()->setCell(xIndex,yIndex, 0.0);
-            }
-        }
-    }
-    dynamic_spectrum_pl.replot();
+    // aktualizujemy widmo dynamiczne
+    update_dynamic_spectrum();
     // -- dodajemy do listy rotowanych --
     append_to_rotated_lst(rotated_epoch);
     // -- ustalamy "made rotation" na 1
@@ -6529,6 +5140,8 @@ void body::calibrate_method()
                 VERRlst[i][k] = (RHCERRlst[i][k] - LHCERRlst[i][k]) / 2.0;
             }
         }
+        // - liczymy sredni rms -
+        calculate_mean_rms();
         //QMessageBox::information(&window, tr("Message"), tr("Calibration done"));
         if (dynamic_spectrum_opened == 1)
         {
@@ -6586,6 +5199,8 @@ void body::calibrate_method()
             }
         }
 
+        // - liczymy sredni rms -
+        calculate_mean_rms();
         //QMessageBox::information(&window, tr("Message"), tr("Calibration undone"));
         if (dynamic_spectrum_opened == 1)
         {
@@ -6815,8 +5430,6 @@ int body::find_next_epoch(int index_of_epoch, string type_of_caltab)
 
 void body::update_dynamic_spectrum()
 {
-
-
     // - ustawiamy informacje na color mapie -
     colorMap->data()->clear();
     colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
@@ -6881,18 +5494,37 @@ void body::update_dynamic_spectrum()
     colorMap -> rescaleKeyAxis(true);
     colorMap -> rescaleValueAxis(true);
     //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
+
+    if (set_log_scale->isChecked())
+    {
+        double dno = 0.0;
+        if(I_pressed == 1)
+        {
+            dno = mean_rms_I;
+        }
+        else if (v_pressed == 1)
+        {
+            dno = mean_rms_V;
+        }
+        else if (lhc_pressed == 1)
+        {
+            dno = mean_rms_LHC;
+        }
+        else
+        {
+            dno = mean_rms_RHC;
+        }
+        QCPRange zasieg(dno, colorMap->dataRange().upper);
+        colorMap->setDataRange(zasieg);
+    }
+    else
+    {
+        colorMap->rescaleDataRange();
+    }
+
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
-    /*
-    double veldif = VELlst[xind][max_range_vel_index] - VELlst[xind][min_range_vel_index];
-    single_dynamic_spectrum.xAxis->setRange(VELlst[xind][min_range_vel_index] - 0.05 * veldif, VELlst[xind][max_range_vel_index] + 0.05 * veldif);
-    single_dynamic_spectrum.replot();
 
-    lcs_dynamic_spectrum.xAxis->setRange(mjdlst[min_obs_number], mjdlst[max_obs_number]);
-    lcs_dynamic_spectrum.replot();
-    window.show();
-    set_down_IVLHCRHCbuttons();
-    */
     // -- twotzymy widmo, ktore wyswietli sie po kliknieciu w widmo dynamiczne --
     // - warunki ze wzgledu na przyciski polaryzacji -
     QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
@@ -8714,28 +7346,93 @@ void body::set_label_on_popup_window()
 
 void body::calculate_log()
 {
+    // -- zmieniamy scale type --
+    colorMap->setDataScaleType(QCPAxis::stLogarithmic);
+
+    // -- skalujemy data range --
     if (set_log_scale->isChecked())
     {
-
-        // - liczymy sredni RMS -
-        double suma = 0.0;
-        double ilosc = 0.0;
-        for(int i = 0; i < ERRlst.size(); i++)
+        // reskalujemy data range
+        double dno = 0.0;
+        if(I_pressed == 1)
         {
-            suma = suma + ERRlst[i][0];
-            ilosc = ilosc + 1.0;
+            dno = mean_rms_I;
         }
-        suma = suma / ilosc;
-        // tworzymy zasieg
-        QCPRange zasieg(3.0*suma, colorMap->dataRange().upper);
+        else if (v_pressed == 1)
+        {
+            dno = mean_rms_V;
+        }
+        else if (lhc_pressed == 1)
+        {
+            dno = mean_rms_LHC;
+        }
+        else
+        {
+            dno = mean_rms_RHC;
+        }
+        QCPRange zasieg(dno, colorMap->dataRange().upper);
         colorMap->setDataRange(zasieg);
 
-        colorMap->setDataScaleType(QCPAxis::stLogarithmic);
+        // -- aktualizujemy wykres --
         dynamic_spectrum_pl.replot();
+        set_down_IVLHCRHCbuttons();
     }
     else
     {
+        // -- zmieniamy na skale liniowa --
         colorMap->setDataScaleType(QCPAxis::stLinear);
+        // -- skalujemy od 0 do max --
+        colorMap->rescaleDataRange();
+        // -- replotujemy --
         dynamic_spectrum_pl.replot();
+        set_down_IVLHCRHCbuttons();
     }
+}
+
+void body::calculate_mean_rms()
+{
+    // - I -
+    double ilosc = 0.0;
+    double suma = 0.0;
+    for(int i = 0; i < ERRlst.size(); i++)
+    {
+        suma = suma + ERRlst[i][0];
+        ilosc = ilosc + 1.0;
+    }
+    suma = suma / ilosc;
+    mean_rms_I = suma;
+
+    // - V -
+    suma = 0.0;
+    ilosc = 0.0;
+    for(int i = 0; i < VERRlst.size(); i++)
+    {
+        suma = suma + VERRlst[i][0];
+        ilosc = ilosc + 1.0;
+    }
+    suma = suma / ilosc;
+    mean_rms_V = suma;
+
+    // - LHC -
+    suma = 0.0;
+    ilosc = 0.0;
+    for(int i = 0; i < LHCERRlst.size(); i++)
+    {
+        suma = suma + LHCERRlst[i][0];
+        ilosc = ilosc + 1.0;
+    }
+    suma = suma / ilosc;
+    mean_rms_LHC = suma;
+
+    // - RHC -
+    suma = 0.0;
+    ilosc = 0.0;
+    for(int i = 0; i < RHCERRlst.size(); i++)
+    {
+        suma = suma + RHCERRlst[i][0];
+        ilosc = ilosc + 1.0;
+    }
+    suma = suma / ilosc;
+    mean_rms_RHC = suma;
+
 }

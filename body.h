@@ -520,6 +520,7 @@ public slots:
     void open_popup_window();
     void close_popup_window_slot();
     void calculate_log();
+    void calculate_mean_rms();
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
@@ -598,17 +599,16 @@ public:
     vector < vector < double > >  VELlst;
     vector < vector < int > >  CHANlst;
     vector < vector < double > >  ERRlst, VERRlst, LHCERRlst, RHCERRlst;
-    /*
-    vector < vector < double > >  tmpLHClst;
-    vector < vector < double > >  tmpRHClst;
-    vector < vector < double > >  tmpVlst;
-    vector < vector < double > >  tmpIlst;
-    vector < vector < double > >  tmpERRlst, tmpVERRlst, tmpLHCERRlst, tmpRHCERRlst;
-*/
     vector < double > VI_I, VI_LHC, VI_RHC, VI_V;
     vector < double > FI_I, FI_LHC, FI_RHC, FI_V;
     vector < double > chi2_I, chi2_LHC, chi2_RHC, chi2_V;
     vector < int > rotated_spectras;
+
+    // -- tworzymy nowe stałe --
+    double mean_rms_I = 0.0;
+    double mean_rms_V = 0.0;
+    double mean_rms_LHC = 0.0;
+    double mean_rms_RHC = 0.0;
 
     // METODY - nie do przyciskow
     void czytaj(const char *nazwa_pliku); // zapełnia zmienne i kontenery danymi
