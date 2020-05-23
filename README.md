@@ -72,3 +72,10 @@ type "make"
 
 It should now run on your old system
 
+3. I use fedora/arch/manjaro
+
+Just don't use them
+
+4. Will this run on Windows?
+
+Working on Windows with this program seems a bit non-natural to me - but since running it does not require terminal window, it can be done - you just need to compile it correctly. Best way is to download qt tools from qt site and use them to compile. Also remember, that you'll probably need to copy some dll files to executable directory to open it outside qtCreator.
