@@ -1,4 +1,4 @@
-#include "body.h"
+﻿#include "body.h"
 #include <QObject>
 #include <QApplication>
 #include <QPushButton>
@@ -345,7 +345,7 @@ void body::set_dynamic_spectrum_widget()
     QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(display_dynamic_spectrum()));
     QObject::connect(set_log_scale, SIGNAL(clicked()), this, SLOT(calculate_log()));
     // -- umieszczamy je wszystkie w widgecie --
-    grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 0,0,8,6);
+    grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 1,0,7,6);
     grid_dynamic_spectrum_widget->addWidget(&single_dynamic_spectrum, 0,6,4,4);
     grid_dynamic_spectrum_widget->addWidget(&lcs_dynamic_spectrum, 4,6,4,4);
 
@@ -393,20 +393,46 @@ void body::set_dynamic_spectrum_widget()
     grid_dynamic_spectrum_widget->setColumnStretch(7,1);
     grid_dynamic_spectrum_widget->setColumnStretch(8,1);
     grid_dynamic_spectrum_widget->setColumnStretch(9,1);
+
+    // -- connectujemy range wykresów --
+    connect(single_dynamic_spectrum.xAxis, SIGNAL(rangeChanged(QCPRange)), single_dynamic_spectrum.xAxis2, SLOT(setRange(QCPRange)));
+    connect(single_dynamic_spectrum.yAxis, SIGNAL(rangeChanged(QCPRange)), single_dynamic_spectrum.yAxis2, SLOT(setRange(QCPRange)));
+    connect(lcs_dynamic_spectrum.xAxis, SIGNAL(rangeChanged(QCPRange)), lcs_dynamic_spectrum.xAxis2, SLOT(setRange(QCPRange)));
+    connect(lcs_dynamic_spectrum.yAxis, SIGNAL(rangeChanged(QCPRange)), lcs_dynamic_spectrum.yAxis2, SLOT(setRange(QCPRange)));
+
     //dynamic_spectrum_widget.setLayout(grid_dynamic_spectrum_widget);
 
-    /*
+
     // -- colorbar --
-    QCPColorScale * colorbar = new QCPColorScale(&single_dynamic_spectrum);
-    dynamic_spectrum_pl.plotLayout()->addElement(0, 1, colorbar);
-    colorbar->setType(QCPAxis::atRight);
+    // -- widget do colorbaru --
+
+    colorbar_widget->clearPlottables();
+    //colorbar_widget->removeItem(1);
+    colorbar_widget->plotLayout()->clear();
+    colorbar_widget->plotLayout()->addElement(0,0,colorbar);
+    colorbar->setType(QCPAxis::atTop);
+    grid_dynamic_spectrum_widget->addWidget(colorbar_widget, 0, 0, 1, 6);
+    //dynamic_spectrum_pl.plotLayout()->addElement(0, 1, colorbar);
+    //colorbar->setType(QCPAxis::atRight);
     colorMap->setColorScale(colorbar);
+    colorbar->setDataRange(colorMap->dataRange());
     //colorbar->axis()->setLabel("Magnetic Field Strength");
     // - wyrównujemy dynspec i colorbar -
     QCPMarginGroup * grupa_marginesowa = new QCPMarginGroup(&dynamic_spectrum_pl);
-    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, grupa_marginesowa);
-    colorbar->setMarginGroup(QCP::msBottom|QCP::msTop, grupa_marginesowa);
-    */
+    dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msLeft|QCP::msRight, grupa_marginesowa);
+    colorbar->setMarginGroup(QCP::msLeft|QCP::msRight, grupa_marginesowa);
+    colorbar_widget->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+    colorbar_widget->resize(1,1);
+
+    //connect(colorMap, SIGNAL(datarangeChanged(QCPRange)), colorbar, SLOT(setDataRange(QCPRange)));
+    //connect(colorMap, SIGNAL(datarangeChanged(QCPRange)), colorbar, SLOT(replot()));
+    connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), colorMap, SLOT(setDataRange(QCPRange)));
+    connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), &dynamic_spectrum_pl, SLOT(replot()));
+    connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(set_down_IVLHCRHCbuttons()));
+
+    //connect(colorMap, SIGNAL(dataRangeChanged(QCPRange)), colorbar, SLOT(setDataRange(QCPRange)));
+    //connect(colorbar->axis(), SIGNAL(rangeChanged(QCPRange)), &dynamic_spectrum_pl, SLOT(replot()));
+    //connect(colorbar->axis(), SIGNAL(datarangeChanged(QCPRange)), this, SLOT(range_data_zmienion_na_cb()));
 }
 
 void body::set_single_spectrum_widget()
@@ -442,6 +468,9 @@ void body::set_single_spectrum_widget()
     grid_single_spectrum_widget->setColumnStretch(2,3);
     grid_single_spectrum_widget->setColumnStretch(3,3);
 
+
+    connect(spectrum.xAxis, SIGNAL(rangeChanged(QCPRange)), spectrum.xAxis2, SLOT(setRange(QCPRange)));
+    connect(spectrum.yAxis, SIGNAL(rangeChanged(QCPRange)), spectrum.yAxis2, SLOT(setRange(QCPRange)));
     // -- setujemy layout --
     //single_spectrum_widget.setLayout(grid_single_spectrum_widget);
 
@@ -559,6 +588,17 @@ void body::set_rms_section_widget()
     grid_rms_section_widget->setColumnStretch(2,1);
     grid_rms_section_widget->setColumnStretch(3,1);
     //rms_section_widget.setLayout(grid_rms_section_widget);
+
+    // -- connectujemy rescale --
+    connect(rms_vs_time.xAxis, SIGNAL(rangeChanged(QCPRange)), rms_vs_time.xAxis2, SLOT(setRange(QCPRange)));
+    connect(rms_vs_time.yAxis, SIGNAL(rangeChanged(QCPRange)), rms_vs_time.yAxis2, SLOT(setRange(QCPRange)));
+    connect(tsys_vs_time.xAxis, SIGNAL(rangeChanged(QCPRange)), tsys_vs_time.xAxis2, SLOT(setRange(QCPRange)));
+    connect(tsys_vs_time.yAxis, SIGNAL(rangeChanged(QCPRange)), tsys_vs_time.yAxis2, SLOT(setRange(QCPRange)));
+    connect(int_vs_time.xAxis, SIGNAL(rangeChanged(QCPRange)), int_vs_time.xAxis2, SLOT(setRange(QCPRange)));
+    connect(int_vs_time.yAxis, SIGNAL(rangeChanged(QCPRange)), int_vs_time.yAxis2, SLOT(setRange(QCPRange)));
+    connect(spectrum_on_popup_window.xAxis, SIGNAL(rangeChanged(QCPRange)), spectrum_on_popup_window.xAxis2, SLOT(setRange(QCPRange)));
+    connect(spectrum_on_popup_window.yAxis, SIGNAL(rangeChanged(QCPRange)), spectrum_on_popup_window.yAxis2, SLOT(setRange(QCPRange)));
+
 }
 
 void body::set_integrate_widget()
@@ -910,6 +950,8 @@ void body::plot_single_spectrum()
     double veldiff = *max_element(x.begin(), x.end()) - *min_element(x.begin(), x.end());
     spectrum.xAxis->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
     spectrum.yAxis->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
+    spectrum.xAxis2->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
+    spectrum.yAxis2->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
     // -- pokazujemy ticki na gornej osi --
     spectrum.xAxis2->setVisible(true);
     spectrum.yAxis2->setVisible(true);
@@ -2311,9 +2353,12 @@ void body::kill_dynamic_spectrum()
 // -- obsluguje wcisniecia na widmie dynamicznym --
 void body::press_map(QMouseEvent * event)
 {
+    // przechwytujemy pozycję kliknięcia
     double x,y;
     x = dynamic_spectrum_pl.xAxis->pixelToCoord(event -> pos().x());
     y = dynamic_spectrum_pl.yAxis->pixelToCoord(event -> pos().y());
+
+    // zadajemy wartości parametrów na wypadki, gdy kliknięcie jest poza granicami plotu:
     if(x < 0)
     {
         x = 0.0;
@@ -2332,9 +2377,11 @@ void body::press_map(QMouseEvent * event)
         y = VELlst[0][VELlst[0].size()-1];
     }
 
-    //int xind, yind;
+
+    // stwierdzenie, która epoka została kliknięta jest bardzo proste - wystarczy zaokrąglić pozycję kliknięcia:
     xind = int(round(x));
-    //cout << xind << endl;
+
+    // następnie musimy przeszukać tablicę Vel, by znaleźć indeks, odpowiadający klikniętemu Y:
     for(int i=0; i < VELlst[0].size(); i++)
     {
 
@@ -2344,32 +2391,42 @@ void body::press_map(QMouseEvent * event)
             break;
         }
     }
+
+    // zabezpieczeine, jeśli kliknięta została brzegowa komórka:
     if (yind < 0)
     {
         yind = 0;
     }
+
+    // teraz linie pionowe na widmie dynamicznym
     QPen pen;
-    pen.setColor(QColor(255,255,255));
+    pen.setColor(QColor(255,255,255)); // dajemy im biały kolor
     x_axis_line->setPen(pen);
     y_axis_line->setPen(pen);
+
+    // ustalamy kursor na dynspec na krzyżyk
     dynamic_spectrum_pl.setCursor(QCursor(Qt::CrossCursor));
+
+    // ustalamy jak mają rozciągać się linie:
     x_axis_line->start->setCoords(xind, -QCPRange::maxRange);
     x_axis_line->end->setCoords(xind, QCPRange::maxRange);
     y_axis_line->start->setCoords(-QCPRange::maxRange,VELlst[0][yind]);
     y_axis_line->end->setCoords(QCPRange::maxRange,VELlst[0][yind]);
+
+    // biały kwadrat, zaznaczający kliknięty piksel:
     rectangle->setPen(pen);
     rectangle->topLeft->setCoords(double(xind)-0.5, VELlst[0][yind]+0.5*(VELlst[0][2]-VELlst[0][1]));
     rectangle->bottomRight->setCoords(double(xind)+0.5, VELlst[0][yind]-0.5*(VELlst[0][2]-VELlst[0][1]));
+
+    // i replot
     dynamic_spectrum_pl.replot();
-    //cout << "Kliknieto w x: " << xind << " i w y: " << VELlst[0][yind] << endl;
-   // single_dynamic_spectrum
-    //lcs_dynamic_spectrum
 
     // -- sprawdzamy, czy byly grafiki juz wczesniej otwierane w oknie --
     if (graphs_next_to_dynamical_spectrum == 0)
     {
         single_dynamic_spectrum.addGraph();
         lcs_dynamic_spectrum.addGraph();
+
         graphs_next_to_dynamical_spectrum = 1;
     }
 
@@ -2422,6 +2479,9 @@ void body::press_map(QMouseEvent * event)
     double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
     single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
     single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+    single_dynamic_spectrum.xAxis2->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
+    single_dynamic_spectrum.yAxis2->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+
     // -- pokazujemy ticki na gornej osi --
     single_dynamic_spectrum.xAxis2->setVisible(true);
     single_dynamic_spectrum.yAxis2->setVisible(true);
@@ -2487,7 +2547,6 @@ void body::press_map(QMouseEvent * event)
         error_lcs[i] = ERRlst[min_obs_number + i][yind];
     }
     }
-    //cout << epoch[0] << endl;
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
@@ -2504,6 +2563,8 @@ void body::press_map(QMouseEvent * event)
     double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
     lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
     lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+    lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
     // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
@@ -2511,7 +2572,6 @@ void body::press_map(QMouseEvent * event)
     lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     lcs_dynamic_spectrum.replot();
-
 
     if (lcs_line_added == 0)
     {
@@ -2538,45 +2598,6 @@ void body::press_map(QMouseEvent * event)
     text_mjdlabel.append(string("\nChannel: "));
     text_mjdlabel.append(to_string(CHANlst[xind][yind]));
 
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
     text_mjdlabel.append(string("\nVel: "));
 
     // Create an output string stream
@@ -3933,6 +3954,8 @@ void body::set_default_range()
     double veldiff = *max_element(x.begin(), x.end()) - *min_element(x.begin(), x.end());
     spectrum.xAxis->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
     spectrum.yAxis->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
+    spectrum.xAxis2->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
+    spectrum.yAxis2->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
     spectrum.replot();
 
 }
@@ -4629,19 +4652,35 @@ void body::save_rotated_spectras()
         epoch = rotated_spectras[i];
         filename = avrnames[epoch];
         headere = headerlst[epoch];
-        output_filename = "no_rotated_" + filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed rotacji
+        output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed rotacji
+        output_filename.erase(output_filename.end()-7, output_filename.end());
+        output_filename = output_filename + "norot.DAT";
 
         // -- kopiujemy do backupowego file --
-        cp_destination_rot.open((working_directory + "/" + output_filename).c_str(), std::ios::binary);
-        copied_file.open((working_directory + "/" + filename).c_str(), std::ios::binary);
-        cp_destination_rot << copied_file.rdbuf();
-        cp_destination_rot.close();
-        copied_file.close();
+        if (loaded_from_listfile == 1)
+        {
+            cp_destination_rot.open((working_directory + "/" + output_filename).c_str(), std::ios::binary);
+            copied_file.open((working_directory + "/" + filename).c_str(), std::ios::binary);
+            cp_destination_rot << copied_file.rdbuf();
+            cp_destination_rot.close();
+            copied_file.close();
+            cpy_message = cpy_message + working_directory + "/" + filename + " copied to " + working_directory + "/" + output_filename + "\n";
+        }
+        else
+        {
+            cp_destination_rot.open((output_filename).c_str(), std::ios::binary);
+            copied_file.open(filename.c_str(), std::ios::binary);
+            cp_destination_rot << copied_file.rdbuf();
+            cp_destination_rot.close();
+            copied_file.close();
+            cpy_message = cpy_message + filename + " copied to " + output_filename + "\n";
+        }
+
 
         //system(("cp " + working_directory + "/" + filename + " " + working_directory + "/" + output_filename).c_str());
         //cout << "cp " + filename + " " + output_filename << endl;
 
-        cpy_message = cpy_message + working_directory + "/" + filename + " copied to " + working_directory + "/" + output_filename + "\n";
+        //cpy_message = cpy_message + working_directory + "/" + filename + " copied to " + working_directory + "/" + output_filename + "\n";
 
         // -- zapelniamy tablice --
         for (int ee = 0; ee < Ilst[epoch].size(); ee++)
@@ -4653,16 +4692,23 @@ void body::save_rotated_spectras()
         }
 
         // -- zapisujemy do pliku --
-        save_avr_file(working_directory + "/" + filename, headere, is,v,lhc,rhc);
+        if (loaded_from_listfile == 1)
+        {
+            save_avr_file(working_directory + "/" + filename, headere, is,v,lhc,rhc);
+            message = message + working_directory + "/" + filename + "\n";
+        }
+        else
+        {
+            save_avr_file(filename, headere, is,v,lhc,rhc);
+            message = message + filename + "\n";
+
+        }
         //cout << headere << endl;
         // -- czyscimy kontenery --
         is.clear();
         v.clear();
         lhc.clear();
         rhc.clear();
-
-        // -- dodajemy do wiadomosci --
-        message = message + working_directory + "/" + filename + "\n";
 
     }
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(cpy_message));
@@ -5490,7 +5536,8 @@ void body::update_dynamic_spectrum()
     dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
     colorScale->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
     colorMap -> setGradient(gradient);
-    colorMap -> rescaleDataRange(true);
+    //colorMap -> rescaleDataRange(true);
+    colorMap->data()->recalculateDataBounds();
     colorMap -> rescaleKeyAxis(true);
     colorMap -> rescaleValueAxis(true);
     //dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, marginGroup);
@@ -5514,14 +5561,15 @@ void body::update_dynamic_spectrum()
         {
             dno = mean_rms_RHC;
         }
-        QCPRange zasieg(dno, colorMap->dataRange().upper);
-        colorMap->setDataRange(zasieg);
+        QCPRange zasieg(dno, colorMap->data()->dataBounds().upper);
+        colorbar->setDataRange(zasieg);
     }
     else
     {
         colorMap->rescaleDataRange();
     }
-
+    //colorbar->setDataRange(colorMap->dataRange());
+    colorbar_widget->replot();
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
 
@@ -5771,6 +5819,10 @@ void body::update_dynamic_spectrum()
     cocochanel.setFont(f);
     cocochanel.setText(QString::fromStdString(cocochanel_txt));
     set_down_IVLHCRHCbuttons();
+
+    // reskalujemy kolor bar
+    //colorMap->data()->recalculateDataBounds();
+
 }
 
 bool body::read_calconfig()
@@ -6158,6 +6210,8 @@ void body::set_plot_on_rms_vs_time()
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
     rms_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     rms_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    rms_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    rms_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     // -- pokazujemy ticki na gornej osi --
     rms_vs_time.xAxis2->setVisible(true);
     rms_vs_time.yAxis2->setVisible(true);
@@ -6239,6 +6293,8 @@ void body::set_plot_on_tsys_vs_time()
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
     tsys_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     tsys_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    tsys_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    tsys_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     // -- pokazujemy ticki na gornej osi --
     tsys_vs_time.xAxis2->setVisible(true);
     tsys_vs_time.yAxis2->setVisible(true);
@@ -6456,6 +6512,8 @@ void body::set_plot_on_int_vs_time()
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
     int_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     int_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    int_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
+    int_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     // -- pokazujemy ticki na gornej osi --
     int_vs_time.xAxis2->setVisible(true);
     int_vs_time.yAxis2->setVisible(true);
@@ -7346,8 +7404,7 @@ void body::set_label_on_popup_window()
 
 void body::calculate_log()
 {
-    // -- zmieniamy scale type --
-    colorMap->setDataScaleType(QCPAxis::stLogarithmic);
+
 
     // -- skalujemy data range --
     if (set_log_scale->isChecked())
@@ -7370,22 +7427,39 @@ void body::calculate_log()
         {
             dno = mean_rms_RHC;
         }
-        QCPRange zasieg(dno, colorMap->dataRange().upper);
-        colorMap->setDataRange(zasieg);
+        colorMap->data()->recalculateDataBounds();
+        QCPRange zasieg(dno, colorMap->data()->dataBounds().upper);
+        colorbar->setDataRange(zasieg);
 
-        // -- aktualizujemy wykres --
+        // -- zmieniamy scale type --
+        colorMap->setDataScaleType(QCPAxis::stLogarithmic);
+        colorbar->setDataScaleType(QCPAxis::stLogarithmic);
+        colorbar->axis()->setTicker(QSharedPointer<QCPAxisTickerLog>(new QCPAxisTickerLog));
+        colorbar_widget->replot();
         dynamic_spectrum_pl.replot();
+        //colorMap->setDataRange(zasieg);
+        // -- aktualizujemy wykres --
+        //dynamic_spectrum_pl.replot();
         set_down_IVLHCRHCbuttons();
+
+        //colorbar->axis()->rescale();
+
+
     }
     else
     {
         // -- zmieniamy na skale liniowa --
         colorMap->setDataScaleType(QCPAxis::stLinear);
+        colorbar->setDataScaleType(QCPAxis::stLinear);
         // -- skalujemy od 0 do max --
         colorMap->rescaleDataRange();
         // -- replotujemy --
         dynamic_spectrum_pl.replot();
         set_down_IVLHCRHCbuttons();
+        colorbar->setDataRange(colorMap->dataRange());
+        //colorbar->axis()->rescale();
+        colorbar->axis()->setTicker(QSharedPointer<QCPAxisTicker>(new QCPAxisTicker));
+        colorbar_widget->replot();
     }
 }
 
@@ -7435,4 +7509,15 @@ void body::calculate_mean_rms()
     suma = suma / ilosc;
     mean_rms_RHC = suma;
 
+}
+
+void body::range_zmienion_na_cb()
+{
+    cout << "range zmienionty" << endl;
+}
+
+
+void body::range_data_zmienion_na_cb()
+{
+    cout << "data range zmienionty" << endl;
 }

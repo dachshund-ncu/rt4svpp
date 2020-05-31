@@ -41,6 +41,9 @@ public:
     QWidget * single_spectrum_widget = new QWidget(&window);
     QWidget * rms_section_widget = new QWidget(&window);
 
+    QCustomPlot * colorbar_widget = new QCustomPlot();
+    QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
+
     // - integrate -
     // widget
     QWidget * integrate_widget = new QWidget(&window);
@@ -521,6 +524,10 @@ public slots:
     void close_popup_window_slot();
     void calculate_log();
     void calculate_mean_rms();
+
+    void range_zmienion_na_cb();
+    void range_data_zmienion_na_cb();
+    void set_down_IVLHCRHCbuttons();
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
@@ -619,7 +626,7 @@ public:
     void integrate_single(int min, int max, unsigned int marker);
     void read_chan4rms();
     void press_map_met();
-    void set_down_IVLHCRHCbuttons();
+
     bool read_flagged_files();
     bool read_chan4int();
     bool check_if_flagged(string avr_filename);
