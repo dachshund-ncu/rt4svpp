@@ -791,9 +791,13 @@ void body::set_wd_widget()
     // - rozmiaty text editow -
     starting_channel_ex_dynsp->setMaximumSize(100,30);
     ending_channel_ex_dynsp->setMaximumSize(100,30);
+    starting_epoch_ex_dynsp->setMaximumSize(100,30);
+    ending_epoch_ex_dynsp->setMaximumSize(100,30);
 
     starting_channel_ex_dynsp->setMinimumSize(0,0);
     ending_channel_ex_dynsp->setMinimumSize(0,0);
+    starting_epoch_ex_dynsp->setMinimumSize(0,0);
+    ending_epoch_ex_dynsp->setMinimumSize(0,0);
 
     // - rozmiaty przyciskow -
     cancel_ex_dynsp->setMinimumSize(0,0);
@@ -804,20 +808,30 @@ void body::set_wd_widget()
     end_label_ex_dynsp->setText("End Channel");
     make_ex_dynsp->setText("Export dynspec.");
     cancel_ex_dynsp->setText("Cancel");
+    start_epoch_label_ex_dynsp->setText("Start epoch");
+    end_epoch_label_ex_dynsp->setText("End epoch");
 
     // - dodajemy do layoutow -
-    // start
+    // start chan
     start_ex_dynsp_channels->addWidget(start_label_ex_dynsp,Qt::AlignHCenter);
     start_ex_dynsp_channels->addWidget(starting_channel_ex_dynsp,Qt::AlignHCenter);
-    // end
+    // end chan
     end_ex_dynsp_channels->addWidget(end_label_ex_dynsp,Qt::AlignHCenter);
     end_ex_dynsp_channels->addWidget(ending_channel_ex_dynsp,Qt::AlignHCenter);
+    // start epoch
+    start_ex_dynsp_epoch->addWidget(start_epoch_label_ex_dynsp, Qt::AlignHCenter);
+    start_ex_dynsp_epoch->addWidget(starting_epoch_ex_dynsp, Qt::AlignHCenter);
+    // end epoch
+    end_ex_dynsp_epoch->addWidget(end_epoch_label_ex_dynsp, Qt::AlignHCenter);
+    end_ex_dynsp_epoch->addWidget(ending_epoch_ex_dynsp, Qt::AlignHCenter);
     // przyciski
     ex_dynsp_buttons->addWidget(cancel_ex_dynsp,Qt::AlignHCenter);
     ex_dynsp_buttons->addWidget(make_ex_dynsp,Qt::AlignHCenter);
     // do integrate
     ex_dynsp_layout->addLayout(start_ex_dynsp_channels,Qt::AlignHCenter);
     ex_dynsp_layout->addLayout(end_ex_dynsp_channels,Qt::AlignHCenter);
+    ex_dynsp_layout->addLayout(start_ex_dynsp_epoch,Qt::AlignHCenter);
+    ex_dynsp_layout->addLayout(end_ex_dynsp_epoch,Qt::AlignHCenter);
     ex_dynsp_layout->addLayout(ex_dynsp_buttons,Qt::AlignHCenter);
 
     // connectujemy buttony
@@ -5887,6 +5901,8 @@ void body::open_dynspectum_layout()
     {
         starting_channel_ex_dynsp->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
         ending_channel_ex_dynsp->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+        starting_epoch_ex_dynsp ->setText(QString::fromStdString(to_string(min_obs_number+1)));
+        ending_epoch_ex_dynsp->setText((QString::fromStdString(to_string(max_obs_number+1))));
     }
 
     // przypinamy do vboxa
@@ -5911,15 +5927,22 @@ void body::close_dynspectrum_layout()
 
 void body::export_file_for_dynamic_spectrum()
 {
-    int min, max;
-    QString mins,maxs;
+    // -- inty z przechowywanymi granicami --
+    int min, max, min_epoch, max_epoch;
+
+    // -- stringi, do zczytywania wartości z text editów --
+    QString mins,maxs, min_epoch_str, max_epoch_str;
 
     // -- czytamy wartości z pól tekstowych --
+    // -- kanaly --
     mins = starting_channel_ex_dynsp->toPlainText();
     maxs = ending_channel_ex_dynsp->toPlainText();
+    // -- epoki --
+    min_epoch_str = starting_epoch_ex_dynsp->toPlainText();
+    max_epoch_str = ending_epoch_ex_dynsp ->toPlainText();
 
     // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "")
+    if (mins.toStdString() == "" || maxs.toStdString() == "" || min_epoch_str == "" || max_epoch_str == "")
     {
         QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
         return;
@@ -5930,6 +5953,8 @@ void body::export_file_for_dynamic_spectrum()
     {
         min = stoi(mins.toStdString())-1;
         max = stoi(maxs.toStdString())-1;
+        min_epoch = stoi(min_epoch_str.toStdString())-1;
+        max_epoch = stoi(max_epoch_str.toStdString())-1;
     }
     catch(...)
     {
@@ -5956,6 +5981,14 @@ void body::export_file_for_dynamic_spectrum()
     if (max > Ilst[0].size()-1)
         max = Ilst[0].size()-1;
 
+    // początkowa epoka mniejsza, niż 0:
+    if (min_epoch < 0)
+        min_epoch = 0;
+
+    // końcowa, większa niż całość:
+    if (max_epoch > mjdlst.size() - 1)
+        max_epoch = mjdlst.size()-1;
+
     // -- otwieramy plik do zapisu --
     // nazwa pliku
     string filename = working_directory + "/" + srcname + "_dynamic_spectrum_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
@@ -5971,7 +6004,7 @@ void body::export_file_for_dynamic_spectrum()
         fle_for_wd << "# i time_in_isoformat MJD year channel velocity I e V e LHC e RHC e" << endl;
 
         // podwójna pętla zapisu
-        for(int i = 0; i < Ilst.size(); i++) // po epokach
+        for(int i = min_epoch; i < max_epoch + 1; i++) // po epokach
         {
             for (int e = min; e <= max;e++)
             {
@@ -5987,7 +6020,7 @@ void body::export_file_for_dynamic_spectrum()
         fle_for_wd << "# i MJD year channel velocity I e V e LHC e RHC e" << endl;
 
         // podwójna pętla zapisu
-        for(int i = 0; i < Ilst.size(); i++) // po epokach
+        for(int i = min_epoch; i < max_epoch + 1; i++) // po epokach
         {
             for (int e = min; e <= max;e++)
             {

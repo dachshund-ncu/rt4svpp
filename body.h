@@ -136,13 +136,18 @@ public:
     QHBoxLayout * start_ex_dynsp_channels = new QHBoxLayout();
     QHBoxLayout * end_ex_dynsp_channels = new QHBoxLayout();
     QHBoxLayout * ex_dynsp_buttons = new QHBoxLayout();
+    QHBoxLayout * start_ex_dynsp_epoch = new QHBoxLayout();
+    QHBoxLayout * end_ex_dynsp_epoch = new QHBoxLayout();
     // text edity
     QTextEdit * starting_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
     QTextEdit * ending_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
+    QTextEdit * starting_epoch_ex_dynsp = new QTextEdit(ex_dynsp_widget);
+    QTextEdit * ending_epoch_ex_dynsp = new QTextEdit(ex_dynsp_widget);
     // labele
     QLabel * start_label_ex_dynsp = new QLabel(ex_dynsp_widget);
     QLabel * end_label_ex_dynsp = new QLabel(ex_dynsp_widget);
-
+    QLabel * start_epoch_label_ex_dynsp = new QLabel(ex_dynsp_widget);
+    QLabel * end_epoch_label_ex_dynsp = new QLabel(ex_dynsp_widget);
 
     // - calibrate -
     // - widget -
