@@ -230,6 +230,7 @@ public:
     QSizePolicy sizepolicy;
     QCPColorGradient gradient;
 
+    bool first_time_dynamic_spectrum_opened = 1;
     QPushButton * save_plots_on_single_spectrum = new QPushButton(single_spectrum_widget);
     QPushButton * display_plot_on_single_spectrum = new QPushButton(single_spectrum_widget);
     QPushButton * set_default_range_button = new QPushButton(single_spectrum_widget);
@@ -425,14 +426,14 @@ public:
     bool check_if_loading_not_interrupted = 0;
 
     bool caltabs_loaded = 0;
-    int xind = 0;
-    int yind = 0;
-    int max_range_vel_index;
-    int min_range_vel_index = 0;
-    int min_obs_number = 0;
-    int max_obs_number;
-    int rozmiar_w_x;// = mjdlst.size();
-    int rozmiar_w_y;// = CHANlst[0].size();
+    unsigned long int xind = 0;
+    unsigned long int yind = 0;
+    unsigned long int max_range_vel_index;
+    unsigned long int min_range_vel_index = 0;
+    unsigned long int min_obs_number = 0;
+    unsigned long int max_obs_number;
+    unsigned long int rozmiar_w_x;// = mjdlst.size();
+    unsigned long int rozmiar_w_y;// = CHANlst[0].size();
     int n_graphs_on_single_spec = 0;
     int last_marker;
     vector < int > numbers_of_epochs_on_single_spec;
@@ -533,12 +534,14 @@ public slots:
     void range_zmienion_na_cb();
     void range_data_zmienion_na_cb();
     void set_down_IVLHCRHCbuttons();
+
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
     void average_over_time();
     void calculate_spectral_index();
     */
+
 public:
     // ZMIENNE do uzycia tymczasowego:
     ifstream avr; // obiekt czytanego pliku AVR
@@ -624,13 +627,20 @@ public:
 
     // METODY - nie do przyciskow
     void czytaj(const char *nazwa_pliku); // zapełnia zmienne i kontenery danymi
+    void czytaj_ale_lepiej(const char *nazwa_pliku);
+    void wczytaj_I(vector < string > linie_w_pliku); // dodatkowa metoda, czyta I
+    void wczytaj_V(vector < string > linie_w_pliku); // dodatkowa metoda, czyta V
+    void wczytaj_LHC(vector < string > linie_w_pliku); // dodatkowa metoda, czyta LHC
+    void wczytaj_RHC(vector < string > linie_w_pliku); // dodatkowa metoda, czyta RHC
+
+    vector < vector < double > > recreate_from_rlhc(vector < double > lhc, vector < double > rhc);
     void wypisz(); // wypisuje dane w wybranym w zadaniu szyku
     double JD(double year, double day, double month); // zwraca dzien julianski z podanego roku, dnia i miesiaca
     void read_time_series ();
     void read_time_series_for_list(QStringList lista_plikow);
     void integrate_single(int min, int max, unsigned int marker);
     void read_chan4rms();
-    void press_map_met();
+    void press_map_met(unsigned long int x, unsigned long int y);
 
     bool read_flagged_files();
     bool read_chan4int();

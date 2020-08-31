@@ -14,6 +14,8 @@
 #include <deque>
 #include <stdlib.h>
 #include <string>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 // -- konstruktor klasy programu --
@@ -422,6 +424,21 @@ void body::set_dynamic_spectrum_widget()
     dynamic_spectrum_pl.axisRect()->setMarginGroup(QCP::msLeft|QCP::msRight, grupa_marginesowa);
     colorbar->setMarginGroup(QCP::msLeft|QCP::msRight, grupa_marginesowa);
     colorbar_widget->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+    //colorbar->setMinimumSize(0.0,0.0);
+    //colorbar->setMaximumSize(999999,999999);
+
+    /*
+    QMargins margines;
+    margines.setLeft(0);
+    margines.setTop(0);
+    margines.setBottom(0);
+    margines.setRight(0);
+    colorbar_widget->setMargins(margines);
+    */
+    // -- setujemy max size dla colorbaru --
+    colorbar_widget->setMaximumSize(9999999,70);
+    colorbar->setMinimumMargins(QMargins(6, 0, 6, 0));
+
     colorbar_widget->resize(1,1);
 
     //connect(colorMap, SIGNAL(datarangeChanged(QCPRange)), colorbar, SLOT(setDataRange(QCPRange)));
@@ -429,7 +446,7 @@ void body::set_dynamic_spectrum_widget()
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), colorMap, SLOT(setDataRange(QCPRange)));
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), &dynamic_spectrum_pl, SLOT(replot()));
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(set_down_IVLHCRHCbuttons()));
-
+    //connect(this, SIGNAL(size_changed(const QSize)), colorbar_widget, SLOT(resize(1,1)));
     //connect(colorMap, SIGNAL(dataRangeChanged(QCPRange)), colorbar, SLOT(setDataRange(QCPRange)));
     //connect(colorbar->axis(), SIGNAL(rangeChanged(QCPRange)), &dynamic_spectrum_pl, SLOT(replot()));
     //connect(colorbar->axis(), SIGNAL(datarangeChanged(QCPRange)), this, SLOT(range_data_zmienion_na_cb()));
@@ -1017,9 +1034,586 @@ void body::kill_single_spectrum()
     grid->setColumnStretch(5,1);
 }
 
+vector < vector < double > > body::recreate_from_rlhc (vector < double > lhc, vector < double > rhc)
+{
+    // --- deklarujemy potrzebne tablice ---
+    vector < vector < double > > IV;
+    vector < double > I;
+    vector < double > V;
+
+    // -- blok zapełniający te tablice za pomocą wczytanych LHC i RHC --
+    for(unsigned long int i = 0; i < lhc.size(); i++)
+    {
+        // -- dodajemy I --
+        I.push_back( (lhc[i] + rhc[i]) / 2.0 );
+        // -- dodajemy V --
+        V.push_back( (rhc[i] - lhc[i]) / 2.0);
+    }
+    // -- dodajemy do zwracanej tablicy --
+    IV.push_back(I);
+    IV.push_back(V);
+    // -- zwracamy --
+    return IV;
+}
+
+void body::wczytaj_I(vector<string> linie_w_pliku)
+{
+    // kilka zmiennych na poczatek:
+    string bufor;
+    double bufor_double;
+    // -- I --
+    // zapełniamy pierwsze 23 miejsca zerami
+    for(int i = 0; i < 24; i++)
+    {
+        I.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[17 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            I.push_back(bufor_double / 1000.0);
+    }
+
+
+    for (int i = 0; i < 24; i++)
+    {
+        I.push_back(0.0);
+    }
+}
+
+void body::wczytaj_V(vector<string> linie_w_pliku)
+{
+    // kilka zmiennych na poczatek:
+    string bufor;
+    double bufor_double;
+    // -- V --
+    for(int i = 0; i < 24; i++)
+    {
+        V.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[287 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            V.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        V.push_back(0.0);
+    }
+}
+
+void body::wczytaj_LHC(vector < string > linie_w_pliku)
+{
+    // kilka zmiennych na poczatek:
+    string bufor;
+    double bufor_double;
+    // -- LHC --
+    for(int i = 0; i < 24; i++)
+    {
+        LHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[557 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            LHC.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        LHC.push_back(0.0);
+    }
+}
+
+
+void body::wczytaj_RHC(vector < string > linie_w_pliku)
+{
+    // kilka zmiennych na poczatek:
+    string bufor;
+    double bufor_double;
+    // -- RHC --
+    for(int i = 0; i < 24; i++)
+    {
+        RHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[827 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            RHC.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        RHC.push_back(0.0);
+    }
+}
+
+void body::czytaj_ale_lepiej(const char *nazwa_pliku23)
+{
+
+    // ustalamy na początek boole (nie pamiętam już po co xD)
+    check_if_loading_not_interrupted = 0;
+
+    // otwieramy czytany plik - wykorzystujemy w tym celu obiekt fstream
+    avr.open(nazwa_pliku23);
+
+    // najważniejsze - tworzymy tablicę stringów
+    // każdy jej element będzie przechowywał jedną linię pliku
+    vector < string > linie_w_pliku;
+
+    // i bufor do funkcji getline
+    string bufor;
+    //cout << "wczytujemy" << endl;
+    //wczytujemy plik do kontenera
+    while(avr.good())
+    {
+        getline(avr, bufor);
+        linie_w_pliku.push_back(bufor);
+    }
+    // zamykamy plik
+    avr.close();
+    //cout << "sprawdzamy" << endl;
+    //cout << endl << linie_w_pliku[0] << endl;
+    if(linie_w_pliku[0].substr(0,3) != "???")
+        return;
+
+    //cout << "elaz" << endl;
+    // --- elewacja i azymut ---
+    bufor = linie_w_pliku[3];
+    vector < double > elaz;
+    double bufor_double;
+    stringstream eeeel(bufor);
+    while(eeeel >> bufor_double)
+    {
+        elaz.push_back(bufor_double);
+    }
+    az = elaz[0] + elaz[1] / 60.0;
+    el = elaz[2] + elaz[3] / 60.0;
+    // -------------------------
+
+    //cout << "radec" << endl;
+    // --- RA i DEC ---
+    bufor = linie_w_pliku[1];
+    vector < double > radec;
+    stringstream radec_ss(bufor);
+    while (radec_ss >> bufor_double)
+    {
+        radec.push_back(bufor_double);
+    }
+    // zapisujemy
+    ra = radec[0] + radec[1] / 60.0 + radec[2] / 3600.0;
+    if (radec[3] >= 0.0)
+        dec = radec[3] + radec[4] / 60.0 + radec[5] / 3600.0;
+    else
+    {
+        dec = abs(radec[3]) + radec[4] / 60.0 + radec[5] / 3600.0;
+        dec = -1.0 * dec;
+    }
+    // ----------------
+
+    //cout << "restf i vlsr" << endl;
+    // --- restf i vlsr oraz srcname ---
+    bufor = linie_w_pliku[10];
+    stringstream restf_ss(bufor);
+    vector < double > dane;
+    while(restf_ss >> bufor_double)
+    {
+        dane.push_back(bufor_double);
+    }
+    // -- zapisujemy dane --
+    vlsr = dane[3]; // pr radialna
+    freq = dane[4]; // częstotliwość dla v = 0.0
+    wst = dane[1]; // szerokość wstęgi
+    n_chans = dane[0]; // ilość kanałów
+    srcname = linie_w_pliku[11]; // nazwa źródełka
+    // ----------------------
+
+    //cout << "data" << endl;
+    // --- data ---
+    bufor = linie_w_pliku[4];
+    double day,month,year;
+    day = stod(bufor.substr(4,2));
+    month = stod(bufor.substr(6,2));
+    year = stod("20" + bufor.substr(8,2));
+    vector < double > hms;
+    double hour, min, sec;
+    bufor = linie_w_pliku[13];
+    stringstream hms_ss(bufor);
+    while(hms_ss >> bufor_double)
+    {
+        hms.push_back(bufor_double);
+    }
+    hour = hms[0];
+    min = hms[1];
+    sec = hms[2];
+
+    // zamiany jeszcze
+    double hour2; // zmiennoprzecinkowa godzina
+    double day2; // zmiennoprzecinkowy dzień
+    hour2 = hour + min / 60.0 + sec / 3600.0;
+    day2 = day + hour2 / 24.0;
+    jd = JD(year, month, day2);
+    mjd = jd - 2400000.5;
+    double decyr = decimalyear(year, month, day2); // zmiennoprzecinkowy rok
+    // -------------
+
+    //cout << "tsys" << endl;
+    // --- tsys ---
+    bufor = linie_w_pliku[6];
+    double tsystmp;
+    stringstream tsys_ss(bufor);
+    tsys_ss >> tsystmp;
+    //cout << tsystmp << endl;
+    tsyslst.push_back(tsystmp);
+    //cout << setw(10) << fixed << setprecision(9) << tsystmp << endl;
+    // ------------
+    //cout << "header" << endl;
+    // --- header ---
+    string headertmp = "";
+    for(unsigned long int i = 0; i < 14; i++)
+    {
+        headertmp = headertmp + linie_w_pliku[i] + "\n";
+    }
+
+    // -- koniec --
+
+
+
+    // ----- NAJWAŻNIEJSZE ------
+    // czytamy dane z pliku
+    //cout << "czytamy dane" << endl;
+
+    // watki
+    std::thread first(&body::wczytaj_I, this, linie_w_pliku);
+    std::thread second(&body::wczytaj_V, this, linie_w_pliku);
+    std::thread third(&body::wczytaj_LHC, this, linie_w_pliku);
+    std::thread forth(&body::wczytaj_RHC, this, linie_w_pliku);
+
+    first.join();
+    second.join();
+    third.join();
+    forth.join();
+
+
+    //vector < vector < double > > IR;
+    //IR = recreate_from_rlhc(LHC, RHC);
+    //I = IR[0];
+    //V = IR[1];
+
+    //wczytaj_I(linie_w_pliku);
+    //wczytaj_V(linie_w_pliku);
+    //wczytaj_LHC(linie_w_pliku);
+    //wczytaj_RHC(linie_w_pliku);
+
+    /*
+    // -- I --
+    // zapełniamy pierwsze 23 miejsca zerami
+
+    for(int i = 0; i < 24; i++)
+    {
+        I.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[17 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            I.push_back(bufor_double / 1000.0);
+    }
+
+
+    for (int i = 0; i < 24; i++)
+    {
+        I.push_back(0.0);
+    }
+
+    // -- V --
+    for(int i = 0; i < 24; i++)
+    {
+        V.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[287 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            V.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        V.push_back(0.0);
+    }
+
+    // -- LHC --
+    for(int i = 0; i < 24; i++)
+    {
+        LHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[557 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            LHC.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        LHC.push_back(0.0);
+    }
+
+    // -- RHC --
+    for(int i = 0; i < 24; i++)
+    {
+        RHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
+    }
+
+    for(unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linie_w_pliku[827 + k];
+        stringstream ss(bufor);
+        while(ss >> bufor_double)
+            RHC.push_back(bufor_double / 1000.0);
+    }
+
+    for (int i = 0; i < 24; i++)
+    {
+        RHC.push_back(0.0);
+    }
+    // --------------------------------
+
+    // -- tworzymy tablicę z I i V --
+
+    vector < vector < double > > IR;
+    IR = recreate_from_rlhc(LHC, RHC);
+    I = IR[0];
+    V = IR[1];
+    */
+
+
+    //cout << "predkosci" << endl;
+    // --- Tworzymy tablice z predkosciami radialnymi ---
+    double c = 299792.458; // km/s
+    double beta = vlsr / c;
+    double gamma = 1.0 / sqrt(1.0 - beta*beta);
+    double fcentr = freq / (gamma * (1.0 - beta));
+    double fbegin = fcentr - wst / 2.0;
+    double fend = fcentr + wst / 2.0;
+    double h = (fend - fbegin) / 2048.0;
+    vector < double > freqs;
+    for (unsigned long int i = 0; i < n_chans; i++)
+    {
+      freqs.push_back(fbegin + h*i);
+    }
+    for (unsigned long int i = 0; i < n_chans; i++)
+    {
+      VEL.push_back(c * ((freqs[i] - freq) / freq));
+    }
+    for (unsigned long int i = 0; i < n_chans; i++)
+    {
+      CHAN.push_back(i+1);
+    }
+    //cout << "rms" << endl;
+    // --- liczymy rms ---
+    double suma = 0.0;
+    //double n = 100.0;
+    if(chan4rms_loaded == 0)
+    {
+        rms_start_channel1 = 100;
+        rms_end_channel1 = 400;
+        rms_start_channel2 = CHAN.size() - 400;
+        rms_end_channel2 = CHAN.size() - 100;
+    }
+
+    // -- rms I --
+    int n = 0;
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + I[i]*I[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + I[i]*I[i];
+      n = n+1;
+    }
+    rms = sqrt(suma / (n-1));
+
+    for(int i = 0; i < n_chans; i++)
+    {
+      ERR.push_back(rms);
+    }
+
+    // -- rms V --
+    n = 0;
+    suma = 0.0;
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + V[i]*V[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + V[i]*V[i];
+      n = n+1;
+    }
+    rms = sqrt(suma / (n-1));
+
+    for(int i = 0; i < n_chans; i++)
+    {
+      VERR.push_back(rms);
+    }
+
+    // -- rms LHC --
+    n = 0;
+    suma = 0.0;
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + LHC[i]*LHC[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + LHC[i]*LHC[i];
+      n = n+1;
+    }
+    rms = sqrt(suma / (n-1));
+
+    for(int i = 0; i < n_chans; i++)
+    {
+      LHCERR.push_back(rms);
+    }
+
+    // -- rms RHC --
+    n = 0;
+    suma = 0.0;
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + RHC[i]*RHC[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + RHC[i]*RHC[i];
+      n = n+1;
+    }
+    rms = sqrt(suma / (n-1));
+
+    for(int i = 0; i < n_chans; i++)
+    {
+      RHCERR.push_back(rms);
+    }
+
+    if (I.size() < 512)
+    {
+        return;
+    }
+
+
+    // -- zapelniamy stale kontenery --
+    jdlst.push_back(jd);
+    mjdlst.push_back(mjd);
+    ellst.push_back(el);
+    azlst.push_back(az);
+    declst.push_back(dec);
+    ralst.push_back(ra);
+    freqlst.push_back(freq);
+    vlsrlst.push_back(vlsr);
+    wstlst.push_back(wst);
+    n_chanslst.push_back(n_chans);
+    rmslst.push_back(rms);
+    dlst.push_back(day);
+    mlst.push_back(month);
+    ylst.push_back(year);
+    hrlst.push_back(hour);
+    minutelst.push_back(min);
+    seclst.push_back(sec);
+    yrlst.push_back(decyr);
+
+    // -- konstruujemy pytime format --
+    string time_in_isoformat, yearstr, monthstr, daystr, hourstr, minutestr, secondstr;
+
+    // zapisujemy czas w isoformacie (YYYY-MM-DD)
+    //year
+    yearstr = to_string((int)year);
+    // month
+    if (to_string((int)month).length() == 1)
+        monthstr = string("0")+to_string((int)month);
+    else
+        monthstr = to_string((int)month);
+    // day
+    if (to_string((int)day).length() == 1)
+        daystr = string("0") + to_string((int)day);
+    else
+        daystr = to_string((int)day);
+    // hour
+    if (to_string((int)hour).length() == 1)
+        hourstr = string("0") + to_string((int)hour);
+    else
+        hourstr = to_string((int)hour);
+    // minute
+    if (to_string((int)min).length() == 1)
+        minutestr = string("0") + to_string((int)min);
+    else
+        minutestr = to_string((int)min);
+    // second
+    if (to_string((int)sec).length() == 1)
+        secondstr = string("0") + to_string(sec);
+    else
+        secondstr = to_string(sec);
+
+    // zapisujemy do time...
+    time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
+    pytime_format.push_back(time_in_isoformat);
+
+    // -- i podwojne --
+    headerlst.push_back(headertmp);
+    LHClst.push_back(LHC);
+    RHClst.push_back(RHC);
+    Vlst.push_back(V);
+    Ilst.push_back(I);
+    VELlst.push_back(VEL);
+    CHANlst.push_back(CHAN);
+    ERRlst.push_back(ERR);
+    VERRlst.push_back(VERR);
+    LHCERRlst.push_back(LHCERR);
+    RHCERRlst.push_back(RHCERR);
+    // -- czyscimy tymczasowe kontenery --
+    header.clear();
+    LHC.clear();
+    RHC.clear();
+    V.clear();
+    I.clear();
+    VEL.clear();
+    CHAN.clear();
+    ERR.clear();
+    VERR.clear();
+    LHCERR.clear();
+    RHCERR.clear();
+
+    check_if_loading_not_interrupted = 1;
+
+}
+
 // -- czyta plik AVR o podanej w argumencie nazwie --
 void body::czytaj(const char* nazwa_pliku23)
 {
+
   check_if_loading_not_interrupted = 0;
   // otwieramy obiekt z czytanym plikiem
   avr.open(nazwa_pliku23);
@@ -1152,6 +1746,7 @@ void body::czytaj(const char* nazwa_pliku23)
   //char spr;
   // petla czytajaca:
 
+    /*
   // -- I --
     for(int i = 0; i < 17; i++)
       getline(avr, bufor); // pomijamy 17 linijek i czytamy dalej
@@ -1176,6 +1771,9 @@ void body::czytaj(const char* nazwa_pliku23)
       getline(avr, bufor); // pomijamy 3 linijki i czytamy dalej
 
     //cout << I.size() << endl;
+
+
+
     // -- V --
     for(int i = 0; i < 17; i++)
       getline(avr, bufor); // pomijamy 14 linijek i czytamy dalej
@@ -1201,10 +1799,22 @@ void body::czytaj(const char* nazwa_pliku23)
         getline(avr, bufor); // pomijamy 3 linijki i czytamy dalej
 
      //cout << V.size() << endl;
+    */
 
+
+    // -- pomijamy pierwsze... 554 linijki
+    for(int i = 0; i < 554; i++)
+    {
+        getline(avr, bufor);
+        //cout << i << "   " << bufor << endl;
+    }
+
+
+    /*
     // -- LHC --
     for(int i = 0; i < 17; i++)
       getline(avr, bufor); // pomijamy 17 linijek i czytamy dalej
+    */
 
     for(int i = 0; i < 24; i++)
     {
@@ -1249,14 +1859,21 @@ void body::czytaj(const char* nazwa_pliku23)
          RHC.push_back(0.0);
     }
 
+
+    // -- tworzymy tablicę z I i V --
+    vector < vector < double > > IR;
+    IR = recreate_from_rlhc(LHC, RHC);
+    I = IR[0];
+    V = IR[1];
+
   //cout << RHC.size() << endl;
 
+  avr.close();
   if (I.size() < 512)
   {
       return;
   }
   // ZAMYKAMY PLIK
-  avr.close();
 
   // --- Tworzymy tablice z predkosciami radialnymi ---
   double c = 299792.458; // km/s
@@ -1496,6 +2113,10 @@ void body::read_time_series_for_list(QStringList lista_plikow)
     // -- i tablice z rotowanymi obserwacjami --
     rotated_spectras.clear();
 
+    // -- i indeksy wybranego pola --
+    xind = 0;
+    yind = 0;
+
     // -- pobieramy chan4rms jeśli możemy --
     read_chan4rms();
 
@@ -1532,12 +2153,14 @@ void body::read_time_series_for_list(QStringList lista_plikow)
       if(!check_if_flagged(bufor_do_listy))
       {
           // jesli check if flagged zwraca false to czytamy
-          this->czytaj((bufor_do_listy).c_str());
-
+          //this->czytaj((bufor_do_listy).c_str());
+            this->czytaj_ale_lepiej((bufor_do_listy).c_str());
           // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
          if (check_if_loading_not_interrupted == 0)
-             throw 2; // jeśli tak, wyrzucamy exception
-
+         {
+            cout << "wyrzucam exception" << endl;
+            throw 2; // jeśli tak, wyrzucamy exception
+         }
           avrnames.push_back(bufor_do_listy);
           // wypisujemy podstawowe dane o obserwacji
           cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
@@ -1583,6 +2206,7 @@ void body::read_time_series_for_list(QStringList lista_plikow)
         flags_number = 0;
 
     }
+
     if (dynamic_spectrum_opened)
         display_dynamic_spectrum();
 
@@ -1636,6 +2260,9 @@ void body::read_time_series_for_list(QStringList lista_plikow)
 // -- czyta pliki z calej listy --
 void body::read_time_series()
 {
+   // do czasow
+   //auto start = std::chrono::high_resolution_clock::now();
+
   // przed czytaniem - czyscimy tablice -
   jdlst.clear();
   mjdlst.clear();
@@ -1674,6 +2301,10 @@ void body::read_time_series()
 
   // -- i tablice z rotowanymi obserwacjami --
   rotated_spectras.clear();
+
+  // -- i indeksy wybranego pola --
+  xind = 0;
+  yind = 0;
 
   // -- pobieramy chan4rms jeśli możemy --
   read_chan4rms();
@@ -1729,7 +2360,7 @@ void body::read_time_series()
     if(!check_if_flagged(bufor_do_listy))
     {
         // jesli check if flagged zwraca false to czytamy
-        this->czytaj((working_directory + "/" + bufor_do_listy).c_str());
+        this->czytaj_ale_lepiej((working_directory + "/" + bufor_do_listy).c_str());
         // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
        if (check_if_loading_not_interrupted == 0)
            throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
@@ -1780,7 +2411,9 @@ void body::read_time_series()
 
   }
   if (dynamic_spectrum_opened)
+  {
       display_dynamic_spectrum();
+  }
 
   calibration_done = 0;
   if (calibration_section_opened == 1)
@@ -1828,6 +2461,13 @@ void body::read_time_series()
 
   // - liczymy sredni rms -
   calculate_mean_rms();
+
+  // -- koniec --
+  //auto finish = std::chrono::high_resolution_clock::now();
+
+  //std::chrono::duration<double> elapsed = finish - start;
+
+  //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
@@ -2223,17 +2863,17 @@ void body::plot_dynamic_spectrum()
     //update_dynamic_spectrum();
 
     // color mapa
-    int nx = mjdlst.size();
-    int ny = CHANlst[0].size();
+    unsigned long int nx = mjdlst.size();
+    unsigned long int ny = CHANlst[0].size();
 
     colorMap->data()->setSize(nx,ny);
     //colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
     colorMap->data()->setRange(QCPRange(0, mjdlst.size()-1), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
     //double x,y,z;
 
-    for (int xIndex = 0; xIndex < nx; xIndex++)
+    for (unsigned long int xIndex = 0; xIndex < nx; xIndex++)
     {
-        for (int yIndex = 0; yIndex < ny; yIndex++)
+        for (unsigned long int yIndex = 0; yIndex < ny; yIndex++)
         {
             //colorMap->data()->cellToCoord(xIndex,yIndex, &x, &y);
             if (Ilst[xIndex][yIndex] > 0.0)
@@ -2252,8 +2892,11 @@ void body::plot_dynamic_spectrum()
     colorMap -> rescaleValueAxis();
     colorMap -> setTightBoundary(false);
 
+    /*
     if (set_log_scale->isChecked())
         set_log_scale->setChecked(false);
+    */
+
 
     // -- na koniec --
     dynamic_spectrum_pl.rescaleAxes();
@@ -2288,6 +2931,7 @@ void body::display_dynamic_spectrum()
         max_obs_number = mjdlst.size()-1;
         rozmiar_w_x = mjdlst.size();
         rozmiar_w_y = CHANlst[0].size();
+        press_map_met(xind,yind);
         update_dynamic_spectrum();
         return;
     }
@@ -2305,7 +2949,15 @@ void body::display_dynamic_spectrum()
     grid->setColumnStretch(5,3);
 
     // -- plotujemy dynamic spectrum --
-    plot_dynamic_spectrum();
+    if (first_time_dynamic_spectrum_opened == 1)
+    {
+        plot_dynamic_spectrum();
+        first_time_dynamic_spectrum_opened = 0;
+    }
+    else
+    {
+        update_dynamic_spectrum();
+    }
 
     // -- ustawiamy, ktory z przyciskow do pol. jest wcisniety --
     Ibut->setDown(true);
@@ -2326,7 +2978,7 @@ void body::display_dynamic_spectrum()
     number_of_rotated_channels_texted->setText(rot);
 
     // wywolujemy metode, symulujaca klikniecie w 0,0
-    press_map_met();
+    press_map_met(xind, yind);
 
     // -- pokazujemy widget z dynamic spectrum --
     kill_dynspec->setVisible(true);
@@ -2890,11 +3542,11 @@ void body::set_RHC_on_dynamic_spectrum()
 }
 
 // -- robi to samo, co 'press_map()', jednak bez wciśnięcia - czyta ostatnio zapisane wartości x i y --
-void body::press_map_met()
+void body::press_map_met(unsigned long int x, unsigned long int y)
 {
 
-    xind = 0;
-    yind = 0;
+    xind = x;
+    yind = y;
     QPen pen;
     pen.setColor(QColor(255,255,255));
     x_axis_line->setPen(pen);
@@ -2926,7 +3578,7 @@ void body::press_map_met()
 
     if (I_pressed == 1)
     {
-    for (int i = 0; i < rozmiar_w_y; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
         velocity[i] = VELlst[xind][min_range_vel_index+i];
@@ -2936,7 +3588,7 @@ void body::press_map_met()
 
     else if (v_pressed == 1)
     {
-    for (int i = 0; i < rozmiar_w_y; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
         velocity[i] = VELlst[xind][min_range_vel_index+i];
@@ -2945,7 +3597,7 @@ void body::press_map_met()
     }
     else if (lhc_pressed == 1)
     {
-    for (int i = 0; i < rozmiar_w_y; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
         velocity[i] = VELlst[xind][min_range_vel_index+i];
@@ -2954,7 +3606,7 @@ void body::press_map_met()
     }
     else if (rhc_pressed == 1)
     {
-    for (int i = 0; i < rozmiar_w_y; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
         velocity[i] = VELlst[xind][min_range_vel_index+i];
@@ -2966,8 +3618,11 @@ void body::press_map_met()
     single_dynamic_spectrum.graph(0)->setData(velocity,flux);
     single_dynamic_spectrum.xAxis->setLabel("Vel");
     single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()), *max_element(velocity.begin(), velocity.end()));
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()), *max_element(flux.begin(), flux.end()));
+    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
+    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
+    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+    single_dynamic_spectrum.xAxis2->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
+    single_dynamic_spectrum.yAxis2->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
     // -- pokazujemy ticki na gornej osi --
     single_dynamic_spectrum.xAxis2->setVisible(true);
     single_dynamic_spectrum.yAxis2->setVisible(true);
@@ -2984,8 +3639,8 @@ void body::press_map_met()
     QVector < double > x_vline(2), y_vline(2);
     x_vline[0] = VELlst[0][yind];
     x_vline[1] = VELlst[0][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end());
-    y_vline[1] = *max_element(flux.begin(), flux.end());
+    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
+    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     QPen pen2;
     pen2.setColor(QColor(182,26,26));
@@ -2996,7 +3651,7 @@ void body::press_map_met()
     QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
     if(I_pressed==1)
     {
-    for (int i = 0; i < rozmiar_w_x; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = Ilst[min_obs_number + i][yind];
@@ -3006,7 +3661,7 @@ void body::press_map_met()
 
     else if(v_pressed==1)
     {
-    for (int i = 0; i < rozmiar_w_x; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = Vlst[min_obs_number + i][yind];
@@ -3016,7 +3671,7 @@ void body::press_map_met()
 
     else if(lhc_pressed==1)
     {
-    for (int i = 0; i < rozmiar_w_x; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = LHClst[min_obs_number + i][yind];
@@ -3026,7 +3681,7 @@ void body::press_map_met()
 
     else if(rhc_pressed==1)
     {
-    for (int i = 0; i < rozmiar_w_x; i++)
+    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = RHClst[min_obs_number + i][yind];
@@ -3047,8 +3702,11 @@ void body::press_map_met()
     lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()), *max_element(epoch.begin(), epoch.end()));
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()), *max_element(lcs_flux.begin(), lcs_flux.end()));
+    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
+    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+    lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
     // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
@@ -3066,8 +3724,8 @@ void body::press_map_met()
     QVector < double > lcsx_vline(2), lcsy_vline(2);
     lcsx_vline[0] = mjdlst[xind];
     lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end());
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end());
+    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
     lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
@@ -3206,6 +3864,7 @@ void body::press_map_met()
 
     cocochanel.setFont(f);
     cocochanel.setText(QString::fromStdString(cocochanel_txt));
+    set_down_IVLHCRHCbuttons();
 }
 
 // -- czyta wartości kanałów z pliku 'chan4int.sv' --
@@ -3274,7 +3933,7 @@ vector < double > body::average_over_velocity(int min_chan, int max_chan, vector
         chan_count = 1;
 
     // petla liczaca srednia
-    for (int i = 0; i < chan_count; i++)
+    for (unsigned long int i = 0; i < chan_count; i++)
     {
         suma = suma + stokes_parameter[min_chan + i];
     }
@@ -3282,7 +3941,7 @@ vector < double > body::average_over_velocity(int min_chan, int max_chan, vector
 
     // petla liczaca sredni blad
     double sumaer = 0.0;
-    for (int i = 0; i < chan_count; i++)
+    for (unsigned long int i = 0; i < chan_count; i++)
     {
         sumaer = sumaer + error[min_chan + i];
     }
@@ -5575,6 +6234,11 @@ void body::update_dynamic_spectrum()
         {
             dno = mean_rms_RHC;
         }
+
+        if (dno <= 0.0)
+        {
+            dno = 0.0001; // zabezpieczamy się przed dolną skalą < 0
+        }
         QCPRange zasieg(dno, colorMap->data()->dataBounds().upper);
         colorbar->setDataRange(zasieg);
     }
@@ -5650,8 +6314,8 @@ void body::update_dynamic_spectrum()
         vel_line_added = 1;
     }
     QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
+    x_vline[0] = VELlst[xind][yind];
+    x_vline[1] = VELlst[xind][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
@@ -5836,6 +6500,7 @@ void body::update_dynamic_spectrum()
 
     // reskalujemy kolor bar
     //colorMap->data()->recalculateDataBounds();
+    //colorbar_widget->resize(1,1);
 
 }
 
@@ -6114,8 +6779,8 @@ void body::open_rms_section_slot()
     rms_section_widget->setVisible(true);
     kill_rms_section->setVisible(true);
 
-    window.show();
-    grid->update();
+    // -- selectujemy na początek --
+    select_on_rms_section(mjdlst[xind]);
 }
 
 void body::close_rms_section_slot()
