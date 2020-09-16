@@ -72,9 +72,13 @@ type "make"
 
 It should now run on your old system
 
-3. I use fedora/arch/manjaro
+3. I use fedora/red hat/arch/manjaro
 
-Just don't use them
+Just don't use them 
+
+Just joking.
+
+I do not use system-specific libraries and commands inside rt4sv++, so if you compile it for these systems - it should perform fine.
 
 4. Will this run on Windows?
 
