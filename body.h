@@ -352,6 +352,11 @@ public:
 
     QCPItemLine * vel_line = new QCPItemLine(&single_dynamic_spectrum);
     QCPItemLine * epoch_line = new QCPItemLine(&lcs_dynamic_spectrum);
+
+    // - wertykalne linie -
+    QCPItemStraightLine * inf_vel_line = new QCPItemStraightLine(&single_dynamic_spectrum);
+    QCPItemStraightLine * inf_epoch_line = new QCPItemStraightLine(&lcs_dynamic_spectrum);
+
     QCPColorMap * colorMap = new QCPColorMap(dynamic_spectrum_pl.xAxis, dynamic_spectrum_pl.yAxis);
     QCPColorScale * colorScale = new QCPColorScale(&dynamic_spectrum_pl);
     QCPMarginGroup * marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
