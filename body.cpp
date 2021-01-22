@@ -84,6 +84,7 @@ body::body(const char * nazwa)
     open_rms_section->setMaximumSize(10000,10000);
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
+    save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
 
 
     load_data->setMinimumSize(0,0);
@@ -124,6 +125,8 @@ body::body(const char * nazwa)
     open_rms_section->setMinimumSize(0,0);
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
+    save_all_spectra_to_gnuplot->setMinimumSize(0,0);
+
 
     // - font (do labelow) -
     QFont f( "Arial", 10, QFont::Bold);
@@ -317,6 +320,10 @@ void body::set_dynamic_spectrum_widget()
     dynamic_spectrum_pl.xAxis->setLabel("Observation number");
     dynamic_spectrum_pl.yAxis->setLabel("Vel");
     colorMap->setInterpolate(false);
+    colorMap->setTightBoundary(true);
+    // inicjalizujemy opengl
+    dynamic_spectrum_pl.setOpenGl(true, 8);
+    cout << endl << dynamic_spectrum_pl.openGl() << endl;
 
     // -- connectujemy rozmaite sloty --
     y_down_border_shrt->setKey(QKeySequence("d"));
@@ -463,6 +470,7 @@ void body::set_single_spectrum_widget()
     display_plot_on_single_spectrum->setText("Display plot on single spectrum");
     set_default_range_button->setText("Set default range");
     erase_last_graph->setText("Erase last graph");
+    save_all_spectra_to_gnuplot->setText("Save all spectra for gnuplot");
 
     // -- connectujemy z metodami
     //QObject::connect(list_of_observations, SIGNAL(activated()), this, SLOT(combo_box_display()));
@@ -471,6 +479,7 @@ void body::set_single_spectrum_widget()
     QObject::connect(set_default_range_button, SIGNAL(clicked()), this, SLOT(set_default_range()));
     QObject::connect(erase_last_graph, SIGNAL(clicked()), this, SLOT(remove_selected_graph()));
     QObject::connect(save_plots_on_single_spectrum, SIGNAL(clicked()), this, SLOT(save_plots_from_single_spectrum()));
+    QObject::connect(save_all_spectra_to_gnuplot, SIGNAL(clicked()), this, SLOT(save_all_to_gnuplot_slot()));
 
     // -- dodajemy do grida --
     grid_single_spectrum_widget->addWidget(&spectrum, 0,0,9,4);
@@ -479,11 +488,12 @@ void body::set_single_spectrum_widget()
     grid_single_spectrum_widget->addWidget(display_plot_on_single_spectrum, 2,4,1,1);
     grid_single_spectrum_widget->addWidget(set_default_range_button, 3,4,1,1);
     grid_single_spectrum_widget->addWidget(erase_last_graph, 4,4,1,1);
+    grid_single_spectrum_widget->addWidget(save_all_spectra_to_gnuplot, 5,4,1,1);
 
-    grid_single_spectrum_widget->setColumnStretch(0,3);
-    grid_single_spectrum_widget->setColumnStretch(1,3);
-    grid_single_spectrum_widget->setColumnStretch(2,3);
-    grid_single_spectrum_widget->setColumnStretch(3,3);
+    grid_single_spectrum_widget->setColumnStretch(0,2);
+    grid_single_spectrum_widget->setColumnStretch(1,2);
+    grid_single_spectrum_widget->setColumnStretch(2,2);
+    grid_single_spectrum_widget->setColumnStretch(3,2);
 
 
     connect(spectrum.xAxis, SIGNAL(rangeChanged(QCPRange)), spectrum.xAxis2, SLOT(setRange(QCPRange)));
@@ -600,10 +610,10 @@ void body::set_rms_section_widget()
     QObject::connect(&tsys_vs_time, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(show_spectrum_on_select_tsys(QMouseEvent * )));
     QObject::connect(&int_vs_time, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(show_spectrum_on_select_tint(QMouseEvent * )));
 
-    grid_rms_section_widget->setColumnStretch(0,1);
-    grid_rms_section_widget->setColumnStretch(1,1);
-    grid_rms_section_widget->setColumnStretch(2,1);
-    grid_rms_section_widget->setColumnStretch(3,1);
+    grid_rms_section_widget->setColumnStretch(0,2);
+    grid_rms_section_widget->setColumnStretch(1,2);
+    grid_rms_section_widget->setColumnStretch(2,2);
+    grid_rms_section_widget->setColumnStretch(3,2);
     //rms_section_widget.setLayout(grid_rms_section_widget);
 
     // -- connectujemy rescale --
@@ -894,6 +904,7 @@ void body::set_calibrate_widget()
 // - wyswietla w programie sekcje "single spectrum"
 void body::display_single_spectrum()
 {
+    // --- zmiana
     // -- obwarowanie warunkami --
     if (loaded_data == 0)
     {
@@ -924,10 +935,10 @@ void body::display_single_spectrum()
 
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
-    grid->setColumnStretch(2,1);
-    grid->setColumnStretch(3,1);
-    grid->setColumnStretch(4,1);
-    grid->setColumnStretch(5,1);
+    grid->setColumnStretch(2,2);
+    grid->setColumnStretch(3,2);
+    grid->setColumnStretch(4,2);
+    grid->setColumnStretch(5,2);
 
     // -- ustalamy geometrię okna --
 
@@ -1027,11 +1038,13 @@ void body::kill_single_spectrum()
     // - clearujemy list_of_obs -
     list_of_observations->clear();
     // -- ustalamy szerokości kolumny --
+    /*
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,1);
     grid->setColumnStretch(3,1);
     grid->setColumnStretch(4,1);
     grid->setColumnStretch(5,1);
+    */
 }
 
 vector < vector < double > > body::recreate_from_rlhc (vector < double > lhc, vector < double > rhc)
@@ -1236,7 +1249,10 @@ void body::czytaj_ale_lepiej(const char *nazwa_pliku23)
     freq = dane[4]; // częstotliwość dla v = 0.0
     wst = dane[1]; // szerokość wstęgi
     n_chans = dane[0]; // ilość kanałów
+    // -- wczytujemy nazwę źródła, pomijając białe znaki --
     srcname = linie_w_pliku[11]; // nazwa źródełka
+    // - usuwamy białe znaki -
+    srcname.erase(remove(srcname.begin(), srcname.end(), ' '), srcname.end());
     // ----------------------
 
     //cout << "data" << endl;
@@ -2868,7 +2884,10 @@ void body::plot_dynamic_spectrum()
 
     colorMap->data()->setSize(nx,ny);
     //colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
-    colorMap->data()->setRange(QCPRange(0, mjdlst.size()-1), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
+    if (rozmiar_w_x != 1)
+        colorMap->data()->setRange(QCPRange(0, mjdlst.size()-1), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
+    else
+        colorMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
     //double x,y,z;
 
     for (unsigned long int xIndex = 0; xIndex < nx; xIndex++)
@@ -2942,11 +2961,11 @@ void body::display_dynamic_spectrum()
     vbox_main.addWidget(kill_dynspec);
 
     // -- ustalamy szerokości kolumny --
-    grid->setColumnStretch(1,3);
-    grid->setColumnStretch(2,3);
-    grid->setColumnStretch(3,3);
-    grid->setColumnStretch(4,3);
-    grid->setColumnStretch(5,3);
+    grid->setColumnStretch(1,1);
+    grid->setColumnStretch(2,2);
+    grid->setColumnStretch(3,2);
+    grid->setColumnStretch(4,2);
+    grid->setColumnStretch(5,2);
 
     // -- plotujemy dynamic spectrum --
     if (first_time_dynamic_spectrum_opened == 1)
@@ -3006,12 +3025,13 @@ void body::kill_dynamic_spectrum()
     kill_dynspec->setVisible(false);
 
     // -- ustalamy szerokości kolumn --
+    /*
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,1);
     grid->setColumnStretch(3,1);
     grid->setColumnStretch(4,1);
     grid->setColumnStretch(5,1);
-
+    */
     // -- ustalamy boola --
     dynamic_spectrum_opened = 0;
 }
@@ -3155,7 +3175,6 @@ void body::press_map(QMouseEvent * event)
     single_dynamic_spectrum.yAxis2->setTickLabels(false);
     single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
-
     if (vel_line_added == 0)
     {
         single_dynamic_spectrum.addGraph();
@@ -3172,6 +3191,10 @@ void body::press_map(QMouseEvent * event)
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     single_dynamic_spectrum.graph(1)->setPen(pen2);
     single_dynamic_spectrum.replot();
+
+    //first_item_position
+    //inf_vel_line->anchor()
+
     // -- tworzymy krzywa blasku, ktora wyswietli sie w krzywej blasku --
     QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
     if(I_pressed==1)
@@ -3226,18 +3249,27 @@ void body::press_map(QMouseEvent * event)
     lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+
+    if (rozmiar_w_x == 1)
+    {
+        lcs_dynamic_spectrum.rescaleAxes();
+    }
+    else
+    {
+        double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
+        lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+        lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    }
+
     // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
     lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
+
 
     if (lcs_line_added == 0)
     {
@@ -3247,8 +3279,16 @@ void body::press_map(QMouseEvent * event)
     QVector < double > lcsx_vline(2), lcsy_vline(2);
     lcsx_vline[0] = mjdlst[xind];
     lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    if (rozmiar_w_x == 1)
+    {
+        lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
+        lcsy_vline[1] = lcs_dynamic_spectrum.yAxis->range().upper;
+    }
+    else
+    {
+        lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+        lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    }
     lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
@@ -3702,12 +3742,19 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    // -- pokazujemy ticki na gornej osi --
+    if (rozmiar_w_x == 1)
+    {
+        lcs_dynamic_spectrum.rescaleAxes();
+    }
+    else
+    {
+        double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
+        lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+        lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    }
+     // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
     lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
@@ -3724,8 +3771,17 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     QVector < double > lcsx_vline(2), lcsy_vline(2);
     lcsx_vline[0] = mjdlst[xind];
     lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+
+    if (rozmiar_w_x == 1)
+    {
+        lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
+        lcsy_vline[1] = lcs_dynamic_spectrum.yAxis->range().upper;
+    }
+    else
+    {
+        lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+        lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    }
     lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
@@ -4680,7 +4736,7 @@ void body::save_plots_from_single_spectrum()
         ofstream plik;
         plik.open(filename);
         plik << "# chan vel I er V er LHC er RHC er" << endl;
-        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << endl;
+        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << mjdlst[epoch] << endl;
         for (int ee = 0; ee < CHANlst[epoch].size(); ee++)
         {
             plik << fixed << setprecision(11) << CHANlst[epoch][ee] << "   " <<  VELlst[epoch][ee] << "   " << Ilst[epoch][ee] << "   " << ERRlst[epoch][ee] << "   " << Vlst[epoch][ee] <<  "   " << VERRlst[epoch][ee] <<  "   " << LHClst[epoch][ee] <<  "   " << LHCERRlst[epoch][ee] <<  "   " << RHClst[epoch][ee] <<  "   " << RHCERRlst[epoch][ee] << endl;
@@ -4691,6 +4747,61 @@ void body::save_plots_from_single_spectrum()
     }
     QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
 }
+
+void body::save_all_to_gnuplot_slot()
+{
+    // -- ilość źródeł --
+    unsigned long int count_for_gnuplot = Ilst.size();
+
+    // -- pasek postepu --
+    QProgressDialog postep;//(&window);
+    postep.setLabelText("Saving files... please wait");
+    postep.setMinimum(0);
+    postep.setMaximum(count_for_gnuplot);
+    postep.setVisible(true);
+
+    // -- zapisujemy --
+    for (unsigned long int i = 0; i < count_for_gnuplot; i++)
+    {
+        // -- epoka ekstrahowana do innej zmiennej --
+        unsigned long int epoch = i;
+        // -- tworzymy zmienną do przechowywania pliku --
+        string filename;
+        string avrname = avrnames[epoch];
+        avrname.erase(avrname.end()-7, avrname.end());
+        if (loaded_from_listfile == 1)
+            filename = working_directory + "/" + avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+        else
+            filename = avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+        ofstream plik;
+        plik.open(filename);
+        plik << "# chan vel I er V er LHC er RHC er" << endl;
+        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << mjdlst[epoch] << endl;
+        for (unsigned long int ee = 0; ee < CHANlst[epoch].size(); ee++)
+        {
+            plik << fixed << setprecision(11) << CHANlst[epoch][ee] << "   " <<  VELlst[epoch][ee] << "   " << Ilst[epoch][ee] << "   " << ERRlst[epoch][ee] << "   " << Vlst[epoch][ee] <<  "   " << VERRlst[epoch][ee] <<  "   " << LHClst[epoch][ee] <<  "   " << LHCERRlst[epoch][ee] <<  "   " << RHClst[epoch][ee] <<  "   " << RHCERRlst[epoch][ee] << endl;
+        }
+        plik.close();
+
+        // -- zwiększamy postęp paska postępu --
+        postep.setValue(postep.value()+1);
+        // -- coś tam robi, ale z tym też na wndowsie działa także... --
+        QCoreApplication::processEvents();
+
+
+    }
+
+    // -- piszemy odpowiednie powiadomienie --
+    string message;
+    // - do zamiany intów na takie majtki -
+    stringstream ss;
+    ss << count_for_gnuplot;
+    // - zapisujemy wiadomość -
+    message = "Saved all " +  ss.str() + " spectra to " + working_directory;
+    // - wyświetlamy -
+    QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
+}
+
 
 // -- ustala, który z przycisków I V LHC RHC na widmie dynamicznym powinien być wciśnięty --
 void body::set_down_IVLHCRHCbuttons()
@@ -6152,7 +6263,11 @@ void body::update_dynamic_spectrum()
     // - ustawiamy informacje na color mapie -
     colorMap->data()->clear();
     colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
-    colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+    if (rozmiar_w_x == 1)
+        colorMap->data()->setRange(QCPRange(min_obs_number-0.5, max_obs_number+0.5), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+    else
+        colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+
     if(I_pressed == 1)
     {
         for (int xIndex = 0; xIndex < rozmiar_w_x; xIndex++)
@@ -6293,13 +6408,15 @@ void body::update_dynamic_spectrum()
     }
     }
 
-    single_dynamic_spectrum.replot();
     single_dynamic_spectrum.graph(0)->setData(velocity,flux);
     single_dynamic_spectrum.xAxis->setLabel("Vel");
     single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
     double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
     single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
     single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+    single_dynamic_spectrum.xAxis2->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
+    single_dynamic_spectrum.yAxis2->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+
     // -- pokazujemy ticki na gornej osi --
     single_dynamic_spectrum.xAxis2->setVisible(true);
     single_dynamic_spectrum.yAxis2->setVisible(true);
@@ -6379,17 +6496,24 @@ void body::update_dynamic_spectrum()
     lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-    lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-    lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    if(rozmiar_w_x == 1)
+    {
+        lcs_dynamic_spectrum.rescaleAxes();
+    }
+    else
+    {
+        double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
+        lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+        lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
+        lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
+    }
     // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
     lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
-
 
     if (lcs_line_added == 0)
     {
@@ -6399,8 +6523,16 @@ void body::update_dynamic_spectrum()
     QVector < double > lcsx_vline(2), lcsy_vline(2);
     lcsx_vline[0] = mjdlst[xind];
     lcsx_vline[1] = mjdlst[xind];
-    lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    if(rozmiar_w_x == 1)
+    {
+        lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
+        lcsy_vline[1] = lcs_dynamic_spectrum.yAxis->range().upper;
+    }
+    else
+    {
+        lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+        lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
+    }
     lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
@@ -6762,10 +6894,10 @@ void body::open_rms_section_slot()
 
     // ustalamy szerokość kolumn
     grid->setColumnStretch(1,1);
-    grid->setColumnStretch(2,1);
-    grid->setColumnStretch(3,1);
-    grid->setColumnStretch(4,1);
-    grid->setColumnStretch(5,1);
+    grid->setColumnStretch(2,2);
+    grid->setColumnStretch(3,2);
+    grid->setColumnStretch(4,2);
+    grid->setColumnStretch(5,2);
 
     rms_section_opened = 1;
 
@@ -6802,14 +6934,14 @@ void body::close_rms_section_slot()
     // odpinamy od grida
     grid->removeWidget(rms_section_widget);
     vbox_main.removeWidget(kill_rms_section);
-
+    /*
     // ustalamy szerokość kolumn
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,1);
     grid->setColumnStretch(3,1);
     grid->setColumnStretch(4,1);
     grid->setColumnStretch(5,1);
-
+    */
     // ustalamy wartość boola
     rms_section_opened = 0;
 }
@@ -6903,6 +7035,7 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.xAxis->setLabel("MJD");
     rms_vs_time.yAxis->setLabel("RMS");
     // -- zarzadzamy rangeami --
+    /*
     //spectrum.xAxis->setRange(*min_element(x.begin(), x.end()), *max_element(x.begin(), x.end()));
     //spectrum.yAxis->setRange(*min_element(y.begin(), y.end()), *max_element(y.begin(), y.end()));
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
@@ -6910,6 +7043,8 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     rms_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     rms_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    */
+    autorange_plot(&rms_vs_time);
     // -- pokazujemy ticki na gornej osi --
     rms_vs_time.xAxis2->setVisible(true);
     rms_vs_time.yAxis2->setVisible(true);
@@ -6988,11 +7123,14 @@ void body::set_plot_on_tsys_vs_time()
     tsys_vs_time.yAxis->setLabel("Tsys (K)");
 
     // -- zarzadzamy rangeami --
+    /*
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
     tsys_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     tsys_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     tsys_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     tsys_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    */
+    autorange_plot(&tsys_vs_time);
     // -- pokazujemy ticki na gornej osi --
     tsys_vs_time.xAxis2->setVisible(true);
     tsys_vs_time.yAxis2->setVisible(true);
@@ -7173,6 +7311,7 @@ void body::set_plot_on_int_vs_time()
     int_vs_time.graph(1)->setData(xI,yV);
     int_vs_time.graph(2)->setData(xI,yLHC);
     int_vs_time.graph(3)->setData(xI,yRHC);
+
     /*
     // -- errorbary --
     // I
@@ -7207,11 +7346,14 @@ void body::set_plot_on_int_vs_time()
     // -- zarzadzamy rangeami --
     //spectrum.xAxis->setRange(*min_element(x.begin(), x.end()), *max_element(x.begin(), x.end()));
     //spectrum.yAxis->setRange(*min_element(y.begin(), y.end()), *max_element(y.begin(), y.end()));
+    /*
     double veldiff = *max_element(xI.begin(), xI.end()) - *min_element(xI.begin(), xI.end());
     int_vs_time.xAxis->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     int_vs_time.yAxis->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
     int_vs_time.xAxis2->setRange(*min_element(xI.begin(), xI.end()) - 0.05 * veldiff, *max_element(xI.begin(), xI.end())  + 0.05 * veldiff);
     int_vs_time.yAxis2->setRange(*min_element(yI.begin(), yI.end()) - 0.05 * (*max_element(yI.begin(), yI.end())), *max_element(yI.begin(), yI.end())  + 0.05 * (*max_element(yI.begin(), yI.end())));
+    */
+    autorange_plot(&int_vs_time);
     // -- pokazujemy ticki na gornej osi --
     int_vs_time.xAxis2->setVisible(true);
     int_vs_time.yAxis2->setVisible(true);
@@ -8218,4 +8360,19 @@ void body::range_zmienion_na_cb()
 void body::range_data_zmienion_na_cb()
 {
     cout << "data range zmienionty" << endl;
+}
+
+void body::autorange_plot(QCustomPlot * plot)
+{
+    plot->rescaleAxes();
+    double max_x, min_x, max_y, min_y;
+    max_x = plot->xAxis->range().upper;
+    min_x = plot->xAxis->range().lower;
+    max_y = plot->yAxis->range().upper;
+    min_y = plot->yAxis->range().lower;
+    double diffrence_x = max_x - min_x;
+    double diffrence_y = max_y - min_y;
+    plot->xAxis->setRange(min_x - (0.05 * diffrence_x), max_x + (0.05 * diffrence_x));
+    plot->yAxis->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+    plot->replot();
 }

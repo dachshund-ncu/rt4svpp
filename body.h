@@ -235,6 +235,7 @@ public:
     QPushButton * display_plot_on_single_spectrum = new QPushButton(single_spectrum_widget);
     QPushButton * set_default_range_button = new QPushButton(single_spectrum_widget);
     QPushButton * erase_last_graph = new QPushButton(single_spectrum_widget);
+    QPushButton * save_all_spectra_to_gnuplot = new QPushButton(single_spectrum_widget);
 
     QStringList AVRNAMES_from_load;
 
@@ -352,6 +353,11 @@ public:
 
     QCPItemLine * vel_line = new QCPItemLine(&single_dynamic_spectrum);
     QCPItemLine * epoch_line = new QCPItemLine(&lcs_dynamic_spectrum);
+
+    // - wertykalne linie -
+    QCPItemStraightLine * inf_vel_line = new QCPItemStraightLine(&single_dynamic_spectrum);
+    QCPItemStraightLine * inf_epoch_line = new QCPItemStraightLine(&lcs_dynamic_spectrum);
+
     QCPColorMap * colorMap = new QCPColorMap(dynamic_spectrum_pl.xAxis, dynamic_spectrum_pl.yAxis);
     QCPColorScale * colorScale = new QCPColorScale(&dynamic_spectrum_pl);
     QCPMarginGroup * marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
@@ -534,6 +540,9 @@ public slots:
     void range_zmienion_na_cb();
     void range_data_zmienion_na_cb();
     void set_down_IVLHCRHCbuttons();
+
+    void save_all_to_gnuplot_slot();
+    void autorange_plot(QCustomPlot * plot);
 
     //void menu_request(QPoint pos);
     /*
