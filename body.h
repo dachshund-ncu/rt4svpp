@@ -44,6 +44,8 @@ public:
     QCustomPlot * colorbar_widget = new QCustomPlot();
     QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
 
+    // - opcjonalne mniej ważne checkboxy -
+    QCheckBox * dark_mode_switch = new QCheckBox ("Darth Mode", &window);
     // - integrate -
     // widget
     QWidget * integrate_widget = new QWidget(&window);
@@ -404,6 +406,8 @@ public:
     bool graphs_next_to_dynamical_spectrum = 0;
     bool layers_single_dyn_exist = 0;
     bool vel_line_added = 0;
+    bool dot_single_added = 0;
+    bool dot_lcs_added = 0;
     bool lcs_line_added = 0;
     bool loaded_data = 0;
     bool chan4rms_loaded = 0;
@@ -421,6 +425,7 @@ public:
     bool integrate_buttons_connected = 0;
     bool intgridloaded = 0;
 
+    bool dark_mode_enabled = 0;
     bool integrate_window_opened = 0;
     bool spind_window_opened = 0;
     bool aver_over_time_window_opened = 0;
@@ -543,6 +548,8 @@ public slots:
 
     void save_all_to_gnuplot_slot();
     void autorange_plot(QCustomPlot * plot);
+
+    void set_dark_mode();
 
     //void menu_request(QPoint pos);
     /*

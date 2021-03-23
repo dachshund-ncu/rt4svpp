@@ -156,6 +156,7 @@ body::body(const char * nazwa)
     vbox_main.addWidget(load_data);
 
     vbox_main.addWidget(wiev_data_section_label);
+    vbox_main.addWidget(dark_mode_switch);
     vbox_main.addWidget(dynamic_spectrum);
     vbox_main.addWidget(single_spectrum);
     vbox_main.addWidget(open_rms_section);
@@ -221,6 +222,8 @@ body::body(const char * nazwa)
     QObject::connect(calibrate, SIGNAL(clicked()), this, SLOT(open_cal_layout()));
     QObject::connect(WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
     QObject::connect(open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
+    QObject::connect(dark_mode_switch, SIGNAL(clicked()), this, SLOT(set_dark_mode()));
+
     // -- setujemy widgety roznych sekcji --
     set_single_spectrum_widget();
     set_dynamic_spectrum_widget();
@@ -281,8 +284,12 @@ body::body(const char * nazwa)
         }
     }
 
+    // -- domyślnie ustawiamy dark mode --
+    dark_mode_switch->setChecked(1);
+    set_dark_mode();
     // -- pokazujemy okno --
     window.show();
+
 }
 
 // -------------------------------------------------------------------------------
@@ -323,7 +330,7 @@ void body::set_dynamic_spectrum_widget()
     colorMap->setTightBoundary(true);
     // inicjalizujemy opengl
     dynamic_spectrum_pl.setOpenGl(true, 8);
-    cout << endl << dynamic_spectrum_pl.openGl() << endl;
+    //cout << endl << dynamic_spectrum_pl.openGl() << endl;
 
     // -- connectujemy rozmaite sloty --
     y_down_border_shrt->setKey(QKeySequence("d"));
@@ -3039,6 +3046,12 @@ void body::kill_dynamic_spectrum()
 // -- obsluguje wcisniecia na widmie dynamicznym --
 void body::press_map(QMouseEvent * event)
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
     // przechwytujemy pozycję kliknięcia
     double x,y;
     x = dynamic_spectrum_pl.xAxis->pixelToCoord(event -> pos().x());
@@ -3180,17 +3193,21 @@ void body::press_map(QMouseEvent * event)
         single_dynamic_spectrum.addGraph();
         vel_line_added = 1;
     }
+
+
+    // -- ustawiamy pionową linię --
+    // -- stylistyka --
+    QPen pen2;
+    pen2.setColor(QColor(182,26,26));
     QVector < double > x_vline(2), y_vline(2);
     x_vline[0] = VELlst[0][yind];
     x_vline[1] = VELlst[0][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     single_dynamic_spectrum.graph(1)->setPen(pen2);
     single_dynamic_spectrum.replot();
+
 
     //first_item_position
     //inf_vel_line->anchor()
@@ -3239,7 +3256,10 @@ void body::press_map(QMouseEvent * event)
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    errorBars->setPen(QPen(QColor(180,180,180)));
+    if(!dark_mode_switch->isChecked())
+        errorBars->setPen(QPen(QColor(180,180,180)));
+    else
+        errorBars->setPen(QPen(QColor(105,105,105)));
 
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
@@ -3276,6 +3296,8 @@ void body::press_map(QMouseEvent * event)
         lcs_dynamic_spectrum.addGraph();
         lcs_line_added = 1;
     }
+
+
     QVector < double > lcsx_vline(2), lcsy_vline(2);
     lcsx_vline[0] = mjdlst[xind];
     lcsx_vline[1] = mjdlst[xind];
@@ -3389,6 +3411,86 @@ void body::press_map(QMouseEvent * event)
     cocochanel.setFont(f);
     cocochanel.setText(QString::fromStdString(cocochanel_txt));
     set_down_IVLHCRHCbuttons();
+
+
+
+    // ----- dodatkowa rzecz ! ---------------
+    // -- dodajemy odpowiednią kropkę na krzywej blasku --
+    if (dot_single_added == 0)
+    {
+        single_dynamic_spectrum.addGraph();
+        dot_single_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_spec(1), y_dot_spec(1);
+    // predkosc radialna
+    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+
+
+    single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
+    if(dark_mode_switch->isChecked())
+        single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        single_dynamic_spectrum.graph(2)->setPen(pen2);
+    single_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    single_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+
+    // -- dodajemy kropkę na krzywej blasku --
+    if (dot_lcs_added == 0)
+    {
+        lcs_dynamic_spectrum.addGraph();
+        dot_lcs_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_lcs(1), y_dot_lcs(1);
+    // predkosc radialna
+    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+    // -- stylistyka --
+    lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
+    if(dark_mode_switch->isChecked())
+        lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        lcs_dynamic_spectrum.graph(2)->setPen(pen2);
+    lcs_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+    // -- dark i light mode --
+    if (dark_mode_switch->isChecked())
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_dark);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
+    }
+    else
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_light);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_light);
+    }
+
+    single_dynamic_spectrum.replot();
+    lcs_dynamic_spectrum.replot();
+
+
 }
 
 // -- obsluguje granice w osi predkosci na widmie dynamicznym (max) --
@@ -3584,6 +3686,11 @@ void body::set_RHC_on_dynamic_spectrum()
 // -- robi to samo, co 'press_map()', jednak bez wciśnięcia - czyta ostatnio zapisane wartości x i y --
 void body::press_map_met(unsigned long int x, unsigned long int y)
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
 
     xind = x;
     yind = y;
@@ -3732,7 +3839,10 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    errorBars->setPen(QPen(QColor(180,180,180)));
+    if(!dark_mode_switch->isChecked())
+        errorBars->setPen(QPen(QColor(180,180,180)));
+    else
+        errorBars->setPen(QPen(QColor(105,105,105)));
 
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
@@ -3921,6 +4031,83 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     cocochanel.setFont(f);
     cocochanel.setText(QString::fromStdString(cocochanel_txt));
     set_down_IVLHCRHCbuttons();
+
+    // ----- dodatkowa rzecz ! ---------------
+    // -- dodajemy odpowiednią kropkę na krzywej blasku --
+    if (dot_single_added == 0)
+    {
+        single_dynamic_spectrum.addGraph();
+        dot_single_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_spec(1), y_dot_spec(1);
+    // predkosc radialna
+    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+
+
+    single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
+    if(dark_mode_switch->isChecked())
+        single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        single_dynamic_spectrum.graph(2)->setPen(pen2);
+    single_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    single_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+
+    // -- dodajemy kropkę na krzywej blasku --
+    if (dot_lcs_added == 0)
+    {
+        lcs_dynamic_spectrum.addGraph();
+        dot_lcs_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_lcs(1), y_dot_lcs(1);
+    // predkosc radialna
+    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+    // -- stylistyka --
+    lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
+    if(dark_mode_switch->isChecked())
+        lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        lcs_dynamic_spectrum.graph(2)->setPen(pen2);
+    lcs_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+    // -- dark i light mode --
+    if (dark_mode_switch->isChecked())
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_dark);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
+    }
+    else
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_light);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_light);
+    }
+
+    single_dynamic_spectrum.replot();
+    lcs_dynamic_spectrum.replot();
+
 }
 
 // -- czyta wartości kanałów z pliku 'chan4int.sv' --
@@ -6260,6 +6447,12 @@ int body::find_next_epoch(int index_of_epoch, string type_of_caltab)
 
 void body::update_dynamic_spectrum()
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
     // - ustawiamy informacje na color mapie -
     colorMap->data()->clear();
     colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
@@ -6486,7 +6679,10 @@ void body::update_dynamic_spectrum()
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    errorBars->setPen(QPen(QColor(180,180,180)));
+    if(!dark_mode_switch->isChecked())
+        errorBars->setPen(QPen(QColor(180,180,180)));
+    else
+        errorBars->setPen(QPen(QColor(105,105,105)));
 
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
@@ -6634,6 +6830,83 @@ void body::update_dynamic_spectrum()
     //colorMap->data()->recalculateDataBounds();
     //colorbar_widget->resize(1,1);
 
+    // ----- dodatkowa rzecz ! ---------------
+    // -- dodajemy odpowiednią kropkę na krzywej blasku --
+    if (dot_single_added == 0)
+    {
+        single_dynamic_spectrum.addGraph();
+        dot_single_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_spec(1), y_dot_spec(1);
+    // predkosc radialna
+    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+
+
+    single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
+    if(dark_mode_switch->isChecked())
+        single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        single_dynamic_spectrum.graph(2)->setPen(pen2);
+
+    single_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    single_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+
+    // -- dodajemy kropkę na krzywej blasku --
+    if (dot_lcs_added == 0)
+    {
+        lcs_dynamic_spectrum.addGraph();
+        dot_lcs_added = 1;
+    }
+
+    // -- ustawiamy sobie kropkę na single spectrum --
+    QVector < double > x_dot_lcs(1), y_dot_lcs(1);
+    // predkosc radialna
+    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    // gestosć strumienia
+    if (I_pressed == 1)
+        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+    else if (lhc_pressed == 1)
+        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (rhc_pressed == 1)
+        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+    else if (v_pressed == 1)
+        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+    // -- stylistyka --
+    lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
+
+    if(dark_mode_switch->isChecked())
+        lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+    else
+        lcs_dynamic_spectrum.graph(2)->setPen(pen2);
+
+    lcs_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
+    lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+
+    // -- dark i light mode --
+    if (dark_mode_switch->isChecked())
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_dark);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
+    }
+    else
+    {
+        single_dynamic_spectrum.graph(0)->setPen(graph_light);
+        lcs_dynamic_spectrum.graph(0)->setPen(graph_light);
+    }
+    single_dynamic_spectrum.replot();
+    lcs_dynamic_spectrum.replot();
 }
 
 bool body::read_calconfig()
@@ -6948,6 +7221,12 @@ void body::close_rms_section_slot()
 
 void body::set_plot_on_rms_vs_time()
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
     rms_vs_time.setMouseTracking(true);
     rms_vs_time.clearGraphs();
     // wektor z danymi
@@ -6974,7 +7253,10 @@ void body::set_plot_on_rms_vs_time()
         rms_vs_time.graph(0)->setVisible(false);
     }
     rms_vs_time.graph(0)->setName("I");
-    rms_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    if (dark_mode_switch->isChecked())
+        rms_vs_time.graph(0)->setPen(graph_dark);
+    else
+        rms_vs_time.graph(0)->setPen(graph_light);
     rms_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
     rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     // -- dodajemy grafike (V) --
@@ -6988,7 +7270,11 @@ void body::set_plot_on_rms_vs_time()
         rms_vs_time.graph(1)->setVisible(false);
     }
     rms_vs_time.graph(1)->setName("V");
-    rms_vs_time.graph(1)->setPen(QPen(Qt::black));
+    if (dark_mode_switch->isChecked())
+        rms_vs_time.graph(1)->setPen(QPen(Qt::white));
+    else
+        rms_vs_time.graph(1)->setPen(QPen(Qt::black));
+
     rms_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
     rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     // -- dodajemy grafike (V) --
@@ -7096,6 +7382,12 @@ void body::set_plot_on_rms_vs_time()
 
 void body::set_plot_on_tsys_vs_time()
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
     tsys_vs_time.clearGraphs();
     // wektor z danymi
     QVector < double > xI(Ilst.size()), yI(Ilst.size());
@@ -7111,7 +7403,11 @@ void body::set_plot_on_tsys_vs_time()
     tsys_vs_time.addGraph();
 
     tsys_vs_time.graph(0)->setName("I");
-    tsys_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    if (dark_mode_switch->isChecked())
+        tsys_vs_time.graph(0)->setPen(graph_dark);
+    else
+        tsys_vs_time.graph(0)->setPen(graph_light);
+
     tsys_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
     tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
 
@@ -7156,6 +7452,12 @@ void body::set_plot_on_tsys_vs_time()
 
 void body::set_plot_on_int_vs_time()
 {
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
     // czyscimy tablice z int
     integrated_fluxlst_I.clear();
     integrated_fluxlst_V.clear();
@@ -7255,7 +7557,11 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(0)->setVisible(false);
     }
     int_vs_time.graph(0)->setName("I");
-    int_vs_time.graph(0)->setPen(QPen(Qt::blue));
+    if (dark_mode_switch->isChecked())
+        int_vs_time.graph(0)->setPen(graph_dark);
+    else
+        int_vs_time.graph(0)->setPen(graph_light);
+
     int_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
     int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     // -- dodajemy grafike (V) --
@@ -7269,7 +7575,11 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(1)->setVisible(false);
     }
     int_vs_time.graph(1)->setName("V");
-    int_vs_time.graph(1)->setPen(QPen(Qt::black));
+    if (dark_mode_switch->isChecked())
+        int_vs_time.graph(1)->setPen(QPen(Qt::white));
+    else
+        int_vs_time.graph(1)->setPen(QPen(Qt::black));
+
     int_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
     int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
     // -- dodajemy grafike (V) --
@@ -7731,7 +8041,11 @@ void body::cross_hair_rms_vs_time(QMouseEvent * event)
     y = rms_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    pen.setColor(Qt::black);
+    if (dark_mode_switch->isChecked())
+        pen.setColor(Qt::white);
+    else
+        pen.setColor(Qt::black);
+
     pen.setStyle(Qt::DashLine);
     //rms_x_axis_line->set
     rms_x_axis_line->setPen(pen);
@@ -7748,6 +8062,14 @@ void body::cross_hair_rms_vs_time(QMouseEvent * event)
     string tekst;
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     rms_csh_label->setText(tekst.c_str());
+    if (dark_mode_switch->isChecked())
+    {
+        rms_csh_label->setColor(Qt::white);
+    }
+    else
+    {
+        rms_csh_label->setColor(Qt::black);
+    }
     //cout << x << "   " << y << endl;
     int_vs_time.replot();
     rms_vs_time.replot();
@@ -7772,7 +8094,11 @@ void body::cross_hair_tsys_vs_time(QMouseEvent * event)
     y = tsys_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    pen.setColor(Qt::black);
+    if (dark_mode_switch->isChecked())
+        pen.setColor(Qt::white);
+    else
+        pen.setColor(Qt::black);
+
     pen.setStyle(Qt::DashLine);
     //rms_x_axis_line->set
     tsys_x_axis_line->setPen(pen);
@@ -7790,7 +8116,14 @@ void body::cross_hair_tsys_vs_time(QMouseEvent * event)
     string tekst;
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     tsys_csh_label->setText(tekst.c_str());
-
+    if (dark_mode_switch->isChecked())
+    {
+        tsys_csh_label->setColor(Qt::white);
+    }
+    else
+    {
+        tsys_csh_label->setColor(Qt::black);
+    }
     int_vs_time.replot();
     rms_vs_time.replot();
     tsys_vs_time.replot();
@@ -7814,7 +8147,11 @@ void body::cross_hair_tint_vs_time(QMouseEvent * event)
     y = int_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    pen.setColor(Qt::black);
+    if (dark_mode_switch->isChecked())
+        pen.setColor(Qt::white);
+    else
+        pen.setColor(Qt::black);
+
     pen.setStyle(Qt::DashLine);
     //rms_x_axis_line->set
     tint_x_axis_line->setPen(pen);
@@ -7832,6 +8169,16 @@ void body::cross_hair_tint_vs_time(QMouseEvent * event)
     string tekst;
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     tint_csh_label->setText(tekst.c_str());
+
+    if (dark_mode_switch->isChecked())
+    {
+        tint_csh_label->setColor(Qt::white);
+    }
+    else
+    {
+        tint_csh_label->setColor(Qt::black);
+    }
+
     int_vs_time.replot();
     rms_vs_time.replot();
     tsys_vs_time.replot();
@@ -8030,6 +8377,12 @@ void body::select_on_rms_section(double x)
 
 void body::open_popup_window()
 {
+    // pomocnicze prezydenty
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
  // grid 6x6
  // wykres zajmuje 5 w y i 4 w x
  // w 6 w y znajdziemy przyciski
@@ -8089,7 +8442,12 @@ void body::open_popup_window()
      spectrum_on_popup_window.graph(0)->setVisible(false);
  }
  spectrum_on_popup_window.graph(0)->setName("I");
- spectrum_on_popup_window.graph(0)->setPen(QPen(Qt::blue));
+
+ if(dark_mode_switch->isChecked())
+     spectrum_on_popup_window.graph(0)->setPen(graph_dark);
+ else
+     spectrum_on_popup_window.graph(0)->setPen(graph_light);
+
  //spectrum_on_popup_window.graph(0)->setLineStyle(QCPGraph::lsNone);
  //spectrum_on_popup_window.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
  // -- dodajemy grafike (V) --
@@ -8103,7 +8461,10 @@ void body::open_popup_window()
      spectrum_on_popup_window.graph(1)->setVisible(false);
  }
  spectrum_on_popup_window.graph(1)->setName("V");
- spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::black));
+ if (dark_mode_switch->isChecked())
+     spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::white));
+ else
+     spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::black));
  //spectrum_on_popup_window.graph(1)->setLineStyle(QCPGraph::lsNone);
  //spectrum_on_popup_window.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
  // -- dodajemy grafike (V) --
@@ -8375,4 +8736,600 @@ void body::autorange_plot(QCustomPlot * plot)
     plot->xAxis->setRange(min_x - (0.05 * diffrence_x), max_x + (0.05 * diffrence_x));
     plot->yAxis->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
     plot->replot();
+}
+
+void body::set_dark_mode()
+{
+    // pomocnicze prezydenty
+    QPen graph_dark;
+    graph_dark.setColor(QColor(135,206,250));
+
+    QPen graph_light;
+    graph_light.setColor(QColor(0,0,255));
+
+    QPen pen2;
+    pen2.setColor(QColor(182,26,26));
+
+    if (dark_mode_enabled == 0)
+    {
+        // -- tutaj ustawiamy coś, co nazywa się dark mode --
+
+        // -- deklarujemy biały qpen
+        QPen duda;
+        duda.setColor(Qt::white);
+
+        // -- single dynamic spectrum --
+        // - tło -
+        single_dynamic_spectrum.setBackground(Qt::black);
+        single_dynamic_spectrum.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        single_dynamic_spectrum.xAxis->setTickLabelColor(Qt::white);
+        single_dynamic_spectrum.xAxis2->setTickLabelColor(Qt::white);
+        single_dynamic_spectrum.yAxis->setTickLabelColor(Qt::white);
+        single_dynamic_spectrum.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        single_dynamic_spectrum.xAxis->setSubTickPen(duda);
+        single_dynamic_spectrum.xAxis2->setSubTickPen(duda);
+        single_dynamic_spectrum.yAxis->setSubTickPen(duda);
+        single_dynamic_spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        single_dynamic_spectrum.xAxis->setTickPen(duda);
+        single_dynamic_spectrum.xAxis2->setTickPen(duda);
+        single_dynamic_spectrum.yAxis->setTickPen(duda);
+        single_dynamic_spectrum.yAxis2->setTickPen(duda);
+        // label
+        single_dynamic_spectrum.xAxis->setLabelColor(Qt::white);
+        single_dynamic_spectrum.xAxis2->setLabelColor(Qt::white);
+        single_dynamic_spectrum.yAxis->setLabelColor(Qt::white);
+        single_dynamic_spectrum.yAxis2->setLabelColor(Qt::white);
+
+        // -- lcs dynamic spectrum --
+        // - tło -
+        lcs_dynamic_spectrum.setBackground(Qt::black);
+        lcs_dynamic_spectrum.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        lcs_dynamic_spectrum.xAxis->setTickLabelColor(Qt::white);
+        lcs_dynamic_spectrum.xAxis2->setTickLabelColor(Qt::white);
+        lcs_dynamic_spectrum.yAxis->setTickLabelColor(Qt::white);
+        lcs_dynamic_spectrum.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        lcs_dynamic_spectrum.xAxis->setSubTickPen(duda);
+        lcs_dynamic_spectrum.xAxis2->setSubTickPen(duda);
+        lcs_dynamic_spectrum.yAxis->setSubTickPen(duda);
+        lcs_dynamic_spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        lcs_dynamic_spectrum.xAxis->setTickPen(duda);
+        lcs_dynamic_spectrum.xAxis2->setTickPen(duda);
+        lcs_dynamic_spectrum.yAxis->setTickPen(duda);
+        lcs_dynamic_spectrum.yAxis2->setTickPen(duda);
+        // label
+        lcs_dynamic_spectrum.xAxis->setLabelColor(Qt::white);
+        lcs_dynamic_spectrum.xAxis2->setLabelColor(Qt::white);
+        lcs_dynamic_spectrum.yAxis->setLabelColor(Qt::white);
+        lcs_dynamic_spectrum.yAxis2->setLabelColor(Qt::white);
+
+        // -- dynamic spectrum --
+        // - tło -
+        dynamic_spectrum_pl.setBackground(Qt::black);
+        dynamic_spectrum_pl.axisRect()->setBackground(Qt::black);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        dynamic_spectrum_pl.xAxis->setTickLabelColor(Qt::white);
+        dynamic_spectrum_pl.xAxis2->setTickLabelColor(Qt::white);
+        dynamic_spectrum_pl.yAxis->setTickLabelColor(Qt::white);
+        dynamic_spectrum_pl.yAxis2->setTickLabelColor(Qt::white);
+        // label
+        dynamic_spectrum_pl.xAxis->setLabelColor(Qt::white);
+        dynamic_spectrum_pl.xAxis2->setLabelColor(Qt::white);
+        dynamic_spectrum_pl.yAxis->setLabelColor(Qt::white);
+        dynamic_spectrum_pl.yAxis2->setLabelColor(Qt::white);
+
+        // colorbar
+        // - tło -
+        colorbar_widget->setBackground(Qt::black);
+        // ticklabele
+        colorbar->axis()->setTickPen(duda);
+        colorbar->axis()->setSubTickPen(duda);
+        colorbar->axis()->setTickLabelColor(Qt::white);
+
+        // -- rms_vs_time --
+        // - tło -
+        rms_vs_time.setBackground(Qt::black);
+        rms_vs_time.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        rms_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        rms_vs_time.xAxis->setTickLabelColor(Qt::white);
+        rms_vs_time.xAxis2->setTickLabelColor(Qt::white);
+        rms_vs_time.yAxis->setTickLabelColor(Qt::white);
+        rms_vs_time.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        rms_vs_time.xAxis->setSubTickPen(duda);
+        rms_vs_time.xAxis2->setSubTickPen(duda);
+        rms_vs_time.yAxis->setSubTickPen(duda);
+        rms_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        rms_vs_time.xAxis->setTickPen(duda);
+        rms_vs_time.xAxis2->setTickPen(duda);
+        rms_vs_time.yAxis->setTickPen(duda);
+        rms_vs_time.yAxis2->setTickPen(duda);
+        // label
+        rms_vs_time.xAxis->setLabelColor(Qt::white);
+        rms_vs_time.xAxis2->setLabelColor(Qt::white);
+        rms_vs_time.yAxis->setLabelColor(Qt::white);
+        rms_vs_time.yAxis2->setLabelColor(Qt::white);
+
+        // -- tsys_vs_time --
+        // - tło -
+        tsys_vs_time.setBackground(Qt::black);
+        tsys_vs_time.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        tsys_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        tsys_vs_time.xAxis->setTickLabelColor(Qt::white);
+        tsys_vs_time.xAxis2->setTickLabelColor(Qt::white);
+        tsys_vs_time.yAxis->setTickLabelColor(Qt::white);
+        tsys_vs_time.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        tsys_vs_time.xAxis->setSubTickPen(duda);
+        tsys_vs_time.xAxis2->setSubTickPen(duda);
+        tsys_vs_time.yAxis->setSubTickPen(duda);
+        tsys_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        tsys_vs_time.xAxis->setTickPen(duda);
+        tsys_vs_time.xAxis2->setTickPen(duda);
+        tsys_vs_time.yAxis->setTickPen(duda);
+        tsys_vs_time.yAxis2->setTickPen(duda);
+        // label
+        tsys_vs_time.xAxis->setLabelColor(Qt::white);
+        tsys_vs_time.xAxis2->setLabelColor(Qt::white);
+        tsys_vs_time.yAxis->setLabelColor(Qt::white);
+        tsys_vs_time.yAxis2->setLabelColor(Qt::white);
+
+        // -- int_vs_time --
+        // - tło -
+        int_vs_time.setBackground(Qt::black);
+        int_vs_time.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        int_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        int_vs_time.xAxis->setTickLabelColor(Qt::white);
+        int_vs_time.xAxis2->setTickLabelColor(Qt::white);
+        int_vs_time.yAxis->setTickLabelColor(Qt::white);
+        int_vs_time.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        int_vs_time.xAxis->setSubTickPen(duda);
+        int_vs_time.xAxis2->setSubTickPen(duda);
+        int_vs_time.yAxis->setSubTickPen(duda);
+        int_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        int_vs_time.xAxis->setTickPen(duda);
+        int_vs_time.xAxis2->setTickPen(duda);
+        int_vs_time.yAxis->setTickPen(duda);
+        int_vs_time.yAxis2->setTickPen(duda);
+        // label
+        int_vs_time.xAxis->setLabelColor(Qt::white);
+        int_vs_time.xAxis2->setLabelColor(Qt::white);
+        int_vs_time.yAxis->setLabelColor(Qt::white);
+        int_vs_time.yAxis2->setLabelColor(Qt::white);
+
+        // -- int_vs_time --
+        // - tło -
+        spectrum_on_popup_window.setBackground(Qt::black);
+        spectrum_on_popup_window.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum_on_popup_window.xAxis->setTickLabelColor(Qt::white);
+        spectrum_on_popup_window.xAxis2->setTickLabelColor(Qt::white);
+        spectrum_on_popup_window.yAxis->setTickLabelColor(Qt::white);
+        spectrum_on_popup_window.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        spectrum_on_popup_window.xAxis->setSubTickPen(duda);
+        spectrum_on_popup_window.xAxis2->setSubTickPen(duda);
+        spectrum_on_popup_window.yAxis->setSubTickPen(duda);
+        spectrum_on_popup_window.yAxis2->setSubTickPen(duda);
+        // tick
+        spectrum_on_popup_window.xAxis->setTickPen(duda);
+        spectrum_on_popup_window.xAxis2->setTickPen(duda);
+        spectrum_on_popup_window.yAxis->setTickPen(duda);
+        spectrum_on_popup_window.yAxis2->setTickPen(duda);
+        // label
+        spectrum_on_popup_window.xAxis->setLabelColor(Qt::white);
+        spectrum_on_popup_window.xAxis2->setLabelColor(Qt::white);
+        spectrum_on_popup_window.yAxis->setLabelColor(Qt::white);
+        spectrum_on_popup_window.yAxis2->setLabelColor(Qt::white);
+
+        // -- spectrum --
+        // - tło -
+        spectrum.setBackground(Qt::black);
+        spectrum.axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum.xAxis->setTickLabelColor(Qt::white);
+        spectrum.xAxis2->setTickLabelColor(Qt::white);
+        spectrum.yAxis->setTickLabelColor(Qt::white);
+        spectrum.yAxis2->setTickLabelColor(Qt::white);
+        // subtick
+        spectrum.xAxis->setSubTickPen(duda);
+        spectrum.xAxis2->setSubTickPen(duda);
+        spectrum.yAxis->setSubTickPen(duda);
+        spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        spectrum.xAxis->setTickPen(duda);
+        spectrum.xAxis2->setTickPen(duda);
+        spectrum.yAxis->setTickPen(duda);
+        spectrum.yAxis2->setTickPen(duda);
+        // label
+        spectrum.xAxis->setLabelColor(Qt::white);
+        spectrum.xAxis2->setLabelColor(Qt::white);
+        spectrum.yAxis->setLabelColor(Qt::white);
+        spectrum.yAxis2->setLabelColor(Qt::white);
+
+        // -- jeśli otwarta jest sekcja rms --
+        if (rms_section_opened == 1)
+        {
+            rms_vs_time.graph(0)->setPen(graph_dark);
+            rms_vs_time.graph(1)->setPen(QPen(Qt::white));
+
+            int_vs_time.graph(0)->setPen(graph_dark);
+            int_vs_time.graph(1)->setPen(QPen(Qt::white));
+
+            tsys_vs_time.graph(0)->setPen(graph_dark);
+        }
+
+        // -- jeśli otwarte jest popup window --
+        if (popup_window_opened == 1)
+        {
+            spectrum_on_popup_window.graph(0)->setPen(graph_dark);
+            spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::white));
+        }
+
+        // -- jeśli otwarte jest widmo dynamiczne --
+        if (dynamic_spectrum_opened == 1)
+        {
+            lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
+            single_dynamic_spectrum.graph(0)->setPen(graph_dark);
+
+            lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+            single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+        }
+
+        // -- replotujemy --
+        spectrum.replot();
+        dynamic_spectrum_pl.replot();
+        single_dynamic_spectrum.replot();
+        lcs_dynamic_spectrum.replot();
+        colorbar_widget->replot();
+        rms_vs_time.replot();
+        tsys_vs_time.replot();
+        int_vs_time.replot();
+        spectrum_on_popup_window.replot();
+
+
+        // -- ustawiamy boola --
+        dark_mode_enabled = 1;
+    }
+    else
+    {
+        // -- deklarujemy biały qpen
+        QPen duda;
+        duda.setColor(Qt::black);
+
+        // -- single dynamic spectrum --
+        // - tło -
+        single_dynamic_spectrum.setBackground(Qt::white);
+        single_dynamic_spectrum.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        single_dynamic_spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        single_dynamic_spectrum.xAxis->setTickLabelColor(Qt::black);
+        single_dynamic_spectrum.xAxis2->setTickLabelColor(Qt::black);
+        single_dynamic_spectrum.yAxis->setTickLabelColor(Qt::black);
+        single_dynamic_spectrum.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        single_dynamic_spectrum.xAxis->setSubTickPen(duda);
+        single_dynamic_spectrum.xAxis2->setSubTickPen(duda);
+        single_dynamic_spectrum.yAxis->setSubTickPen(duda);
+        single_dynamic_spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        single_dynamic_spectrum.xAxis->setTickPen(duda);
+        single_dynamic_spectrum.xAxis2->setTickPen(duda);
+        single_dynamic_spectrum.yAxis->setTickPen(duda);
+        single_dynamic_spectrum.yAxis2->setTickPen(duda);
+        // label
+        single_dynamic_spectrum.xAxis->setLabelColor(Qt::black);
+        single_dynamic_spectrum.xAxis2->setLabelColor(Qt::black);
+        single_dynamic_spectrum.yAxis->setLabelColor(Qt::black);
+        single_dynamic_spectrum.yAxis2->setLabelColor(Qt::black);
+
+        // -- lcs dynamic spectrum --
+        // - tło -
+        lcs_dynamic_spectrum.setBackground(Qt::white);
+        lcs_dynamic_spectrum.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        lcs_dynamic_spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        lcs_dynamic_spectrum.xAxis->setTickLabelColor(Qt::black);
+        lcs_dynamic_spectrum.xAxis2->setTickLabelColor(Qt::black);
+        lcs_dynamic_spectrum.yAxis->setTickLabelColor(Qt::black);
+        lcs_dynamic_spectrum.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        lcs_dynamic_spectrum.xAxis->setSubTickPen(duda);
+        lcs_dynamic_spectrum.xAxis2->setSubTickPen(duda);
+        lcs_dynamic_spectrum.yAxis->setSubTickPen(duda);
+        lcs_dynamic_spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        lcs_dynamic_spectrum.xAxis->setTickPen(duda);
+        lcs_dynamic_spectrum.xAxis2->setTickPen(duda);
+        lcs_dynamic_spectrum.yAxis->setTickPen(duda);
+        lcs_dynamic_spectrum.yAxis2->setTickPen(duda);
+        // label
+        lcs_dynamic_spectrum.xAxis->setLabelColor(Qt::black);
+        lcs_dynamic_spectrum.xAxis2->setLabelColor(Qt::black);
+        lcs_dynamic_spectrum.yAxis->setLabelColor(Qt::black);
+        lcs_dynamic_spectrum.yAxis2->setLabelColor(Qt::black);
+
+        // -- dynamic spectrum --
+        // - tło -
+        dynamic_spectrum_pl.setBackground(Qt::white);
+        dynamic_spectrum_pl.axisRect()->setBackground(Qt::white);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        dynamic_spectrum_pl.xAxis->setTickLabelColor(Qt::black);
+        dynamic_spectrum_pl.xAxis2->setTickLabelColor(Qt::black);
+        dynamic_spectrum_pl.yAxis->setTickLabelColor(Qt::black);
+        dynamic_spectrum_pl.yAxis2->setTickLabelColor(Qt::black);
+        // label
+        dynamic_spectrum_pl.xAxis->setLabelColor(Qt::black);
+        dynamic_spectrum_pl.xAxis2->setLabelColor(Qt::black);
+        dynamic_spectrum_pl.yAxis->setLabelColor(Qt::black);
+        dynamic_spectrum_pl.yAxis2->setLabelColor(Qt::black);
+
+        // colorbar
+        // - tło -
+        colorbar_widget->setBackground(Qt::white);
+        // ticklabele
+        colorbar->axis()->setTickPen(duda);
+        colorbar->axis()->setSubTickPen(duda);
+        colorbar->axis()->setTickLabelColor(Qt::black);
+
+        // -- rms_vs_time --
+        // - tło -
+        rms_vs_time.setBackground(Qt::white);
+        rms_vs_time.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        rms_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        rms_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        rms_vs_time.xAxis->setTickLabelColor(Qt::black);
+        rms_vs_time.xAxis2->setTickLabelColor(Qt::black);
+        rms_vs_time.yAxis->setTickLabelColor(Qt::black);
+        rms_vs_time.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        rms_vs_time.xAxis->setSubTickPen(duda);
+        rms_vs_time.xAxis2->setSubTickPen(duda);
+        rms_vs_time.yAxis->setSubTickPen(duda);
+        rms_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        rms_vs_time.xAxis->setTickPen(duda);
+        rms_vs_time.xAxis2->setTickPen(duda);
+        rms_vs_time.yAxis->setTickPen(duda);
+        rms_vs_time.yAxis2->setTickPen(duda);
+        // label
+        rms_vs_time.xAxis->setLabelColor(Qt::black);
+        rms_vs_time.xAxis2->setLabelColor(Qt::black);
+        rms_vs_time.yAxis->setLabelColor(Qt::black);
+        rms_vs_time.yAxis2->setLabelColor(Qt::black);
+
+        // -- tsys_vs_time --
+        // - tło -
+        tsys_vs_time.setBackground(Qt::white);
+        tsys_vs_time.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        tsys_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        tsys_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        tsys_vs_time.xAxis->setTickLabelColor(Qt::black);
+        tsys_vs_time.xAxis2->setTickLabelColor(Qt::black);
+        tsys_vs_time.yAxis->setTickLabelColor(Qt::black);
+        tsys_vs_time.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        tsys_vs_time.xAxis->setSubTickPen(duda);
+        tsys_vs_time.xAxis2->setSubTickPen(duda);
+        tsys_vs_time.yAxis->setSubTickPen(duda);
+        tsys_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        tsys_vs_time.xAxis->setTickPen(duda);
+        tsys_vs_time.xAxis2->setTickPen(duda);
+        tsys_vs_time.yAxis->setTickPen(duda);
+        tsys_vs_time.yAxis2->setTickPen(duda);
+        // label
+        tsys_vs_time.xAxis->setLabelColor(Qt::black);
+        tsys_vs_time.xAxis2->setLabelColor(Qt::black);
+        tsys_vs_time.yAxis->setLabelColor(Qt::black);
+        tsys_vs_time.yAxis2->setLabelColor(Qt::black);
+
+        // -- int_vs_time --
+        // - tło -
+        int_vs_time.setBackground(Qt::white);
+        int_vs_time.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        int_vs_time.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        int_vs_time.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        int_vs_time.xAxis->setTickLabelColor(Qt::black);
+        int_vs_time.xAxis2->setTickLabelColor(Qt::black);
+        int_vs_time.yAxis->setTickLabelColor(Qt::black);
+        int_vs_time.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        int_vs_time.xAxis->setSubTickPen(duda);
+        int_vs_time.xAxis2->setSubTickPen(duda);
+        int_vs_time.yAxis->setSubTickPen(duda);
+        int_vs_time.yAxis2->setSubTickPen(duda);
+        // tick
+        int_vs_time.xAxis->setTickPen(duda);
+        int_vs_time.xAxis2->setTickPen(duda);
+        int_vs_time.yAxis->setTickPen(duda);
+        int_vs_time.yAxis2->setTickPen(duda);
+        // label
+        int_vs_time.xAxis->setLabelColor(Qt::black);
+        int_vs_time.xAxis2->setLabelColor(Qt::black);
+        int_vs_time.yAxis->setLabelColor(Qt::black);
+        int_vs_time.yAxis2->setLabelColor(Qt::black);
+
+        // -- int_vs_time --
+        // - tło -
+        spectrum_on_popup_window.setBackground(Qt::white);
+        spectrum_on_popup_window.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_on_popup_window.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum_on_popup_window.xAxis->setTickLabelColor(Qt::black);
+        spectrum_on_popup_window.xAxis2->setTickLabelColor(Qt::black);
+        spectrum_on_popup_window.yAxis->setTickLabelColor(Qt::black);
+        spectrum_on_popup_window.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        spectrum_on_popup_window.xAxis->setSubTickPen(duda);
+        spectrum_on_popup_window.xAxis2->setSubTickPen(duda);
+        spectrum_on_popup_window.yAxis->setSubTickPen(duda);
+        spectrum_on_popup_window.yAxis2->setSubTickPen(duda);
+        // tick
+        spectrum_on_popup_window.xAxis->setTickPen(duda);
+        spectrum_on_popup_window.xAxis2->setTickPen(duda);
+        spectrum_on_popup_window.yAxis->setTickPen(duda);
+        spectrum_on_popup_window.yAxis2->setTickPen(duda);
+        // label
+        spectrum_on_popup_window.xAxis->setLabelColor(Qt::black);
+        spectrum_on_popup_window.xAxis2->setLabelColor(Qt::black);
+        spectrum_on_popup_window.yAxis->setLabelColor(Qt::black);
+        spectrum_on_popup_window.yAxis2->setLabelColor(Qt::black);
+
+        // -- spectrum --
+        // - tło -
+        spectrum.setBackground(Qt::white);
+        spectrum.axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum.xAxis->setTickLabelColor(Qt::black);
+        spectrum.xAxis2->setTickLabelColor(Qt::black);
+        spectrum.yAxis->setTickLabelColor(Qt::black);
+        spectrum.yAxis2->setTickLabelColor(Qt::black);
+        // subtick
+        spectrum.xAxis->setSubTickPen(duda);
+        spectrum.xAxis2->setSubTickPen(duda);
+        spectrum.yAxis->setSubTickPen(duda);
+        spectrum.yAxis2->setSubTickPen(duda);
+        // tick
+        spectrum.xAxis->setTickPen(duda);
+        spectrum.xAxis2->setTickPen(duda);
+        spectrum.yAxis->setTickPen(duda);
+        spectrum.yAxis2->setTickPen(duda);
+        // label
+        spectrum.xAxis->setLabelColor(Qt::black);
+        spectrum.xAxis2->setLabelColor(Qt::black);
+        spectrum.yAxis->setLabelColor(Qt::black);
+        spectrum.yAxis2->setLabelColor(Qt::black);
+
+
+        dark_mode_enabled = 0;
+
+        if (rms_section_opened == 1)
+        {
+            rms_vs_time.graph(0)->setPen(graph_light);
+            rms_vs_time.graph(1)->setPen(QPen(Qt::black));
+
+            int_vs_time.graph(0)->setPen(graph_light);
+            int_vs_time.graph(1)->setPen(QPen(Qt::black));
+
+            tsys_vs_time.graph(0)->setPen(graph_light);
+        }
+        // -- jeśli otwarte jest popup window --
+        if (popup_window_opened == 1)
+        {
+            spectrum_on_popup_window.graph(0)->setPen(graph_light);
+            spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::black));
+        }
+        if (dynamic_spectrum_opened == 1)
+        {
+            lcs_dynamic_spectrum.graph(0)->setPen(graph_light);
+            single_dynamic_spectrum.graph(0)->setPen(graph_light);
+
+            lcs_dynamic_spectrum.graph(2)->setPen(pen2);
+            single_dynamic_spectrum.graph(2)->setPen(pen2);
+        }
+
+        // -- replotujemy --
+        spectrum.replot();
+        dynamic_spectrum_pl.replot();
+        single_dynamic_spectrum.replot();
+        lcs_dynamic_spectrum.replot();
+        colorbar_widget->replot();
+        rms_vs_time.replot();
+        tsys_vs_time.replot();
+        int_vs_time.replot();
+        spectrum_on_popup_window.replot();
+
+
+
+    }
 }
