@@ -3048,9 +3048,11 @@ void body::press_map(QMouseEvent * event)
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     // przechwytujemy pozycję kliknięcia
     double x,y;
@@ -3091,10 +3093,30 @@ void body::press_map(QMouseEvent * event)
         }
     }
 
+
+
+    // dodatkowe zabezpieczenia
+    if (yind > max_range_vel_index)
+        yind = max_range_vel_index-1;
+
+    if (yind < min_range_vel_index)
+        yind = min_range_vel_index;
+
+    if (xind < min_obs_number)
+        xind = min_obs_number;
+
+    if (xind > max_obs_number)
+        xind = max_obs_number;
+
     // zabezpieczeine, jeśli kliknięta została brzegowa komórka:
     if (yind < 0)
     {
         yind = 0;
+    }
+
+    if (xind < 0)
+    {
+        xind = 0;
     }
 
     // teraz linie pionowe na widmie dynamicznym
@@ -3264,9 +3286,9 @@ void body::press_map(QMouseEvent * event)
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
 
-    lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
+    //lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
     lcs_dynamic_spectrum.graph(0)->setLineStyle(QCPGraph::lsNone);
-    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
 
@@ -3688,9 +3710,11 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     xind = x;
     yind = y;
@@ -3847,9 +3871,9 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
 
-    lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
+    //lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
     lcs_dynamic_spectrum.graph(0)->setLineStyle(QCPGraph::lsNone);
-    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
     if (rozmiar_w_x == 1)
@@ -6449,9 +6473,11 @@ void body::update_dynamic_spectrum()
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     // - ustawiamy informacje na color mapie -
     colorMap->data()->clear();
@@ -6602,6 +6628,7 @@ void body::update_dynamic_spectrum()
     }
 
     single_dynamic_spectrum.graph(0)->setData(velocity,flux);
+
     single_dynamic_spectrum.xAxis->setLabel("Vel");
     single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
     double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
@@ -6687,9 +6714,9 @@ void body::update_dynamic_spectrum()
     lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
     errorBars->setData(error_lcs);
 
-    lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
+    //lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
     lcs_dynamic_spectrum.graph(0)->setLineStyle(QCPGraph::lsNone);
-    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
     if(rozmiar_w_x == 1)
@@ -8743,10 +8770,11 @@ void body::set_dark_mode()
     // pomocnicze prezydenty
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
-
+    graph_light.setWidth(2);
     QPen pen2;
     pen2.setColor(QColor(182,26,26));
 
@@ -9026,6 +9054,8 @@ void body::set_dark_mode()
 
             lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
             single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
+
+            errorBars->setPen(QPen(QColor(105,105,105)));
         }
 
         // -- replotujemy --
@@ -9316,6 +9346,9 @@ void body::set_dark_mode()
 
             lcs_dynamic_spectrum.graph(2)->setPen(pen2);
             single_dynamic_spectrum.graph(2)->setPen(pen2);
+
+            errorBars->setPen(QPen(QColor(180,180,180)));
+
         }
 
         // -- replotujemy --
