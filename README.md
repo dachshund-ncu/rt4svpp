@@ -6,7 +6,7 @@ AppImage release is deployed with linuxdeployqt (https://github.com/probonopd/li
 
 -- Some major comments --
 
-This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless.
+This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless for you.
 
 -- Usage --
 
