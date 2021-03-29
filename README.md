@@ -1,7 +1,15 @@
 # Source code for rt4sv++
 This tool is designed to view data from NCU 32m radio telescope.
 It comes with qt ui.
+AppImage release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
 
+-- Some major comments --
+This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless.
+
+-- Usage --
+Just download suitable release and enjoy. .Deb release is non-static build and may not work if you use older distro. I recommend to use .AppImage version instead.
+
+If you want to build it instead...
 -- Compilation on Linux systems --
 
 You will need packages "qt4-default" or "qt5-default" and g++ compiler (works best with version 8)
@@ -83,3 +91,4 @@ I do not use system-specific libraries and commands inside rt4sv++, so if you co
 4. Will this run on Windows?
 
 Working on Windows with this program seems a bit non-natural to me - but since running it does not require terminal window, it can be done - you just need to compile it correctly. Best way is to download qt tools from qt site and use them to compile. Also remember, that you'll probably need to copy some dll files to executable directory to open it outside qtCreator.
+Also there is no point of building windows version, since it is also in the "Release" section now.
