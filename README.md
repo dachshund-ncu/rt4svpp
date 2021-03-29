@@ -3,13 +3,18 @@ This tool is designed to view data from NCU 32m radio telescope.
 It comes with qt ui.
 AppImage release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
 
+
 -- Some major comments --
+
 This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless.
 
 -- Usage --
+
 Just download suitable release and enjoy. .Deb release is non-static build and may not work if you use older distro. I recommend to use .AppImage version instead.
 
 If you want to build it instead...
+
+
 -- Compilation on Linux systems --
 
 You will need packages "qt4-default" or "qt5-default" and g++ compiler (works best with version 8)
@@ -18,6 +23,7 @@ When ready, just type in main file catalogue "qmake", then "make". Compilation w
 It is good to type "make clean" after compilation is done.
 
 -- Known problems --
+
 1. "My program does not want to compile"
 
 Check version of your g++ compiler (type "g++ --version" in command line). If it is not in at least version 8, try to install it (sudo apt install g++-8). Then, change three lines in "Makefile":
