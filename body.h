@@ -28,6 +28,23 @@ public:
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
+
+    // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
+    // - WIDGET -
+    QWidget * gauss_fitting_widget = new QWidget(&window);
+
+    /*
+    // - customploty -
+    QCustomPlot * spectrum_w_gauss = new QCustomPlot(gauss_fitting_widget);
+
+    // - buttony -
+    QPushButton * fit_gauss = new QPushButton(gauss_fitting_widget);
+    QPushButton * kill_gauss = new QPushButton(&window);
+    QPushButton * open_gauss = new QPushButton(&window);
+    // - layouty -
+    QGridLayout * grid_for_gauss = new QGridLayout(gauss_fitting_widget);
+    */
+
     // -- group boxy --
     //QVBoxLayout loaders_layout;
     //QGroupBox loaders;
@@ -436,6 +453,8 @@ public:
     bool made_rotation = 0;
     bool check_if_loading_not_interrupted = 0;
 
+    bool gauss_section_opened = 0;
+
     bool caltabs_loaded = 0;
     unsigned long int xind = 0;
     unsigned long int yind = 0;
@@ -550,7 +569,11 @@ public slots:
     void autorange_plot(QCustomPlot * plot);
 
     void set_dark_mode();
-
+    /*
+    void set_gauss_widget();
+    void open_gauss_widget();
+    void close_gauss_widget();
+    */
     //void menu_request(QPoint pos);
     /*
     void average_over_velocity();
