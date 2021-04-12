@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/exit.png</file>
-        <file>images/1143841.svg</file>
+        <file>images/deathstaradder.svg</file>
     </qresource>
 </RCC>

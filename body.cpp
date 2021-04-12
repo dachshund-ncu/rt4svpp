@@ -85,6 +85,7 @@ body::body(const char * nazwa)
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
+    //open_gauss->setMaximumSize(10000,10000);
 
 
     load_data->setMinimumSize(0,0);
@@ -126,7 +127,7 @@ body::body(const char * nazwa)
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
     save_all_spectra_to_gnuplot->setMinimumSize(0,0);
-
+    //open_gauss->setMinimumSize(0,0);
 
     // - font (do labelow) -
     QFont f( "Arial", 10, QFont::Bold);
@@ -160,6 +161,7 @@ body::body(const char * nazwa)
     vbox_main.addWidget(dynamic_spectrum);
     vbox_main.addWidget(single_spectrum);
     vbox_main.addWidget(open_rms_section);
+    //vbox_main.addWidget(open_gauss);
 
     vbox_main.addWidget(export_data_section_label);
     vbox_main.addWidget(include_pytime);
@@ -198,6 +200,7 @@ body::body(const char * nazwa)
     start_calibration->setText("START");
     WD->setText("Export file for dynamic spectrum");
     open_rms_section->setText("RMS, Tsys, Sint vs time");
+    // open_gauss->setText("Gaus fitting");
 
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
@@ -223,17 +226,21 @@ body::body(const char * nazwa)
     QObject::connect(WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
     QObject::connect(open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
     QObject::connect(dark_mode_switch, SIGNAL(clicked()), this, SLOT(set_dark_mode()));
+    //QObject::connect(open_gauss, SIGNAL(clicked()), this, SLOT(open_gauss_widget()));
+    //QObject::connect(kill_gauss, SIGNAL(clicked()), this, SLOT(close_gauss_widget()));
 
     // -- setujemy widgety roznych sekcji --
     set_single_spectrum_widget();
     set_dynamic_spectrum_widget();
     set_rms_section_widget();
+    //set_gauss_widget();
     set_integrate_widget();
     set_aver_over_vel_widget();
     set_aver_over_time_widget();
     set_spectral_index_widget();
     set_wd_widget();
     set_calibrate_widget();
+
 
     // -- probojemy czytac liste --
     if (strncmp(nazwa, "", 300) == 0)
@@ -328,9 +335,6 @@ void body::set_dynamic_spectrum_widget()
     dynamic_spectrum_pl.yAxis->setLabel("Vel");
     colorMap->setInterpolate(false);
     colorMap->setTightBoundary(true);
-    // inicjalizujemy opengl
-    dynamic_spectrum_pl.setOpenGl(true, 8);
-    //cout << endl << dynamic_spectrum_pl.openGl() << endl;
 
     // -- connectujemy rozmaite sloty --
     y_down_border_shrt->setKey(QKeySequence("d"));
@@ -906,8 +910,27 @@ void body::set_calibrate_widget()
     QPushButton::connect(load_caltab_l1, SIGNAL(clicked()), this, SLOT(load_l1_caltab_button()));
     QPushButton::connect(load_caltab_r1, SIGNAL(clicked()), this, SLOT(load_r1_caltab_button()));
 }
-// --------------------------------------------------------------------------------
 
+/*
+void body::set_gauss_widget()
+{
+    // --- ustalaby visibilities ---
+    gauss_fitting_widget->setVisible(false);
+    kill_gauss->setVisible(false);
+
+    // --- ustalamy teksty na przyciskach ---
+    fit_gauss->setText("Fit gaussian function");
+    kill_gauss->setText("Kill gaussian section");
+
+    // -- ustalamy rozmiary --
+    fit_gauss->setMaximumSize(100000,100000);
+    fit_gauss->setMinimumSize(0,0);
+    // --- dodajemy do gridu ---
+    grid_for_gauss->addWidget(spectrum_w_gauss, 0,0,5,4);
+    grid_for_gauss->addWidget(fit_gauss, 5,0,1,2);
+}
+// --------------------------------------------------------------------------------
+*/
 // - wyswietla w programie sekcje "single spectrum"
 void body::display_single_spectrum()
 {
@@ -925,6 +948,13 @@ void body::display_single_spectrum()
         kill_dynamic_spectrum();
         //return;
     }
+
+    /*
+    else if (gauss_section_opened == 1)
+    {
+        close_gauss_widget();
+    }
+    */
     else if (rms_section_opened == 1)
     {
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
@@ -2948,6 +2978,12 @@ void body::display_dynamic_spectrum()
         close_rms_section_slot();
     }
 
+    /*
+    else if (gauss_section_opened == 1)
+    {
+        close_gauss_widget();
+    }
+    */
     else if (dynamic_spectrum_opened == 1)
     {
         // -- kilka rzeczy ustawiamy --
@@ -3228,7 +3264,6 @@ void body::press_map(QMouseEvent * event)
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
 
 
     //first_item_position
@@ -3447,7 +3482,7 @@ void body::press_map(QMouseEvent * event)
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_spec(1), y_dot_spec(1);
     // predkosc radialna
-    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    x_dot_spec[0] = VELlst[xind][yind]; // kliknięta prędkość radialna
     // gestosć strumienia
     if (I_pressed == 1)
         y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
@@ -7170,6 +7205,13 @@ void body::open_rms_section_slot()
         select_on_rms_section(mjdlst[0]);
         return;
     }
+
+    /*
+    else if (gauss_section_opened == 1)
+    {
+        close_gauss_widget();
+    }
+    */
     if(popup_window_opened==1)
     {
         close_popup_window_slot();
@@ -7250,9 +7292,11 @@ void body::set_plot_on_rms_vs_time()
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     rms_vs_time.setMouseTracking(true);
     rms_vs_time.clearGraphs();
@@ -7285,7 +7329,7 @@ void body::set_plot_on_rms_vs_time()
     else
         rms_vs_time.graph(0)->setPen(graph_light);
     rms_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
-    rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     rms_vs_time.addGraph();
     if(V_on_rms->isChecked())
@@ -7303,7 +7347,7 @@ void body::set_plot_on_rms_vs_time()
         rms_vs_time.graph(1)->setPen(QPen(Qt::black));
 
     rms_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
-    rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     rms_vs_time.addGraph();
     if(LHC_on_rms->isChecked())
@@ -7317,7 +7361,7 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.graph(2)->setName("LHC");
     rms_vs_time.graph(2)->setPen(QPen(Qt::red));
     rms_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
-    rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     rms_vs_time.addGraph();
     if(RHC_on_rms->isChecked())
@@ -7331,7 +7375,7 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.graph(3)->setName("RHC");
     rms_vs_time.graph(3)->setPen(QPen(Qt::green));
     rms_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
-    rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
 
     // -- legenda --
     rms_vs_time.legend->setVisible(true);
@@ -7411,9 +7455,11 @@ void body::set_plot_on_tsys_vs_time()
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     tsys_vs_time.clearGraphs();
     // wektor z danymi
@@ -7436,7 +7482,7 @@ void body::set_plot_on_tsys_vs_time()
         tsys_vs_time.graph(0)->setPen(graph_light);
 
     tsys_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
-    tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
 
     // -- dodajemy do grafiki dane --
     tsys_vs_time.graph(0)->setData(xI,yI);
@@ -7481,9 +7527,11 @@ void body::set_plot_on_int_vs_time()
 {
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
 
     // czyscimy tablice z int
     integrated_fluxlst_I.clear();
@@ -7590,7 +7638,7 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(0)->setPen(graph_light);
 
     int_vs_time.graph(0)->setLineStyle(QCPGraph::lsNone);
-    int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     int_vs_time.addGraph();
     if(V_on_rms->isChecked())
@@ -7608,7 +7656,7 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(1)->setPen(QPen(Qt::black));
 
     int_vs_time.graph(1)->setLineStyle(QCPGraph::lsNone);
-    int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     int_vs_time.addGraph();
     if(LHC_on_rms->isChecked())
@@ -7622,7 +7670,7 @@ void body::set_plot_on_int_vs_time()
     int_vs_time.graph(2)->setName("LHC");
     int_vs_time.graph(2)->setPen(QPen(Qt::red));
     int_vs_time.graph(2)->setLineStyle(QCPGraph::lsNone);
-    int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     // -- dodajemy grafike (V) --
     int_vs_time.addGraph();
     if(RHC_on_rms->isChecked())
@@ -7636,7 +7684,7 @@ void body::set_plot_on_int_vs_time()
     int_vs_time.graph(3)->setName("RHC");
     int_vs_time.graph(3)->setPen(QPen(Qt::green));
     int_vs_time.graph(3)->setLineStyle(QCPGraph::lsNone);
-    int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+    int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
 
     // -- legenda --
     int_vs_time.legend->setVisible(false);
@@ -7862,17 +7910,17 @@ void body::show_points_or_lines()
     if(show_pts->isChecked())
     {
         // rms vs time
-        rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        rms_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        rms_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        rms_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        rms_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
         // int vs time
-        int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
-        int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        int_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        int_vs_time.graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        int_vs_time.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        int_vs_time.graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
         // tsys vs time
-        tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
+        tsys_vs_time.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     }
     else
     {
@@ -8407,9 +8455,11 @@ void body::open_popup_window()
     // pomocnicze prezydenty
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
+    graph_dark.setWidth(2);
 
     QPen graph_light;
     graph_light.setColor(QColor(0,0,255));
+    graph_light.setWidth(2);
  // grid 6x6
  // wykres zajmuje 5 w y i 4 w x
  // w 6 w y znajdziemy przyciski
@@ -9366,3 +9416,66 @@ void body::set_dark_mode()
 
     }
 }
+
+/*
+void body::open_gauss_widget()
+{
+    if (loaded_data == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+
+    if (dynamic_spectrum_opened == 1)
+    {
+        kill_dynamic_spectrum();
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
+        //return;
+    }
+    else if (single_spectrum_opened == 1)
+    {
+        kill_single_spectrum();
+        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
+        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the SINGLE SPECTRUM window"));
+        //return;
+    }
+    else if (rms_section_opened == 1)
+    {
+        close_rms_section_slot();
+    }
+    else if (gauss_section_opened == 1)
+    {
+        return;
+    }
+
+    // dodajemy do grida widget sekcji
+    grid->addWidget(gauss_fitting_widget, 0, 1, 9, 5);
+
+
+    // dodajemy zamykający button do głównego panelu
+    vbox_main.addWidget(kill_gauss);
+
+    // ustalamy visibilities
+    gauss_fitting_widget->setVisible(true);
+    kill_gauss->setVisible(true);
+
+    // -- ustalamy boole --
+    gauss_section_opened = 1;
+
+}
+
+void body::close_gauss_widget()
+{
+    // -- ustalamy visibilities --
+    gauss_fitting_widget->setVisible(false);
+    kill_gauss->setVisible(false);
+
+    // -- odpinamy od rozmiarowkarzow --
+    vbox_main.removeWidget(kill_gauss);
+    grid->removeWidget(gauss_fitting_widget);
+
+    // -- ustawiamy boole --
+    gauss_section_opened = 0;
+}
+*/
