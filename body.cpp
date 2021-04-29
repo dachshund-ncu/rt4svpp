@@ -85,7 +85,8 @@ body::body(const char * nazwa)
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
-    //open_gauss->setMaximumSize(10000,10000);
+    open_gauss->setMaximumSize(10000,10000);
+    kill_gauss->setMaximumSize(10000,10000);
 
 
     load_data->setMinimumSize(0,0);
@@ -127,7 +128,8 @@ body::body(const char * nazwa)
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
     save_all_spectra_to_gnuplot->setMinimumSize(0,0);
-    //open_gauss->setMinimumSize(0,0);
+    open_gauss->setMinimumSize(0,0);
+    kill_gauss->setMinimumSize(0,0);
 
     // - font (do labelow) -
     QFont f( "Arial", 10, QFont::Bold);
@@ -161,7 +163,7 @@ body::body(const char * nazwa)
     vbox_main.addWidget(dynamic_spectrum);
     vbox_main.addWidget(single_spectrum);
     vbox_main.addWidget(open_rms_section);
-    //vbox_main.addWidget(open_gauss);
+    vbox_main.addWidget(open_gauss);
 
     vbox_main.addWidget(export_data_section_label);
     vbox_main.addWidget(include_pytime);
@@ -200,7 +202,7 @@ body::body(const char * nazwa)
     start_calibration->setText("START");
     WD->setText("Export file for dynamic spectrum");
     open_rms_section->setText("RMS, Tsys, Sint vs time");
-    // open_gauss->setText("Gaus fitting");
+    open_gauss->setText("Gaus fitting");
 
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
@@ -226,14 +228,14 @@ body::body(const char * nazwa)
     QObject::connect(WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
     QObject::connect(open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
     QObject::connect(dark_mode_switch, SIGNAL(clicked()), this, SLOT(set_dark_mode()));
-    //QObject::connect(open_gauss, SIGNAL(clicked()), this, SLOT(open_gauss_widget()));
-    //QObject::connect(kill_gauss, SIGNAL(clicked()), this, SLOT(close_gauss_widget()));
+    QObject::connect(open_gauss, SIGNAL(clicked()), this, SLOT(open_gauss_widget()));
+    QObject::connect(kill_gauss, SIGNAL(clicked()), this, SLOT(close_gauss_widget()));
 
     // -- setujemy widgety roznych sekcji --
     set_single_spectrum_widget();
     set_dynamic_spectrum_widget();
     set_rms_section_widget();
-    //set_gauss_widget();
+    set_gauss_widget();
     set_integrate_widget();
     set_aver_over_vel_widget();
     set_aver_over_time_widget();
@@ -294,6 +296,7 @@ body::body(const char * nazwa)
     // -- domyślnie ustawiamy dark mode --
     dark_mode_switch->setChecked(1);
     set_dark_mode();
+
     // -- pokazujemy okno --
     window.show();
 
@@ -383,11 +386,17 @@ void body::set_dynamic_spectrum_widget()
     operations->addWidget(save_rotation);
     operations->addWidget(rotate_minus);
     operations->addWidget(make_lcs_button);
-    operations->addWidget(set_log_scale);
+    //operations->addWidget(set_log_scale);
+    //operations->addWidget(rotate_all_pols);
+    checkboxes_dynspec->addWidget(set_log_scale);
+    checkboxes_dynspec->addWidget(rotate_all_pols);
+    operations->addItem(checkboxes_dynspec);
     hbox->setSpacing(1);
     operations->setSpacing(1);
     on_dyn_spec_buttons->addLayout(operations);
     on_dyn_spec_buttons->addLayout(hbox);
+
+
 
     grid_dynamic_spectrum_widget->addLayout(on_dyn_spec_buttons,8,0,1,6);
     grid_dynamic_spectrum_widget->addWidget(&mjd_label, 8,6);
@@ -468,6 +477,9 @@ void body::set_dynamic_spectrum_widget()
     //connect(colorMap, SIGNAL(dataRangeChanged(QCPRange)), colorbar, SLOT(setDataRange(QCPRange)));
     //connect(colorbar->axis(), SIGNAL(rangeChanged(QCPRange)), &dynamic_spectrum_pl, SLOT(replot()));
     //connect(colorbar->axis(), SIGNAL(datarangeChanged(QCPRange)), this, SLOT(range_data_zmienion_na_cb()));
+
+    rotate_all_pols->setChecked(true);
+
 }
 
 void body::set_single_spectrum_widget()
@@ -911,26 +923,292 @@ void body::set_calibrate_widget()
     QPushButton::connect(load_caltab_r1, SIGNAL(clicked()), this, SLOT(load_r1_caltab_button()));
 }
 
-/*
+
 void body::set_gauss_widget()
 {
+    // -- ustalamy maksima --
+    fitted_params_gb->setMinimumSize(200,200);
+    starting_fit_params_gb->setMinimumSize(200,200);
+
+    //scroll_fitted_params->setWidget(fitted_params_gb);
+    //scroll_starting_params->setWidget(starting_fit_params_gb);
+
+    //scroll_fitted_params->setBackgroundRole(QPalette::Light);
+    //scroll_starting_params->setBackgroundRole(QPalette::Light);
+
+    //scroll_fitted_params->setWidgetResizable(true);
+    //scroll_starting_params->setWidgetResizable(true);
+
     // --- ustalaby visibilities ---
     gauss_fitting_widget->setVisible(false);
     kill_gauss->setVisible(false);
 
+    // -- ustalamy teksty na labelach --
+    actual_mjd_gauss->setText("Obs. 1");
+    actual_epoch_nr_gauss->setText("MJD: ");
+    /*
+    amp_starting->setText("Sv 1:");
+    vel_starting->setText("Vel 1:");
+    fwhm_starting->setText("FWHM 1:");
+    amp_fitted->setText("Sv 1:");
+    vel_fitted->setText("Vel 1:");
+    fwhm_fitted->setText("FWHM 1:");
+    pm->setText("+/-");
+    pm2->setText("+/-");
+    pm3->setText("+/-");
+    pm4->setText("+/-");
+    pm5->setText("+/-");
+    pm6->setText("+/-");
+    */
+    // -- ustalamy czcionkę na labelach
+    QFont f( "Arial", 10, QFont::Bold);
+    actual_mjd_gauss->setFont(f);
+    actual_epoch_nr_gauss->setFont(f);
+    /*
+    amp_starting->setFont(f);
+    vel_starting->setFont(f);
+    fwhm_starting->setFont(f);
+    amp_fitted->setFont(f);
+    vel_fitted->setFont(f);
+    fwhm_fitted->setFont(f);
+    */
     // --- ustalamy teksty na przyciskach ---
-    fit_gauss->setText("Fit gaussian function");
+    fit_gauss->setText("Fit gauss");
     kill_gauss->setText("Kill gaussian section");
+    prev_epoch->setText("<--");
+    next_epoch->setText("-->");
+    set_clicker_gauss->setText("Toggle click");
+    change_bounds->setText("Change fit limits");
+    range_lbl->setText("Fit Vlsr: ");
+    lt->setText(" to ");
+    set_range_to_fit_limits->setText("Set range to fit limits");
+    set_range_to_data->setText("Set range to data");
 
+    // --- ustalamy rozmiary text editów --
+    /*
+    amp_starting_texed->setMaximumSize(100,30);
+    vel_starting_texed->setMaximumSize(100,30);
+    fwhm_starting_texed->setMaximumSize(100,30);
+    amp_fitted_texed->setMaximumSize(100,30);
+    vel_fitted_texed->setMaximumSize(100,30);
+    fwhm_fitted_texed->setMaximumSize(100,30);
+    */
+    min_fit_range->setMaximumSize(100,30);
+    max_fit_range->setMaximumSize(100,30);
+
+    /*
+    amp_starting_err_texed->setMaximumSize(100,30);
+    vel_starting_err_texed->setMaximumSize(100,30);
+    fwhm_starting_err_texed->setMaximumSize(100,30);
+    amp_fitted_err_texed->setMaximumSize(100,30);
+    vel_fitted_err_texed->setMaximumSize(100,30);
+    fwhm_fitted_err_texed->setMaximumSize(100,30);
+    */
     // -- ustalamy rozmiary --
     fit_gauss->setMaximumSize(100000,100000);
+    prev_epoch->setMaximumSize(100000,100000);
+    next_epoch->setMaximumSize(100000,100000);
+    set_clicker_gauss->setMaximumSize(100000,100000);
+    change_bounds->setMaximumSize(100000,100000);
+    set_range_to_fit_limits->setMaximumSize(100000,100000);
+    set_range_to_data->setMaximumSize(100000,100000);
+
     fit_gauss->setMinimumSize(0,0);
+    prev_epoch->setMinimumSize(0,0);
+    next_epoch->setMinimumSize(0,0);
+    set_clicker_gauss->setMinimumSize(0,0);
+    change_bounds->setMinimumSize(0,0);
+    set_range_to_fit_limits->setMinimumSize(0,0);
+    set_range_to_data->setMinimumSize(0,0);
+
+    // -- ustalamy wygląd naszego widgetu
+    // - w skrócie - dajemy grid 10 x 10
+
+    // buttony na górze
+    checkboxes_on_left_top->addWidget(set_lines_gauss);
+    checkboxes_on_left_top->addWidget(set_points_gauss);
+    checkboxes_on_left_top->addWidget(set_crosshair_gauss);
+    labels_over_plot_gauss->addWidget(actual_mjd_gauss);
+    labels_over_plot_gauss->addWidget(actual_epoch_nr_gauss);
+    range_buttons->addWidget(set_range_to_fit_limits);
+    range_buttons->addWidget(set_range_to_data);
+    top_left_buttons_gauss->addItem(checkboxes_on_left_top);
+    top_left_buttons_gauss->addItem(labels_over_plot_gauss);
+    top_left_buttons_gauss->addItem(range_buttons);
+    top_left_buttons_gauss->addWidget(prev_epoch);
+    top_left_buttons_gauss->addWidget(next_epoch);
+
+    // buttony na górze po prawej
+    top_right_buttons_gauss->addWidget(set_clicker_gauss);
+    top_right_buttons_gauss->addWidget(change_bounds);
+    top_right_buttons_gauss->addWidget(fit_gauss);
+    fit_range_managment->addWidget(range_lbl);
+    fit_range_managment->addWidget(min_fit_range);
+    fit_range_managment->addWidget(lt);
+    fit_range_managment->addWidget(max_fit_range);
+
+    top_right_buttons_gauss_V->addItem(top_right_buttons_gauss);
+    top_right_buttons_gauss_V->addItem(fit_range_managment);
+
+    // sekcja z dopasowanymi wartościami
+    /*
+    first_gauss_amp_fitted->addWidget(amp_fitted);
+    first_gauss_amp_fitted->addWidget(amp_fitted_texed);
+    first_gauss_amp_fitted->addWidget(pm);
+    first_gauss_amp_fitted->addWidget(amp_fitted_err_texed);
+
+    first_gauss_vel_fitted->addWidget(vel_fitted);
+    first_gauss_vel_fitted->addWidget(vel_fitted_texed);
+    first_gauss_vel_fitted->addWidget(pm2);
+    first_gauss_vel_fitted->addWidget(vel_fitted_err_texed);
+
+    first_gauss_fwhm_fitted->addWidget(fwhm_fitted);
+    first_gauss_fwhm_fitted->addWidget(fwhm_fitted_texed);
+    first_gauss_fwhm_fitted->addWidget(pm3);
+    first_gauss_fwhm_fitted->addWidget(fwhm_fitted_err_texed);
+
+
+    fitted_params->addItem(first_gauss_amp_fitted);
+    fitted_params->addItem(first_gauss_vel_fitted);
+    fitted_params->addItem(first_gauss_fwhm_fitted);
+    */
+    fitted_params->addWidget(fitted_params_texted);
+    fitted_params_gb->setLayout(fitted_params);
+
+    // sekcja ze startowymi wartościami
+    /*
+    first_gauss_amp_start->addWidget(amp_starting);
+    first_gauss_amp_start->addWidget(amp_starting_texed);
+    first_gauss_amp_start->addWidget(pm4);
+    first_gauss_amp_start->addWidget(amp_starting_err_texed);
+
+    first_gauss_vel_start->addWidget(vel_starting);
+    first_gauss_vel_start->addWidget(vel_starting_texed);
+    first_gauss_vel_start->addWidget(pm5);
+    first_gauss_vel_start->addWidget(vel_starting_err_texed);
+
+    first_gauss_fwhm_start->addWidget(fwhm_starting);
+    first_gauss_fwhm_start->addWidget(fwhm_starting_texed);
+    first_gauss_fwhm_start->addWidget(pm6);
+    first_gauss_fwhm_start->addWidget(fwhm_starting_err_texed);
+
+    starting_fit_params->addItem(first_gauss_amp_start);
+    starting_fit_params->addItem(first_gauss_vel_start);
+    starting_fit_params->addItem(first_gauss_fwhm_start);
+    */
+    starting_fit_params->addWidget(starting_params_texted);
+    starting_fit_params_gb->setLayout(starting_fit_params);
+
     // --- dodajemy do gridu ---
-    grid_for_gauss->addWidget(spectrum_w_gauss, 0,0,5,4);
-    grid_for_gauss->addWidget(fit_gauss, 5,0,1,2);
+    grid_for_gauss->addWidget(spectrum_w_gauss, 1,0,9,7);
+    grid_for_gauss->addItem(top_left_buttons_gauss, 0,0,1,7);
+    grid_for_gauss->addItem(top_right_buttons_gauss_V, 0,7,1,3);
+    grid_for_gauss->addWidget(fitted_params_gb, 1,7,5,3);
+    grid_for_gauss->addWidget(starting_fit_params_gb, 6,7,4,3);
+
+    grid_for_gauss->setColumnStretch(0, 1);
+    grid_for_gauss->setColumnStretch(1, 1);
+    grid_for_gauss->setColumnStretch(2, 1);
+    grid_for_gauss->setColumnStretch(3, 1);
+    grid_for_gauss->setColumnStretch(4, 1);
+    grid_for_gauss->setColumnStretch(5, 1);
+    grid_for_gauss->setColumnStretch(6, 1);
+    grid_for_gauss->setColumnStretch(7, 1);
+    grid_for_gauss->setColumnStretch(8, 1);
+    grid_for_gauss->setColumnStretch(9, 1);
+
+    grid_for_gauss->setRowStretch(0,1);
+    grid_for_gauss->setRowStretch(1,1);
+    grid_for_gauss->setRowStretch(2,1);
+    grid_for_gauss->setRowStretch(3,1);
+    grid_for_gauss->setRowStretch(4,1);
+    grid_for_gauss->setRowStretch(5,1);
+    grid_for_gauss->setRowStretch(6,1);
+    grid_for_gauss->setRowStretch(7,1);
+    grid_for_gauss->setRowStretch(8,1);
+    grid_for_gauss->setRowStretch(9,1);
+    //grid_for_gauss->addWidget(fit_gauss, 5,0,1,2);
+
+    // -- ustalamy sobie plot, by były w nim rezydua --
+    spectrum_w_gauss->plotLayout()->clear();
+    spectrum_w_gauss->clearGraphs();
+    // setujemy spacing
+    spectrum_w_gauss->plotLayout()->setRowSpacing(0);
+    // dodajemy axis recty
+    gorne_widmo_gauss->setupFullAxesBox(true);
+    dolne_widmo_gauss->setupFullAxesBox(true);
+
+    spectrum_w_gauss->plotLayout()->addElement(0,0, gorne_widmo_gauss);
+    spectrum_w_gauss->plotLayout()->addElement(1,0, dolne_widmo_gauss);
+    spectrum_w_gauss->plotLayout()->setRowStretchFactor(0,5);
+    spectrum_w_gauss->plotLayout()->setRowStretchFactor(1,1);
+
+    // margin group
+    QCPMarginGroup * margin_group = new QCPMarginGroup(spectrum_w_gauss);
+    gorne_widmo_gauss->setMarginGroup(QCP::msLeft|QCP::msRight, margin_group);
+    dolne_widmo_gauss->setMarginGroup(QCP::msLeft|QCP::msRight, margin_group);
+    // marginesy
+    gorne_widmo_gauss->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msTop);
+    gorne_widmo_gauss->setMargins(QMargins(0,0,0,0));
+    dolne_widmo_gauss->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msBottom);
+    dolne_widmo_gauss->setMargins(QMargins(0,0,0,0));
+
+    // - gridy -
+    gorne_widmo_gauss->axis(QCPAxis::atBottom)->grid()->setVisible(true);
+    dolne_widmo_gauss->axis(QCPAxis::atBottom)->grid()->setVisible(true);
+    gorne_widmo_gauss->axis(QCPAxis::atLeft)->grid()->setVisible(true);
+    dolne_widmo_gauss->axis(QCPAxis::atLeft)->grid()->setVisible(true);
+
+    // - wylaczamy labele na dolnej osi gornego plotu -
+    gorne_widmo_gauss->axis(QCPAxis::atBottom, 0)->setTickLabels(false);
+
+    // - ustalamy interakcje -
+    spectrum_w_gauss->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+    // connectujemy zmiane zasiegu w jednym i drugim
+    connect(gorne_widmo_gauss->axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)), dolne_widmo_gauss->axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
+    connect(dolne_widmo_gauss->axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)), gorne_widmo_gauss->axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
+    //connect(dolne_widmo_gauss->axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)), gorne_widmo_gauss->axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
+
+    // przypisujemy metody do buttonów
+    QObject::connect(prev_epoch, SIGNAL(clicked()), this, SLOT(previous_gauss_spec()));
+    QObject::connect(next_epoch, SIGNAL(clicked()), this, SLOT(next_gauss_spec()));
+    QObject::connect(set_range_to_data, SIGNAL(clicked()), this, SLOT(scale_fit_plot_to_data()));
+    QObject::connect(set_range_to_fit_limits, SIGNAL(clicked()), this, SLOT(scale_fit_plot_to_txt()));
+    QObject::connect(set_lines_gauss, SIGNAL(clicked()), this, SLOT(show_lines_gauss()));
+    QObject::connect(set_points_gauss, SIGNAL(clicked()), this, SLOT(show_points_gauss()));
+    QObject::connect(spectrum_w_gauss, SIGNAL(mouseMove(QMouseEvent *)), this, SLOT(cross_hair_gauss(QMouseEvent *)));
+    QObject::connect(set_crosshair_gauss, SIGNAL(clicked()), this, SLOT(show_crosshair_gauss()));
+
+
+    // -- dodajemy do gaussa graphy --
+    // na początek - dwa na rezyduach
+    QCPGraph * residuals_zeros = spectrum_w_gauss->addGraph(dolne_widmo_gauss->axis(QCPAxis::atBottom), dolne_widmo_gauss->axis(QCPAxis::atLeft));
+    QCPGraph * residuals_accurate = spectrum_w_gauss->addGraph(dolne_widmo_gauss->axis(QCPAxis::atBottom), dolne_widmo_gauss->axis(QCPAxis::atLeft));
+    // następnie - jeden na dane, jeden na fit, dwa na crosshair, wszystkie pozostałe - na dopasowania
+    QCPGraph * spectrum_data = spectrum_w_gauss->addGraph(gorne_widmo_gauss->axis(QCPAxis::atBottom), gorne_widmo_gauss->axis(QCPAxis::atLeft));
+    QCPGraph * fit_line = spectrum_w_gauss->addGraph(gorne_widmo_gauss->axis(QCPAxis::atBottom), gorne_widmo_gauss->axis(QCPAxis::atLeft));
+    QCPGraph * crosshair_v_gauss = spectrum_w_gauss->addGraph(gorne_widmo_gauss->axis(QCPAxis::atBottom), gorne_widmo_gauss->axis(QCPAxis::atLeft));
+    QCPGraph * crosshair_h_gauss = spectrum_w_gauss->addGraph(gorne_widmo_gauss->axis(QCPAxis::atBottom), gorne_widmo_gauss->axis(QCPAxis::atLeft));
+
+    // -- skrowidz --
+    // 0 - linia dopasowania na rezyduach
+    // 1 - linia widma na rezyduach
+    // 2 - widmo na wykresie wimda
+    // 3 - linia dopasowania na wykresie widma
+    // 4 - linia pionowa crosshair
+    // 5 - linia pozioma crosshair
+
+    // -- ustawiamy prezydenty --
+    set_gauss_light_mode_pens();
+
+    set_lines_gauss->setChecked(true);
+    set_points_gauss->setChecked(false);
+    set_crosshair_gauss->setChecked(true);
+
+
 }
 // --------------------------------------------------------------------------------
-*/
+
 // - wyswietla w programie sekcje "single spectrum"
 void body::display_single_spectrum()
 {
@@ -949,12 +1227,12 @@ void body::display_single_spectrum()
         //return;
     }
 
-    /*
+
     else if (gauss_section_opened == 1)
     {
         close_gauss_widget();
     }
-    */
+
     else if (rms_section_opened == 1)
     {
         //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
@@ -2978,12 +3256,12 @@ void body::display_dynamic_spectrum()
         close_rms_section_slot();
     }
 
-    /*
+
     else if (gauss_section_opened == 1)
     {
         close_gauss_widget();
     }
-    */
+
     else if (dynamic_spectrum_opened == 1)
     {
         // -- kilka rzeczy ustawiamy --
@@ -3229,7 +3507,7 @@ void body::press_map(QMouseEvent * event)
     }
     }
 
-    single_dynamic_spectrum.replot();
+
     single_dynamic_spectrum.graph(0)->setData(velocity,flux);
     single_dynamic_spectrum.xAxis->setLabel("Vel");
     single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
@@ -3372,7 +3650,6 @@ void body::press_map(QMouseEvent * event)
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
     lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
 
     // -- setujemy tekst do displayowania informacji --
     string text_mjdlabel = "";
@@ -5514,30 +5791,113 @@ void body::rotate_slot_plus()
     vector < double > tmprhc;
     vector < double > tmpv;
 
-    for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+    // -- dajemy warunek, czy checkbox jest zaznaczony --
+    if (rotate_all_pols->isChecked())
     {
-        if (ch+i < Ilst[rotated_epoch].size())
+        for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
         {
-            tmpi.push_back(Ilst[rotated_epoch][ch+i]);
-            tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
-            tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
-            tmpv.push_back(Vlst[rotated_epoch][ch+i]);
-        }
-        else
-        {
-            tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
-            tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
-            tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
-            tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
-        }
-        }
+            if (ch+i < Ilst[rotated_epoch].size())
+            {
+                tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+            }
+            else
+            {
+                tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+            }
+         }
 
-    for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+        for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+        {
+            Ilst[rotated_epoch][i] = tmpi[i];
+            LHClst[rotated_epoch][i] = tmplhc[i];
+            Vlst[rotated_epoch][i] = tmpv[i];
+            RHClst[rotated_epoch][i] = tmprhc[i];
+        }
+    }
+    else
     {
-        Ilst[rotated_epoch][i] = tmpi[i];
-        LHClst[rotated_epoch][i] = tmplhc[i];
-        Vlst[rotated_epoch][i] = tmpv[i];
-        RHClst[rotated_epoch][i] = tmprhc[i];
+        if (I_pressed==1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                }
+             }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                Ilst[rotated_epoch][i] = tmpi[i];
+            }
+        }
+        else if (v_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                Vlst[rotated_epoch][i] = tmpv[i];
+            }
+        }
+        else if (lhc_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                LHClst[rotated_epoch][i] = tmplhc[i];
+            }
+        }
+        else if (rhc_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                RHClst[rotated_epoch][i] = tmprhc[i];
+            }
+        }
     }
 
     // aktualizujemy widmo dynamiczne
@@ -5567,6 +5927,7 @@ void body::rotate_slot_minus()
     vector < double > tmprhc;
     vector < double > tmpv;
 
+    /*
     for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
     {
         if (ch+i < Ilst[rotated_epoch].size())
@@ -5591,6 +5952,116 @@ void body::rotate_slot_minus()
         LHClst[rotated_epoch][i] = tmplhc[i];
         Vlst[rotated_epoch][i] = tmpv[i];
         RHClst[rotated_epoch][i] = tmprhc[i];
+    }
+    */
+
+    // -- dajemy warunek, czy checkbox jest zaznaczony --
+    if (rotate_all_pols->isChecked())
+    {
+        for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+        {
+            if (ch+i < Ilst[rotated_epoch].size())
+            {
+                tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+            }
+            else
+            {
+                tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+            }
+         }
+
+        for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+        {
+            Ilst[rotated_epoch][i] = tmpi[i];
+            LHClst[rotated_epoch][i] = tmplhc[i];
+            Vlst[rotated_epoch][i] = tmpv[i];
+            RHClst[rotated_epoch][i] = tmprhc[i];
+        }
+    }
+    else
+    {
+        if (I_pressed==1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                }
+             }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                Ilst[rotated_epoch][i] = tmpi[i];
+            }
+        }
+        else if (v_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                Vlst[rotated_epoch][i] = tmpv[i];
+            }
+        }
+        else if (lhc_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                LHClst[rotated_epoch][i] = tmplhc[i];
+            }
+        }
+        else if (rhc_pressed == 1)
+        {
+            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                if (ch+i < Ilst[rotated_epoch].size())
+                {
+                    tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                }
+                else
+                {
+                    tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                }
+            }
+
+            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            {
+                RHClst[rotated_epoch][i] = tmprhc[i];
+            }
+        }
     }
 
     // aktualizujemy widmo dynamiczne
@@ -6516,6 +6987,7 @@ void body::update_dynamic_spectrum()
 
     // - ustawiamy informacje na color mapie -
     colorMap->data()->clear();
+    dynamic_spectrum_pl.layer("pixmap");
     colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
     if (rozmiar_w_x == 1)
         colorMap->data()->setRange(QCPRange(min_obs_number-0.5, max_obs_number+0.5), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
@@ -6541,7 +7013,7 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                if (Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
                     colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
@@ -6554,7 +7026,7 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                if (LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
                     colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
@@ -6567,7 +7039,7 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                if (RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
                     colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
@@ -6619,6 +7091,7 @@ void body::update_dynamic_spectrum()
     colorbar_widget->replot();
     dynamic_spectrum_pl.rescaleAxes();
     dynamic_spectrum_pl.replot();
+
 
     // -- twotzymy widmo, ktore wyswietli sie po kliknieciu w widmo dynamiczne --
     // - warunki ze wzgledu na przyciski polaryzacji -
@@ -6695,7 +7168,7 @@ void body::update_dynamic_spectrum()
     pen2.setColor(QColor(182,26,26));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
+
     // -- tworzymy krzywa blasku, ktora wyswietli sie w krzywej blasku --
     QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
     if(I_pressed==1)
@@ -6795,8 +7268,6 @@ void body::update_dynamic_spectrum()
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
     lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-
 
     // -- setujemy tekst do displayowania informacji --
     string text_mjdlabel = "";
@@ -7206,12 +7677,10 @@ void body::open_rms_section_slot()
         return;
     }
 
-    /*
     else if (gauss_section_opened == 1)
     {
         close_gauss_widget();
     }
-    */
     if(popup_window_opened==1)
     {
         close_popup_window_slot();
@@ -9077,6 +9546,69 @@ void body::set_dark_mode()
         spectrum.yAxis->setLabelColor(Qt::white);
         spectrum.yAxis2->setLabelColor(Qt::white);
 
+
+        // -- sekcja gauss --
+        //spectrum_w_gauss->xaxis->
+
+        // -- single dynamic spectrum --
+        // - tło -
+        spectrum_w_gauss->setBackground(Qt::black);
+        spectrum_w_gauss->axisRect()->setBackground(Qt::black);
+        // - kwadracik -
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setBasePen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setTickLabelColor(Qt::white);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setTickLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setTickLabelColor(Qt::white);
+        // subtick
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setSubTickPen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setSubTickPen(duda);
+        // tick
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setTickPen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setTickPen(duda);
+        // label
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setLabelColor(Qt::white);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setLabelColor(Qt::white);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setLabelColor(Qt::white);
+        // prezydenty
+        set_gauss_dark_mode_pens();
+
+
         // -- jeśli otwarta jest sekcja rms --
         if (rms_section_opened == 1)
         {
@@ -9108,6 +9640,7 @@ void body::set_dark_mode()
             errorBars->setPen(QPen(QColor(105,105,105)));
         }
 
+
         // -- replotujemy --
         spectrum.replot();
         dynamic_spectrum_pl.replot();
@@ -9118,7 +9651,10 @@ void body::set_dark_mode()
         tsys_vs_time.replot();
         int_vs_time.replot();
         spectrum_on_popup_window.replot();
+        spectrum_w_gauss->replot();
 
+        // -- ustawiamy styl okna --
+        //qApp->setStyleSheet("theme: Dark");
 
         // -- ustawiamy boola --
         dark_mode_enabled = 1;
@@ -9371,7 +9907,67 @@ void body::set_dark_mode()
         spectrum.yAxis2->setLabelColor(Qt::black);
 
 
-        dark_mode_enabled = 0;
+        // -- sekcja gauss --
+        //spectrum_w_gauss->xaxis->
+
+        // -- single dynamic spectrum --
+        // - tło -
+        spectrum_w_gauss->setBackground(Qt::white);
+        spectrum_w_gauss->axisRect()->setBackground(Qt::white);
+        // - kwadracik -
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setBasePen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setBasePen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setBasePen(duda);
+        // - zmiana kolorów czcionki -
+        // ticklabele
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setTickLabelColor(Qt::black);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setTickLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setTickLabelColor(Qt::black);
+        // subtick
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setSubTickPen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setSubTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setSubTickPen(duda);
+        // tick
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setTickPen(duda);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setTickPen(duda);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setTickPen(duda);
+        // label
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atTop)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atRight)->setLabelColor(Qt::black);
+
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atTop)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setLabelColor(Qt::black);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atRight)->setLabelColor(Qt::black);
+        // prezydenty
+        set_gauss_light_mode_pens();
+
 
         if (rms_section_opened == 1)
         {
@@ -9411,15 +10007,20 @@ void body::set_dark_mode()
         tsys_vs_time.replot();
         int_vs_time.replot();
         spectrum_on_popup_window.replot();
+        spectrum_w_gauss->replot();
 
-
+        //qApp->setStyleSheet("theme: Light");
+        dark_mode_enabled = 0;
 
     }
 }
 
-/*
+
 void body::open_gauss_widget()
 {
+    QMessageBox::information(&window, tr("Error!"), tr("Not ready to use. Maybe it will be in the future ;)"));
+    return;
+
     if (loaded_data == 0)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
@@ -9463,6 +10064,9 @@ void body::open_gauss_widget()
     // -- ustalamy boole --
     gauss_section_opened = 1;
 
+    // -- plotujemy aktualną obserwację --
+    actual_gauss_spec();
+
 }
 
 void body::close_gauss_widget()
@@ -9478,4 +10082,543 @@ void body::close_gauss_widget()
     // -- ustawiamy boole --
     gauss_section_opened = 0;
 }
+
+/*
+void body::fitted_parameters_creator(unsigned long int amount)
+{
+    fitted_params_gb->resize(250, 250*amount);
+    // -- na samym początku - trzeba zniszczyć kontenery --
+    fitted_amp_labels.clear();
+    fitted_vel_labels.clear();
+    fitted_fwhm_labels.clear();
+
+    fitted_amp_pm.clear();
+    fitted_vel_pm.clear();
+    fitted_fwhm_pm.clear();
+
+    fitted_amp_texted.clear();
+    fitted_vel_texted.clear();
+    fitted_fwhm_texted.clear();
+    fitted_amp_texted_err.clear();
+    fitted_vel_texted_err.clear();
+    fitted_fwhm_texted_err.clear();
+
+    fitted_amp_hbox.clear();
+    fitted_vel_hbox.clear();
+    fitted_fwhm_hbox.clear();
+    fitted_one_record.clear();
+
+    fitted_one_widget.clear();
+    // ---------------------------------------------------
+
+    // -- czyścimy też vboxa --
+    QLayoutItem * child;
+    while((child = fitted_params->takeAt(0)) != 0 )
+    {
+        delete child;
+    }
+
+    // -- zapełniamy teraz kontenery nowymi wartościami --
+    for (unsigned long int i = 0; i < amount; i++)
+    {
+        // deklarujemy odpowiednie zabawki
+        QLabel * amp_label = new QLabel();
+        amp_label->setText((string("Sv ") + to_string(i+1)).c_str());
+        fitted_amp_labels.push_back(amp_label);
+
+        QLabel * vel_label = new QLabel();
+        vel_label->setText((string("Vel ") + to_string(i+1)).c_str());
+        fitted_amp_labels.push_back(vel_label);
+
+        QLabel * fwhm_label = new QLabel();
+        fwhm_label->setText((string("FWHM ") + to_string(i+1)).c_str());
+        fitted_fwhm_labels.push_back(vel_label);
+
+        QLabel * amp_pm = new QLabel();
+        amp_pm->setText("+/-");
+        fitted_amp_pm.push_back(amp_pm);
+
+        QLabel * fwhm_pm = new QLabel();
+        fwhm_pm->setText("+/-");
+        fitted_fwhm_pm.push_back(fwhm_pm);
+
+        QLabel * vel_pm = new QLabel();
+        vel_pm->setText("+/-");
+        fitted_vel_pm.push_back(vel_pm);
+
+        QTextEdit * amp_texted = new QTextEdit();
+        amp_texted->setMaximumSize(100,30);
+        fitted_amp_texted.push_back(amp_texted);
+
+        QTextEdit * vel_texted = new QTextEdit();
+        vel_texted->setMaximumSize(100,30);
+        fitted_vel_texted.push_back(vel_texted);
+
+        QTextEdit * fwhm_texted = new QTextEdit();
+        fwhm_texted->setMaximumSize(100,30);
+        fitted_fwhm_texted.push_back(fwhm_texted);
+
+        QTextEdit * amp_texted_err = new QTextEdit();
+        amp_texted_err->setMaximumSize(100,30);
+        fitted_amp_texted_err.push_back(amp_texted_err);
+
+        QTextEdit * vel_texted_err = new QTextEdit();
+        vel_texted_err->setMaximumSize(100,30);
+        fitted_vel_texted_err.push_back(vel_texted_err);
+
+        QTextEdit * fwhm_texted_err = new QTextEdit();
+        fwhm_texted_err->setMaximumSize(100,30);
+        fitted_fwhm_texted_err.push_back(fwhm_texted_err);
+
+        QHBoxLayout * amp_hbox = new QHBoxLayout();
+        amp_hbox->addWidget(amp_label);
+        amp_hbox->addWidget(amp_texted);
+        amp_hbox->addWidget(amp_pm);
+        amp_hbox->addWidget(amp_texted_err);
+
+        QHBoxLayout * vel_hbox = new QHBoxLayout();
+        vel_hbox->addWidget(vel_label);
+        vel_hbox->addWidget(vel_texted);
+        vel_hbox->addWidget(vel_pm);
+        vel_hbox->addWidget(vel_texted_err);
+
+        QHBoxLayout * fwhm_hbox = new QHBoxLayout();
+        fwhm_hbox->addWidget(fwhm_label);
+        fwhm_hbox->addWidget(fwhm_texted);
+        fwhm_hbox->addWidget(fwhm_pm);
+        fwhm_hbox->addWidget(fwhm_texted_err);
+
+        QVBoxLayout * vboxee = new QVBoxLayout();
+        vboxee->addItem(amp_hbox);
+        vboxee->addItem(vel_hbox);
+        vboxee->addItem(fwhm_hbox);
+
+        QWidget * ewina = new QWidget();
+        ewina->setLayout(vboxee);
+        fitted_one_widget.push_back(ewina);
+        ewina->setMinimumSize(250,250);
+        // -- dodajemy do widgetu --
+        fitted_params->addWidget(ewina);
+    }
+
+
+}
 */
+
+void body::previous_gauss_spec()
+{
+    // -- na wejściu zmieniamy wartość markera --
+    // robimy takie fikołki, żeby nie szukało danych gdzie ich kurwa nie ma xD
+    if (actual_obs_index_gauss == 0)
+    {
+        return;
+    }
+    else if (actual_obs_index_gauss == Ilst.size()-1)
+    {
+        actual_obs_index_gauss = actual_obs_index_gauss-1;
+    }
+    else
+    {
+        actual_obs_index_gauss = actual_obs_index_gauss-1;
+    }
+
+    // wektor z danymi
+    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    // zapelniamy wektor
+    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    {
+        x[i] = VELlst[actual_obs_index_gauss][i];
+        y[i] = Ilst[actual_obs_index_gauss][i];
+    }
+    // dodajemy grafikę do naszego kochanego wykresu
+    spectrum_w_gauss->graph(2)->setData(x,y);
+    // skalujemy wykres na nowo
+    autoscale_gauss_graph();
+    // replotujemy
+    spectrum_w_gauss->replot();
+
+    // -- ustawiamy labele --
+    string mjd_gauss;
+    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
+
+    string obsn;
+    obsn = "Obs. " + to_string(actual_obs_index_gauss+1);
+    actual_epoch_nr_gauss->setText(QString::fromStdString(obsn));
+
+}
+
+
+void body::next_gauss_spec()
+{
+    // -- na wejściu zmieniamy wartość markera --
+    // robimy takie fikołki, żeby nie szukało danych gdzie ich kurwa nie ma xD
+    if (actual_obs_index_gauss == 0)
+    {
+        actual_obs_index_gauss = actual_obs_index_gauss+1;
+    }
+    else if (actual_obs_index_gauss == Ilst.size()-1)
+    {
+        return;
+    }
+    else
+    {
+        actual_obs_index_gauss = actual_obs_index_gauss+1;
+    }
+
+    // wektor z danymi
+    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    // zapelniamy wektor
+    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    {
+        x[i] = VELlst[actual_obs_index_gauss][i];
+        y[i] = Ilst[actual_obs_index_gauss][i];
+    }
+    // dodajemy grafikę do naszego kochanego wykresu
+    spectrum_w_gauss->graph(2)->setData(x,y);
+    // skalujemy wykres na nowo
+    autoscale_gauss_graph();
+    // replotujemy
+    spectrum_w_gauss->replot();
+
+    // -- ustawiamy labele --
+    string mjd_gauss;
+    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
+
+    string obsn;
+    obsn = "Obs. " + to_string(actual_obs_index_gauss+1);
+    actual_epoch_nr_gauss->setText(QString::fromStdString(obsn));
+
+}
+
+void body::actual_gauss_spec()
+{
+    // wektor z danymi
+    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    // zapelniamy wektor
+    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    {
+        x[i] = VELlst[actual_obs_index_gauss][i];
+        y[i] = Ilst[actual_obs_index_gauss][i];
+    }
+    // dodajemy grafikę do naszego kochanego wykresu
+    spectrum_w_gauss->graph(2)->setData(x,y);
+    // skalujemy wykres na nowo
+    autoscale_gauss_graph();
+    // replotujemy
+    spectrum_w_gauss->replot();
+
+    // -- ustawiamy labele --
+    string mjd_gauss;
+    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
+
+    string obsn;
+    obsn = "Obs. " + to_string(actual_obs_index_gauss+1);
+    actual_epoch_nr_gauss->setText(QString::fromStdString(obsn));
+}
+
+void body::plot_initial_fit()
+{
+
+}
+
+void body::plot_fitted_fit()
+{
+
+}
+
+void body::autoscale_gauss_graph()
+{
+    // -- czyścimy crosshair - nie chcemy szkalować do niego --
+    spectrum_w_gauss->graph(4)->data()->clear();
+    spectrum_w_gauss->graph(5)->data()->clear();
+
+    // -- warunki --
+    if (range_to_fit_set == 1)
+    {
+        // -- jeśli uda się przeczytać pola tekstowe - czytamy z nich zasięgi
+        if (read_gauss_range_from_txt() == 1)
+        {
+            // -- reksalujemy tylko oś y
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->rescale();
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->rescale();
+
+            // -- bierzemy wartości z tej skali --
+            double max_y, min_y, max_y2, min_y2;
+            max_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().upper;
+            min_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().lower;
+            max_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().upper;
+            min_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().lower;
+
+            // -- ustalamy roznice
+            double diffrence_y = max_y - min_y;
+            double diffrence_y2 = max_y - min_y;
+
+            // -- skalujemy oś y
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setRange(min_y2 - (0.05 * diffrence_y2), max_y2 + (0.05 * diffrence_y2));
+
+            // -- skalujemy oś x - zgodnie z wartościami z pól tekstowych
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setRange(min_fit_range_d, max_fit_range_d);
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setRange(min_fit_range_d, max_fit_range_d);
+
+        }
+        //  -- jak nie - robimy po staremu (szkalujemy do danych)
+        else
+        {
+            // -- reskalujemy górne widmo --
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->rescale();
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->rescale();
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->rescale();
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->rescale();
+
+            // -- bierzemy wartości --
+            double max_x, min_x;
+            double max_y, min_y, max_y2, min_y2;
+            max_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().upper;
+            min_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().lower;
+            max_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().upper;
+            min_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().lower;
+            max_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().upper;
+            min_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().lower;
+
+            double diffrence_y = max_y - min_y;
+            double diffrence_y2 = max_y - min_y;
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setRange(min_x, max_x);
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setRange(min_x, max_x);
+            spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+            spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setRange(min_y2 - (0.05 * diffrence_y2), max_y2 + (0.05 * diffrence_y2));
+        }
+    }
+    else
+    {
+        // -- reskalujemy górne widmo --
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->rescale();
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->rescale();
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->rescale();
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->rescale();
+
+        // -- bierzemy wartości --
+        double max_x, min_x;
+        double max_y, min_y, max_y2, min_y2;
+        max_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().upper;
+        min_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().lower;
+        max_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().upper;
+        min_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().lower;
+        max_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().upper;
+        min_y2 = spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->range().lower;
+
+        double diffrence_y = max_y - min_y;
+        double diffrence_y2 = max_y - min_y;
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->setRange(min_x, max_x);
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atBottom)->setRange(min_x, max_x);
+        spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+        spectrum_w_gauss->axisRect(1)->axis(QCPAxis::atLeft)->setRange(min_y2 - (0.05 * diffrence_y2), max_y2 + (0.05 * diffrence_y2));
+    }
+}
+
+bool body::read_gauss_range_from_txt()
+{
+    QString minsg,maxsg;
+    minsg = min_fit_range->toPlainText();
+    maxsg = max_fit_range->toPlainText();
+
+    // -- sprawdzamy, czy text edity sa wypelnione --
+    if (minsg.toStdString() == "" || maxsg.toStdString() == "")
+    {
+        //cout << "Empty txt!" << endl;
+        return 0;
+    }
+
+    // -- konwertujemy tera wartosci z text edit na inty--
+    try
+    {
+        min_fit_range_d = stod(minsg.toStdString());
+        max_fit_range_d = stod(maxsg.toStdString());
+        return 1;
+    }
+    catch(...)
+    {
+        //cout << "Some other error" << endl;
+        return 0;
+    }
+
+}
+
+void body::scale_fit_plot_to_data()
+{
+    range_to_data_set = 1;
+    range_to_fit_set = 0;
+    autoscale_gauss_graph();
+    spectrum_w_gauss->replot();
+}
+
+void body::scale_fit_plot_to_txt()
+{
+    range_to_data_set = 0;
+    range_to_fit_set = 1;
+    autoscale_gauss_graph();
+    spectrum_w_gauss->replot();
+}
+
+void body::set_gauss_dark_mode_pens()
+{
+    // -- skrowidz --
+    // 0 - linia dopasowania na rezyduach
+    // 1 - linia widma na rezyduach
+    // 2 - widmo na wykresie wimda
+    // 3 - linia dopasowania na wykresie widma
+    // 4 - linia pionowa crosshair
+    // 5 - linia pozioma crosshair
+
+    // pomocnicze prezydenty
+    QPen spectrum;
+    spectrum.setColor(QColor(135,206,250));
+    spectrum.setWidth(2);
+
+    QPen fitted_gausses;
+    fitted_gausses.setColor(QColor(Qt::red));
+    fitted_gausses.setWidth(2);
+
+    QPen crosshairpen;
+    crosshairpen.setColor(QColor(Qt::white));
+    crosshairpen.setStyle(Qt::DashLine);
+
+    // -- ustawiamy prezydenty --
+    spectrum_w_gauss->graph(0)->setPen(fitted_gausses);
+    spectrum_w_gauss->graph(1)->setPen(spectrum);
+    spectrum_w_gauss->graph(2)->setPen(spectrum);
+    spectrum_w_gauss->graph(3)->setPen(fitted_gausses);
+    spectrum_w_gauss->graph(4)->setPen(crosshairpen);
+    spectrum_w_gauss->graph(5)->setPen(crosshairpen);
+
+    //gauss_spec_csh_label->setColor(Qt::white);
+
+}
+
+void body::set_gauss_light_mode_pens()
+{
+    // -- skrowidz --
+    // 0 - linia dopasowania na rezyduach
+    // 1 - linia widma na rezyduach
+    // 2 - widmo na wykresie wimda
+    // 3 - linia dopasowania na wykresie widma
+    // 4 - linia pionowa crosshair
+    // 5 - linia pozioma crosshair
+
+    // pomocnicze prezydenty
+    QPen spectrum;
+    spectrum.setColor(QColor(0,0,255));
+    spectrum.setWidth(2);
+
+    QPen fitted_gausses;
+    fitted_gausses.setColor(QColor(Qt::red));
+    fitted_gausses.setWidth(2);
+
+    QPen crosshairpen;
+    crosshairpen.setColor(QColor(Qt::black));
+    crosshairpen.setStyle(Qt::DashLine);
+
+    // -- ustawiamy prezydenty --
+    spectrum_w_gauss->graph(0)->setPen(fitted_gausses);
+    spectrum_w_gauss->graph(1)->setPen(spectrum);
+    spectrum_w_gauss->graph(2)->setPen(spectrum);
+    spectrum_w_gauss->graph(3)->setPen(fitted_gausses);
+    spectrum_w_gauss->graph(4)->setPen(crosshairpen);
+    spectrum_w_gauss->graph(5)->setPen(crosshairpen);
+
+    //gauss_spec_csh_label->setColor(Qt::black);
+}
+
+void body::show_lines_gauss()
+{
+    if (!set_lines_gauss->isChecked())
+    {
+        spectrum_w_gauss->graph(1)->setLineStyle(QCPGraph::lsNone);
+        spectrum_w_gauss->graph(2)->setLineStyle(QCPGraph::lsNone);
+    }
+    else
+    {
+        spectrum_w_gauss->graph(1)->setLineStyle(QCPGraph::lsLine);
+        spectrum_w_gauss->graph(2)->setLineStyle(QCPGraph::lsLine);
+    }
+    spectrum_w_gauss->replot();
+
+}
+
+void body::show_points_gauss()
+{
+    if (!set_points_gauss->isChecked())
+    {
+        spectrum_w_gauss->graph(1)->setScatterStyle(QCPScatterStyle::ssNone);
+        spectrum_w_gauss->graph(2)->setScatterStyle(QCPScatterStyle::ssNone);
+    }
+    else
+    {
+        spectrum_w_gauss->graph(1)->setScatterStyle(QCPScatterStyle::ssDisc);
+        spectrum_w_gauss->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
+    spectrum_w_gauss->replot();
+}
+
+void body::cross_hair_gauss(QMouseEvent * event)
+{
+    // nie wykonujemy nic, jeśli nie oglądamy crosshair
+    if(!set_crosshair_gauss->isChecked())
+    {
+        return;
+    }
+
+    // -- przejmujemy pozycję kursora --
+    double x,y;
+
+    //max_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().upper;
+    x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->pixelToCoord(event->pos().x());
+    y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->pixelToCoord(event->pos().y());
+
+    // -- czytamy zasięgi --
+    double max_y, min_y, max_x, min_x;
+    max_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().upper;
+    min_x = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atBottom)->range().lower;
+    max_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().upper;
+    min_y = spectrum_w_gauss->axisRect(0)->axis(QCPAxis::atLeft)->range().lower;
+
+    // -- deklarujemy wektory --
+    QVector < double > hline(2), vline(2), hline_y(2), vline_x(2);
+    // zapełniamy je
+    hline[0] = min_x;
+    hline[1] = max_x;
+    vline[0] = min_y;
+    vline[1] = max_y;
+    hline_y[0] = y;
+    hline_y[1] = y;
+    vline_x[0] = x;
+    vline_x[1] = x;
+
+    // dajemy do grafiki
+    spectrum_w_gauss->graph(4)->setData(hline, hline_y);
+    spectrum_w_gauss->graph(5)->setData(vline_x, vline);
+
+    // -- aktualizujemy wykres widma --
+    spectrum_w_gauss->replot();
+}
+
+void body::show_crosshair_gauss()
+{
+    if (!set_crosshair_gauss->isChecked())
+    {
+        spectrum_w_gauss->graph(4)->setVisible(false);
+        spectrum_w_gauss->graph(5)->setVisible(false);
+        spectrum_w_gauss->graph(4)->data()->clear();
+        spectrum_w_gauss->graph(5)->data()->clear();
+
+    }
+    else
+    {
+        spectrum_w_gauss->graph(4)->setVisible(true);
+        spectrum_w_gauss->graph(5)->setVisible(true);
+    }
+    spectrum_w_gauss->replot();
+}
