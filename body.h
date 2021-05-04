@@ -379,6 +379,7 @@ public:
     QPushButton * RHCbut = new QPushButton(dynamic_spectrum_widget);
     QPushButton * flag = new QPushButton(dynamic_spectrum_widget); // do flagowania
     QPushButton * make_lcs_button = new QPushButton(dynamic_spectrum_widget); // robi krzywe blasku z zaznaczonego kwadratu
+    QPushButton * recreate_I_button = new QPushButton(dynamic_spectrum_widget);
     // -- Do rotacji widm --
     QPushButton * rotate = new QPushButton(dynamic_spectrum_widget);
     QPushButton * rotate_minus = new QPushButton(dynamic_spectrum_widget);
@@ -735,6 +736,8 @@ public slots:
     void show_crosshair_gauss();
 
     void cross_hair_gauss(QMouseEvent * event);
+
+    void make_new_I_and_V_for_epoch_on_dynspec();
 
     //void fitted_parameters_creator(unsigned long int amount);
     //void menu_request(QPoint pos);

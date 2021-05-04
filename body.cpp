@@ -67,19 +67,19 @@ body::body(const char * nazwa)
     display_plot_on_single_spectrum->setMaximumSize(10000,10000);
     set_default_range_button->setMaximumSize(10000,10000);
     erase_last_graph->setMaximumSize(10000,10000);
-    flag->setMaximumSize(10000,30);
-    rotate->setMaximumSize(10000,30);
-    make_lcs_button->setMaximumSize(10000,30);
+    flag->setMaximumSize(10000,10000);
+    rotate->setMaximumSize(10000,10000);
+    make_lcs_button->setMaximumSize(10000,10000);
     reload->setMaximumSize(10000,10000);
-    rotate_minus->setMaximumSize(10000,30);
-    save_rotation->setMaximumSize(10000,30);
-    number_of_rotated_channels_texted->setMaximumSize(100,30);
+    rotate_minus->setMaximumSize(10000,10000);
+    save_rotation->setMaximumSize(10000,10000);
+    number_of_rotated_channels_texted->setMaximumSize(30,30);
     calibrate->setMaximumSize(10000,10000);
-    load_caltab_l1->setMaximumSize(10000,30);
-    load_caltab_r1->setMaximumSize(10000,30);
-    start_calibration->setMaximumSize(10000,30);
-    caltab_l1_path->setMaximumSize(10000,30);
-    caltab_r1_path->setMaximumSize(10000,30);
+    load_caltab_l1->setMaximumSize(10000,10000);
+    load_caltab_r1->setMaximumSize(10000,10000);
+    start_calibration->setMaximumSize(10000,10000);
+    caltab_l1_path->setMaximumSize(10000,10000);
+    caltab_r1_path->setMaximumSize(10000,10000);
     WD->setMaximumSize(10000,10000);
     open_rms_section->setMaximumSize(10000,10000);
     kill_rms_section->setMaximumSize(10000,10000);
@@ -87,6 +87,7 @@ body::body(const char * nazwa)
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
     open_gauss->setMaximumSize(10000,10000);
     kill_gauss->setMaximumSize(10000,10000);
+    recreate_I_button->setMaximumSize(10000,10000);
 
 
     load_data->setMinimumSize(0,0);
@@ -130,6 +131,7 @@ body::body(const char * nazwa)
     save_all_spectra_to_gnuplot->setMinimumSize(0,0);
     open_gauss->setMinimumSize(0,0);
     kill_gauss->setMinimumSize(0,0);
+    recreate_I_button->setMinimumSize(0,0);
 
     // - font (do labelow) -
     QFont f( "Arial", 10, QFont::Bold);
@@ -193,7 +195,7 @@ body::body(const char * nazwa)
     make_lcs_button->setText("Make lc");
     rotate->setText("Rotate +");
     rotate_minus->setText("Rotate -");
-    save_rotation->setText("Save rotation");
+    save_rotation->setText("Save");
     flag->setText("Flag");
     reload->setText("Reload");
     calibrate->setText("Calibrate");
@@ -367,6 +369,7 @@ void body::set_dynamic_spectrum_widget()
     QObject::connect(save_rotation, SIGNAL(clicked()), this, SLOT(save_rotated_spectras()));
     QObject::connect(reset_dynamic_spectrum, SIGNAL(activated()), this, SLOT(display_dynamic_spectrum()));
     QObject::connect(set_log_scale, SIGNAL(clicked()), this, SLOT(calculate_log()));
+    QObject::connect(recreate_I_button, SIGNAL(clicked()), this, SLOT(make_new_I_and_V_for_epoch_on_dynspec()));
     // -- umieszczamy je wszystkie w widgecie --
     grid_dynamic_spectrum_widget->addWidget(&dynamic_spectrum_pl, 1,0,7,6);
     grid_dynamic_spectrum_widget->addWidget(&single_dynamic_spectrum, 0,6,4,4);
@@ -381,6 +384,7 @@ void body::set_dynamic_spectrum_widget()
     hbox->addWidget(x_left_border);
     hbox->addWidget(x_right_border);
     operations->addWidget(number_of_rotated_channels_texted);
+    operations->addWidget(recreate_I_button);
     operations->addWidget(flag);
     operations->addWidget(rotate);
     operations->addWidget(save_rotation);
@@ -411,6 +415,7 @@ void body::set_dynamic_spectrum_widget()
     LHCbut->setText("LHC");
     RHCbut->setText("RHC");
     kill_dynspec->setText("Kill dynamic spectrum --->");
+    recreate_I_button->setText("Recal");
 
     grid_dynamic_spectrum_widget->setColumnStretch(0,1);
     grid_dynamic_spectrum_widget->setColumnStretch(1,1);
@@ -6119,13 +6124,13 @@ void body::save_rotated_spectras()
 {
     if (made_rotation == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("There are no rotated spectras, so nothing will be saved"));
+        QMessageBox::information(&window, tr("Error!"), tr("There are no edited spectras, so nothing will be saved"));
         return;
     }
 
     // -- okno do upewniania sie, ze na pewno chcesz --
     QMessageBox::StandardButton upewka;
-    upewka = QMessageBox::question(&window, "Are you sure?", QString::fromStdString("Do you realy want to save rotated spectras (non - rotated versions will be stored at no_rotated*AVR.DAT)?"), QMessageBox::Yes| QMessageBox::No);
+    upewka = QMessageBox::question(&window, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectras (non - rotated versions will be stored at *noedt.DAT)?"), QMessageBox::Yes| QMessageBox::No);
     if (upewka == QMessageBox::No)
     {
         //cout << "noioo" << endl;
@@ -6141,7 +6146,7 @@ void body::save_rotated_spectras()
     string cpy_message = "";
     //cpy_message = cpy_message + "Copied to\n"
     string message = "";
-    message = message + "Saved rotated spectras to:\n";
+    message = message + "Saved edited spectras to:\n";
 
     // -- kopiowanie plikow --
     ofstream cp_destination_rot;
@@ -6155,7 +6160,7 @@ void body::save_rotated_spectras()
         headere = headerlst[epoch];
         output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed rotacji
         output_filename.erase(output_filename.end()-7, output_filename.end());
-        output_filename = output_filename + "norot.DAT";
+        output_filename = output_filename + "noedt.DAT";
 
         // -- kopiujemy do backupowego file --
         if (loaded_from_listfile == 1)
@@ -10621,4 +10626,64 @@ void body::show_crosshair_gauss()
         spectrum_w_gauss->graph(5)->setVisible(true);
     }
     spectrum_w_gauss->replot();
+}
+
+// -- slot sprawia, że tworzone jest nowe I w wybranyej na widmie dynamicznym epoce --
+void body::make_new_I_and_V_for_epoch_on_dynspec()
+{
+    // -- czytamy numer epoki --
+    int epoch_number = xind;
+
+    // -- tworzymy tymczasowe kontenery --
+    vector < double > tmprec_LHCERR(LHCERRlst[epoch_number].size()); // deklarujemy dokładny rozmiar, by szybciej działało
+    vector < double > tmprec_RHCERR(RHCERRlst[epoch_number].size());
+    vector < double > tmprec_LHC(LHClst[epoch_number].size());
+    vector < double > tmprec_RHC(RHClst[epoch_number].size());
+
+    // -- pętla nr. 1 - zgrywanie informacji dot. LHC i RHC --
+    for (unsigned long int i = 0; i < LHClst[epoch_number].size(); i++)
+    {
+        tmprec_LHC[i] = LHClst[epoch_number][i];
+        tmprec_RHC[i] = RHClst[epoch_number][i];
+        tmprec_LHCERR[i] = LHCERRlst[epoch_number][i];
+        tmprec_RHCERR[i] = RHCERRlst[epoch_number][i];
+    }
+
+    // -- pętla nr. 2 - zapisywanie infromacji na nowych tablicach --
+    for (unsigned long int i = 0; i < LHClst[epoch_number].size(); i++)
+    {
+        Ilst[epoch_number][i] = (tmprec_LHC[i] + tmprec_RHC[i]) / 2.0;
+        ERRlst[epoch_number][i] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
+
+        Vlst[epoch_number][i] = (tmprec_RHC[i] - tmprec_LHC[i]) / 2.0;
+        VERRlst[epoch_number][i] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
+
+    }
+
+    // -- dodajemy do listy edutowanych --
+    append_to_rotated_lst(epoch_number);
+    // -- ustalamy "made rotation" na 1
+    made_rotation = 1;
+    // -- aktualizujemy widmo dynamiczne --
+    update_dynamic_spectrum();
+    /*
+    for(int i = 0; i < RHClst.size(); i++)
+    {
+        for (int k=0; k< RHClst[i].size(); k++)
+        {
+            Ilst[i][k] = (RHClst[i][k] + LHClst[i][k]) / 2.0;
+            ERRlst[i][k] = (RHCERRlst[i][k] + LHCERRlst[i][k]) / 2.0;
+        }
+    }
+
+    for(int i = 0; i < Vlst.size(); i++)
+    {
+        for (int k=0; k< Vlst[i].size(); k++)
+        {
+            Vlst[i][k] = (RHClst[i][k] - LHClst[i][k]) / 2.0;
+            VERRlst[i][k] = (RHCERRlst[i][k] - LHCERRlst[i][k]) / 2.0;
+        }
+    }
+    */
+
 }
