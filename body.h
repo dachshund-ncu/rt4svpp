@@ -14,6 +14,7 @@
 #include "qcustomplot.h"
 #include <deque>
 #include <stdlib.h>
+#include <CCfits/CCfits>
 
 using namespace std;
 
@@ -806,7 +807,6 @@ public:
     vector < double > averaged_over_velocity_I_err, averaged_over_velocity_V_err, averaged_over_velocity_LHC_err, averaged_over_velocity_RHC_err;
     vector < double > averaged_over_time_I, averaged_over_time_V, averaged_over_time_LHC, averaged_over_time_RHC;
     vector < double > averaged_over_time_I_err, averaged_over_time_V_err, averaged_over_time_LHC_err, averaged_over_time_RHC_err;
-
     // -- stale kontenery -- (podwojne)
     vector < string > headerlst; // lista z headerami
     vector < string > avrnames; // lista z plikami avr
@@ -823,6 +823,7 @@ public:
     vector < double > FI_I, FI_LHC, FI_RHC, FI_V;
     vector < double > chi2_I, chi2_LHC, chi2_RHC, chi2_V;
     vector < int > rotated_spectras;
+    vector < int > filetype; // przechowuje typ pliku, jaki jest załadowany (0 - avr, 1 - fits);
 
     // -- tworzymy nowe stałe --
     double mean_rms_I = 0.0;
@@ -884,6 +885,17 @@ public:
     void set_plot_on_int_vs_time();
     void calculate_sint_for_rms_window();
     void select_on_rms_section(double x);
+
+    // czyta plik fits
+    void read_fits_file(const char * nazwa_pliku23);
+
+    // pomocnicze sloty do "save rotated spectras"
+    vector < string > save_edited_avr(int epoch); // ten zapisuje AVR
+    vector < string > save_edited_fitsfile(int epoch); // ten zapisuje fits
+
+    void save_new_cols_in_fits_file(string fitsfilename, vector < double > lhc, vector < double > rhc);
+
+    bool check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path);
     //void read_chan4int();
 
 };

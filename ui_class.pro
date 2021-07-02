@@ -1,6 +1,6 @@
 QT += core gui widgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
-TARGET = mdrt4sv
+TARGET = rt4sv++
 
 TEMPLATE = app
 
@@ -15,3 +15,10 @@ HEADERS += \
 
 RESOURCES += \
     resources.qrc
+
+unix:!macx: LIBS += -L /usr/local/lib/ -lCCfits
+
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
+
+unix:!macx: LIBS += -lcfitsio

@@ -8,9 +8,12 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
+#include <CCfits/CCfits>
 
+using namespace CCfits;
 int main(int argc, char *argv[])
 {
+    FITS::setVerboseMode(true);
     // -- zaczynamy program --
     QApplication program (argc, argv);
     program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));

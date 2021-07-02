@@ -16,8 +16,10 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <CCfits/CCfits>
 
 using namespace std;
+using namespace CCfits;
 // -- konstruktor klasy programu --
 body::body(const char * nazwa)
 {
@@ -73,7 +75,7 @@ body::body(const char * nazwa)
     reload->setMaximumSize(10000,10000);
     rotate_minus->setMaximumSize(10000,10000);
     save_rotation->setMaximumSize(10000,10000);
-    number_of_rotated_channels_texted->setMaximumSize(30,30);
+    number_of_rotated_channels_texted->setMaximumSize(60,30);
     calibrate->setMaximumSize(10000,10000);
     load_caltab_l1->setMaximumSize(10000,10000);
     load_caltab_r1->setMaximumSize(10000,10000);
@@ -1367,6 +1369,440 @@ void body::kill_single_spectrum()
     */
 }
 
+// -- czyta plik fits, którego nazwa została podana w argumencie --
+void body::read_fits_file(const char * nazwa_pliku23)
+{
+    // ustalamy na początek boole (nie pamiętam już po co xD)
+    check_if_loading_not_interrupted = 0;
+
+    // -- wczytujemy plik FITS --
+    FITS * fitsfile = new FITS(nazwa_pliku23, Read);
+
+    // -- czytamy w pliku fits header nr. 2 (czyli o indeksie 1) --
+    // w tym celu towrzymy obiekt ExtHDU
+    ExtHDU & table = fitsfile->extension(1);
+
+    // -- czytamy wszystkie potrzebne wartości w headerze --
+    // -- do tego będą potrzebne nam rozmaite zmienne --
+    double vlsr, freq_beg, freq_mid, freq_end, freq_rang, equinox, nchans, restfreq, el, az, z, tsys1, tsys2, dopp_vsu, dopp_vob, dopp_vto;
+    double year, month, day, hour, min,sec;
+    string zstr, tsysstr, vlsr_str, freq_beg_str, freq_mid_str, freq_end_str, freq_rang_str, equinox_str, nchans_str, restfreq_str, el_str, az_str, z_str, tsys1_str, tsys2_str, dopp_vsu_str, dopp_vob_str, dopp_vto_str;
+    string sourcename, isotime, ra, dec;
+
+    // -- odczytujemy z pliku fits --
+    // VSYS
+    try
+    {
+        table.readKey("VSYS", vlsr);
+    }
+    catch(...)
+    {
+        table.readKey("VSYS", vlsr_str);
+        vlsr = stod(vlsr_str);
+    }
+
+    // FRQ_BEG
+    try
+    {
+        table.readKey("FRQ_BEG", freq_beg);
+    }
+    catch(...)
+    {
+        table.readKey("FRQ_BEG", freq_beg_str);
+        freq_beg = stod(freq_beg_str);
+    }
+
+    // FRQ_END
+    try
+    {
+        table.readKey("FRQ_END", freq_end);
+    }
+    catch(...)
+    {
+        table.readKey("FRQ_END", freq_end_str);
+        freq_end = stod(freq_end_str);
+    }
+
+    // FRQ_RANG
+    try
+    {
+        table.readKey("FRQ_RANG", freq_rang);
+    }
+    catch(...)
+    {
+        table.readKey("FRQ_RANG", freq_rang_str);
+        freq_rang = stod(freq_rang_str);
+    }
+
+    // EQUINOX
+    try
+    {
+        table.readKey("EQUINOX", equinox);
+    }
+    catch(...)
+    {
+        table.readKey("EQUINOX", equinox_str);
+        equinox = stod(equinox_str);
+    }
+
+    // NAXIS2
+    try
+    {
+        table.readKey("NAXIS2", nchans);
+    }
+    catch(...)
+    {
+        table.readKey("NAXIS2", nchans_str);
+        nchans = stod(nchans_str);
+    }
+
+    // FREQ
+    try
+    {
+        table.readKey("FREQ", restfreq);
+    }
+    catch(...)
+    {
+        table.readKey("FREQ", restfreq_str);
+        restfreq = stod(restfreq_str);
+    }
+
+    // AZ
+    try
+    {
+        table.readKey("AZ", az);
+    }
+    catch(...)
+    {
+        table.readKey("AZ", az_str);
+        az = stod(az_str);
+    }
+
+    // Z
+    try
+    {
+        table.readKey("Z", z);
+    }
+        catch(...)
+    {
+        table.readKey("Z", zstr);
+        z = stod(zstr);
+    }
+
+    // TSYS1 TSYS2
+    try
+    {
+        table.readKey("TSYS1", tsys1);
+        table.readKey("TSYS2", tsys2);
+    }
+    catch(...)
+    {
+        try
+        {
+            table.readKey("TSYS", tsys1);
+            table.readKey("TSYS", tsys2);
+        }
+        catch(...)
+        {
+            table.readKey("TSYS", tsysstr);
+            tsys1 = stod(tsysstr);
+            tsys2 = stod(tsysstr);
+        }
+
+    }
+
+    // -- czytamy rzeczy, specyficzne dla RS --
+    // -- dla autokorelatora wartości z tych pól będą równe 0 --
+    try
+    {
+        table.readKey("DOPP_VSU", dopp_vsu);
+    }
+    catch(...)
+    {
+        table.readKey("DOPP_VSU", dopp_vsu_str);
+        dopp_vsu = stod(dopp_vsu_str);
+    }
+
+    try
+    {
+        table.readKey("DOPP_VOB", dopp_vob);
+    }
+    catch(...)
+    {
+        table.readKey("DOPP_VOB", dopp_vob_str);
+        dopp_vob = stod(dopp_vob_str);
+    }
+
+    try
+    {
+        table.readKey("DOPP_VTO", dopp_vto);
+    }
+    catch(...)
+    {
+        table.readKey("DOPP_VTO", dopp_vto_str);
+        dopp_vto = stod(dopp_vto_str);
+    }
+
+    // stringi
+    table.readKey("OBJECT", sourcename);
+    table.readKey("DATE-OBS", isotime);
+    table.readKey("SRC_RA", ra);
+    table.readKey("SRC_DEC", dec);
+
+    // -- obliczamy kilka rzeczy --
+    // elewacja
+    el = 90.0 - z;
+
+    // zamieniamy restfreq na MHZ
+    restfreq = restfreq / 1000000;
+
+    // daty
+    // zapisujemy do innej zmiennej, oryginał jeszcze się przyda
+    string isotime2 = isotime;
+    // formatujemy, by między numerami były białe znaki
+    isotime2.replace(isotime2.find_first_of("-"), 1, " ");
+    isotime2.replace(isotime2.find_first_of("-"), 1, " ");
+    isotime2.replace(isotime2.find_first_of("T"), 1, " ");
+    isotime2.replace(isotime2.find_first_of(":"), 1, " ");
+    isotime2.replace(isotime2.find_first_of(":"), 1, " ");
+    // zapisujemy do zmiennych double
+    stringstream wppl(isotime2);
+    // tymczasowa tablica i bufor double
+    vector < double > time_temporal;
+    double bufor_double_time;
+    // pętla parsująca string na double
+    while(wppl >> bufor_double_time)
+    {
+        time_temporal.push_back(bufor_double_time);
+    }
+    // zapisujemy z tablicy do naszych zmiennych
+    year = time_temporal[0];
+    month = time_temporal[1];
+    day = time_temporal[2];
+    hour = time_temporal[3];
+    min = time_temporal[4];
+    sec = time_temporal[5];
+    // dodatkowa zmienna day2, integrująca godziny
+    double day2 = day + hour / 24.0 + min / 24.0 / 60.0 + sec / 24.0 / 3600.0;
+    // bierzemy sobie coś, co nazywa się JD:
+    jd = JD(year, month, day2);
+    mjd = jd - 2400000.5;
+    double decyr = decimalyear(year, month, day2); // zmiennoprzecinkowy rok
+
+
+    // -- czytamy dane --
+    vector < double > lhc((int) nchans), rhc ((int) nchans);
+    table.column("Pol 1").read(lhc, 0, nchans);
+    table.column("Pol 2").read(rhc, 0, nchans);
+
+    // -- obcinamy krawędzie wstęgi --
+    for(int i = 0; i < 24; i++)
+    {
+        // - na początku wstęgi -
+        lhc[i] = 0.0;
+        rhc[i] = 0.0;
+
+        // - i na końcu -
+        lhc[(int) nchans - 1 - i] = 0.0;
+        rhc[(int) nchans - 1 - i] = 0.0;
+
+    }
+
+    // -- deklarujemy tablice z częstotliwościami i prędkościami --
+    vector < double > freqs((int) nchans), vels((int) nchans);
+    // -- krok częstotliwości --
+    double freq_step = freq_rang / nchans;
+    // prędkość światła
+    double c = 299792.458;
+    // -- obliczamy doppler shift (powinien != 0 tylko dla fitsów RS)
+    double f_shift = (dopp_vto + dopp_vob + dopp_vsu) / c * restfreq;
+
+    // -- generujemy tablice prędkości --
+    for (int i = 0; i < nchans; i++)
+    {
+        freqs[i] = (freq_beg + i*freq_step) + f_shift;
+        vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
+    }
+
+    // -- odwracamy tablice, by VEL było od najmniejszej --
+    vector < double > vel_rev((int) nchans), lhc_rev((int) nchans), rhc_rev((int) nchans);
+    for (int i = 0; i < nchans; i++)
+    {
+        vel_rev[i] = vels[vels.size() - 1 - i];
+        lhc_rev[i] = lhc[lhc.size() - 1 - i];
+        rhc_rev[i] = rhc[rhc.size() - 1 - i];
+    }
+    // zapisujemy do oryginalnych
+    vels = vel_rev;
+    lhc = lhc_rev;
+    rhc = rhc_rev;
+
+    // -- tworzymy tablice I oraz V --
+    // na podstawie wczytanych LHC i RHC
+    vector < vector < double > > IV(2);
+    vector < double > i_tmp_lst((int) nchans), v_tmp_lst((int) nchans);
+    IV = recreate_from_rlhc(lhc, rhc);
+    i_tmp_lst = IV[0];
+    v_tmp_lst = IV[1];
+
+    // -- generujemy tablice z kanałami --
+    vector < int > nanamichan((int) nchans);
+    for(int i = 0; i < nchans; i++)
+    {
+        nanamichan[i] = i+1;
+    }
+
+    // -- liczymy RMS --
+    // - definiujemy kanały do obliczania RMS --
+    // na początek sprawdzamy plik chan4rms.sv
+    if(chan4rms_loaded == 0)
+    {
+        // jeśli nie jest załadowany, to lecimy z tym koksem:
+        rms_start_channel1 = 100;
+        rms_end_channel1 = 400;
+        rms_start_channel2 = (int) nchans - 400;
+        rms_end_channel2 = (int) nchans - 100;
+    }
+
+    // -- definiujemy kilka lokalnych zmiennych --
+    double suma = 0.0; // przechowuje sumę kwadratów wartości w kanałach, tymczasowa
+    double rms_fits; // przechowuje wartość RMS (sqrt( suma / (n-1)), tymczasowa
+    vector < double > I_rms_tmp((int) nchans), V_rms_tmp((int) nchans), LHC_rms_tmp((int) nchans), RHC_rms_tmp((int) nchans);
+
+    // -----------------------------------------------
+    // -- rms I --
+    int n = 0; // zerujemy "n"
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + i_tmp_lst[i]*i_tmp_lst[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + i_tmp_lst[i]*i_tmp_lst[i];
+      n = n+1;
+    }
+    rms_fits = sqrt(suma / (n-1));
+
+    for(int i = 0; i < nchans; i++)
+    {
+      I_rms_tmp[i] = rms_fits;
+    }
+    // -----------------------------------------------
+    // -- rms V --
+    n = 0; // zerujemy "n"
+    suma = 0.0; // zerujemy "sumę"
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + v_tmp_lst[i]*v_tmp_lst[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + v_tmp_lst[i]*v_tmp_lst[i];
+      n = n+1;
+    }
+    rms_fits = sqrt(suma / (n-1));
+
+    for(int i = 0; i < nchans; i++)
+    {
+      V_rms_tmp[i] = rms_fits;
+    }
+    // -----------------------------------------------
+    // -- rms LHC --
+    n = 0; // zerujemy "n"
+    suma = 0.0; // zerujemy "sumę"
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + lhc[i]*lhc[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + lhc[i]*lhc[i];
+      n = n+1;
+    }
+    rms_fits = sqrt(suma / (n-1));
+
+    for(int i = 0; i < nchans; i++)
+    {
+      LHC_rms_tmp[i] = rms_fits;
+    }
+    // -----------------------------------------------
+    // -- rms RHC --
+    n = 0; // zerujemy "n"
+    suma = 0.0; // zerujemy "sumę"
+    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
+    {
+      suma = suma + rhc[i]*rhc[i];
+      n = n+1;
+    }
+    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
+    {
+      suma = suma + rhc[i]*rhc[i];
+      n = n+1;
+    }
+    rms_fits = sqrt(suma / (n-1));
+
+    for(int i = 0; i < nchans; i++)
+    {
+      RHC_rms_tmp[i] = rms_fits;
+    }
+    // -----------------------------------------------
+
+    // -- formatujemy nazwę źródła --
+    sourcename.erase(remove(srcname.begin(), srcname.end(), ' '), srcname.end());
+
+    // -- ustalamy zmienną globalną srcname --
+    srcname = sourcename;
+    // -- ustalamy tsys --
+    double tsys = (tsys1 + tsys2) / 2.0; // jest to średnia z obu polaryzacji - tak jest w wynikach z rt4s
+
+    // -- zapisujemy do kontenerów --
+    // -- zapelniamy kontenery 1D --
+    jdlst.push_back(jd);
+    mjdlst.push_back(mjd);
+    ellst.push_back(el);
+    azlst.push_back(az);
+    declst.push_back(0.0); // TYMCZASOWO
+    ralst.push_back(0.0); // TYMCZASOWO
+    freqlst.push_back(restfreq);
+    vlsrlst.push_back(vlsr);
+    wstlst.push_back(freq_rang);
+    n_chanslst.push_back(nchans);
+    rmslst.push_back(rms_fits);
+    dlst.push_back(day);
+    mlst.push_back(month);
+    ylst.push_back(year);
+    hrlst.push_back(hour);
+    minutelst.push_back(min);
+    seclst.push_back(sec);
+    yrlst.push_back(decyr);
+    tsyslst.push_back(tsys);
+
+    // -- zapełniamy kontenery 2D --
+    headerlst.push_back("headertmp");
+    LHClst.push_back(lhc);
+    RHClst.push_back(rhc);
+    Vlst.push_back(v_tmp_lst);
+    Ilst.push_back(i_tmp_lst);
+    VELlst.push_back(vels);
+    CHANlst.push_back(nanamichan);
+    ERRlst.push_back(I_rms_tmp);
+    VERRlst.push_back(V_rms_tmp);
+    LHCERRlst.push_back(LHC_rms_tmp);
+    RHCERRlst.push_back(RHC_rms_tmp);
+
+    // -- czyscimy tymczasowe kontenery --
+    check_if_loading_not_interrupted = 1;
+
+    // -- zamykamy plik fits, bo jeśli nie zamykany wali błędami --
+    fitsfile->destroy();
+
+    // -- ustawiamy, jaki to typ w tablicy --
+    filetype.push_back(1); // 0 - AVR 1 - fits
+}
+
 vector < vector < double > > body::recreate_from_rlhc (vector < double > lhc, vector < double > rhc)
 {
     // --- deklarujemy potrzebne tablice ---
@@ -1944,6 +2380,9 @@ void body::czytaj_ale_lepiej(const char *nazwa_pliku23)
 
     check_if_loading_not_interrupted = 1;
 
+    // -- ustawiamy, jaki to typ w tablicy --
+    filetype.push_back(0); // AVR
+
 }
 
 // -- czyta plik AVR o podanej w argumencie nazwie --
@@ -2407,6 +2846,51 @@ void body::czytaj(const char* nazwa_pliku23)
   check_if_loading_not_interrupted = 1;
 }
 
+// -- zwraca false na fits, true na avr --
+bool body::check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path)
+{
+    ifstream tmpavr; // tymczasowy obiekt pliku
+    string buforek; // przechowuje tekst czytany z pliku
+    // otwieramy plik
+    if (name_with_absolute_path == true)
+    {
+        tmpavr.open( ( filename_of_tested_file ).c_str() );
+    }
+    else
+    {
+        tmpavr.open((working_directory + "/" + filename_of_tested_file).c_str() );
+    }
+
+
+    // -- robimy fikołka --
+    try
+    {
+        // -- sposób sprawdzania, czy mamy do czynienia z plikiem AVR czy nie jest bardzo prosty --
+        // po prostu sprawdzamy, czy ma na początku trzy znaki zapytania (XD)
+        // głupie, ale działa
+        tmpavr >> buforek;
+        tmpavr.close();
+        if (buforek == "???")
+        {
+            // jeśli mamy te trzy znaki zapytania, zwracamy true
+            return true;
+        }
+        else
+        {
+            // jeśli nie mamy tych trzech znaków zapytania, zwracamy false
+            return false;
+        }
+    }
+    catch (...)
+    {
+        // jeśli z jakiegoś powodu wypier*****o przy czytaniu to cóż
+        // zwracamy jakby to był fits
+        // bo w takim trybie prędzej fitsa nie przeczyta
+        return false;
+    }
+
+}
+
 // -- czyta pliki z podanej listy plikow --
 void body::read_time_series_for_list(QStringList lista_plikow)
 {
@@ -2470,12 +2954,8 @@ void body::read_time_series_for_list(QStringList lista_plikow)
     postep.setMinimum(0);
     postep.setMaximum(lista_plikow.size());
     postep.setVisible(true);
-    //cout << "zadeklarowany pasek" << endl;
-    // - petla wczytujaca pliki z obserwacjami -
-    //cout << lista.good() << endl;
-    //getline(lista, bufor_do_listy);
-    //cout << bufor_do_listy << endl;
 
+    // właściwa pętla wczytująca
     for(int i = 0; i < lista_plikow.size(); i++)
     {
       bufor_do_listy = lista_plikow[i].toStdString();
@@ -2488,32 +2968,35 @@ void body::read_time_series_for_list(QStringList lista_plikow)
       // czytamy plik z listy
       if(!check_if_flagged(bufor_do_listy))
       {
-          // jesli check if flagged zwraca false to czytamy
-          //this->czytaj((bufor_do_listy).c_str());
-            this->czytaj_ale_lepiej((bufor_do_listy).c_str());
+          // -- sprawdzamy, czy mamy do czynienia z plikiem "fits" czy "AVR" --
+          // mają one oddzielne metody wczytywania i mogą być wczytywane obok siebie
+          if(check_if_avr_or_fits(bufor_do_listy, true)) // dajemy "true" bo nazwy plików tutaj są ze ścieżką absolutną
+              this->czytaj_ale_lepiej((bufor_do_listy).c_str());
+          else
+              this->read_fits_file((bufor_do_listy).c_str());
+
           // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
          if (check_if_loading_not_interrupted == 0)
-         {
-            cout << "wyrzucam exception" << endl;
-            throw 2; // jeśli tak, wyrzucamy exception
-         }
+             throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
+
+         // -- dodajemy nazwę pliku do listy z nazwami plików --
           avrnames.push_back(bufor_do_listy);
-          // wypisujemy podstawowe dane o obserwacji
+
+         // -- konstruujemy komunikat wypisujący --
           cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
          // inkrementujemy marker
           marker = marker + 1;
-
       }
       else
       {
-          // jesli czeck if flagged zwraca true to pomijamy
+          // -- jesli czeck if flagged zwraca true to pomijamy --
           cout << "------> " << bufor_do_listy << " is flagged, so i will not read it" << endl;
       }
+      // -- zwiększamy postęp paska postępu --
       pasek_postepu = pasek_postepu + 1;
-      //cout << "zwiekszamy postep paska" << endl;
       postep.setValue(postep.value()+1);
-      QCoreApplication::processEvents();
-
+      //by na windowsie też postepowal
+      QCoreApplication::processEvents(); // zabawne, żę bez tego na windowsie pasek stoi w miejscu
     }
 
     max_range_vel_index = VELlst[0].size()-1;
@@ -2668,26 +3151,21 @@ void body::read_time_series()
   //cout << lista.tellg() << endl;
 
   // -- progressbar --
-  //cout << "startujemy" << endl;
   QProgressDialog postep;//(&window);
   postep.setLabelText("Loading files... please wait");
   int pasek_postepu = 0;
   postep.setMinimum(0);
   postep.setMaximum(lista_length);
   postep.setVisible(true);
-  //cout << "zadeklarowany pasek" << endl;
-  // - petla wczytujaca pliki z obserwacjami -
-  //cout << lista.good() << endl;
-  //getline(lista, bufor_do_listy);
-  //cout << bufor_do_listy << endl;
+
+  // główna pętla wczytująca dane
   while(lista.good())
   {
 
     // czytamy linie z pliku
-    //cout << "getline" << endl;
     getline(lista, bufor_do_listy);
-    //cout << "po getline" << endl;
-    // jesli jest zerowej dlugosci, to mamy koniec pliku i wywalamy z petli
+
+    // sprawdzamy, czy ta linia aby cokolwiek zawiera
     if(bufor_do_listy.size() < 1)
     {
       break;
@@ -2695,30 +3173,38 @@ void body::read_time_series()
     // czytamy plik z listy
     if(!check_if_flagged(bufor_do_listy))
     {
-        // jesli check if flagged zwraca false to czytamy
-        this->czytaj_ale_lepiej((working_directory + "/" + bufor_do_listy).c_str());
+        // -- sprawdzamy, czy mamy do czynienia z plikiem "fits" czy "AVR" --
+        // mają one oddzielne metody wczytywania i mogą być wczytywane obok siebie
+        if(check_if_avr_or_fits(bufor_do_listy, false)) // dajemy "false" bo tutaj nazwy plików mają ścieżkę względną
+            this->czytaj_ale_lepiej((working_directory + "/" + bufor_do_listy).c_str());
+        else
+            this->read_fits_file((working_directory + "/" + bufor_do_listy).c_str());
+
         // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
        if (check_if_loading_not_interrupted == 0)
            throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
 
+       // -- dodajemy nazwę pliku do listy z nazwami plików --
         avrnames.push_back(bufor_do_listy);
-        // wypisujemy podstawowe dane o obserwacji
+
+       // -- konstruujemy komunikat wypisujący --
         cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
        // inkrementujemy marker
         marker = marker + 1;
     }
     else
     {
-        // jesli czeck if flagged zwraca true to pomijamy
+        // -- jesli czeck if flagged zwraca true to pomijamy --
         cout << "------> " << bufor_do_listy << " is flagged, so i will not read it" << endl;
     }
+    // -- zwiększamy postęp paska postępu --
     pasek_postepu = pasek_postepu + 1;
-    //cout << "zwiekszamy postep paska" << endl;
     postep.setValue(postep.value()+1);
-    // by na windowsie też postepowal
-    QCoreApplication::processEvents();
-
+    //by na windowsie też postepowal
+    QCoreApplication::processEvents(); // zabawne, żę bez tego na windowsie pasek stoi w miejscu
   }
+
+  // -- zamykamy plik z listą --
   lista.close();
   max_range_vel_index = VELlst[0].size()-1;
   max_obs_number = mjdlst.size()-1;
@@ -2814,7 +3300,7 @@ void body::load_time_series()
     QStringList fileName1;// qstring z nazwa pliku
     QString fileName;
 
-    QFileDialog dialog(&window,tr("Select a list of AVR files or just AVR files"), tr(""), tr("All Files (*);;AVR files (*AVR.DAT)"));
+    QFileDialog dialog(&window,tr("Select a list of AVR files or just AVR files"), tr(""), tr("All Files (*);;AVR files (*AVR.DAT);;FITS files(*fits)"));
     dialog.setFileMode(QFileDialog::ExistingFiles);
     if(dialog.exec())
     {
@@ -2830,11 +3316,7 @@ void body::load_time_series()
     {
         return;
     }
-    //fileName = dialog.getOpenFileName(&window, tr("Select a list of AVR files"), tr(""), tr("All Files (*)")); // qfile dialog
-    //fileName = dialog.getOpenFileName();
-    //dialog.exec();
-    //dialog.close();
-    //cout << fileName.toStdString() << endl;
+
     nazwa_pliku = fileName.toStdString(); // ustalamy nazwe pliku
     if (nazwa_pliku == "")
     {
@@ -2847,6 +3329,7 @@ void body::load_time_series()
     if (info.absolutePath().toStdString() != "")
     {
         working_directory = info.absolutePath().toStdString();
+        cout << working_directory << endl;
 
     }
 
@@ -3541,8 +4024,8 @@ void body::press_map(QMouseEvent * event)
     QPen pen2;
     pen2.setColor(QColor(182,26,26));
     QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
+    x_vline[0] = VELlst[xind][yind];
+    x_vline[1] = VELlst[xind][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
@@ -3570,7 +4053,7 @@ void body::press_map(QMouseEvent * event)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = Vlst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        error_lcs[i] = VERRlst[min_obs_number + i][yind];
     }
     }
 
@@ -3580,7 +4063,7 @@ void body::press_map(QMouseEvent * event)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = LHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        error_lcs[i] = LHCERRlst[min_obs_number + i][yind];
     }
     }
 
@@ -3590,7 +4073,7 @@ void body::press_map(QMouseEvent * event)
     {
         epoch[i] = mjdlst[min_obs_number + i];
         lcs_flux[i] = RHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        error_lcs[i] = RHCERRlst[min_obs_number + i][yind];
     }
     }
 
@@ -3795,7 +4278,7 @@ void body::press_map(QMouseEvent * event)
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_lcs(1), y_dot_lcs(1);
     // predkosc radialna
-    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    x_dot_lcs[0] = mjdlst[xind]; // kliknięta epoka
     // gestosć strumienia
     if (I_pressed == 1)
         y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
@@ -6119,9 +6602,170 @@ bool body::check_if_is_on_rotated_lst(int marker)
 
 }
 
-// -- zapisuje przerotowane widma --
+// -- pomocnicza metoda do "save rotated spectras" --
+vector < string >  body::save_edited_avr(int epoch)
+{
+    // -- blok tymczasowych zmiennych --
+    string filename; // tymczasowa zmienna, będzie przechowywać nazwę pliku edytowanego
+    string headere; // tymczasowa zmienna, będzie przechowywać nagłówek AVR
+    vector < double > is,v,lhc,rhc; // tymczasowe kontenery, będą przechowywać polaryzacje etc.
+    string output_filename; // nazwa pliku, do którego zapisany będzie backup
+    // -- kontener, za pomocą którego zwracamy nazwy plików --
+    vector < string > returned_filenames(2);
+    // -- kopiowanie plikow --
+    ofstream cp_destination_rot; // obiekt pliku, do którego będziemy kopiować
+    ifstream copied_file; // obiekt pliku, używany do robienia backapu
+
+    // -- czytamy nazwę pliku, który będzie obrabiany --
+    filename = avrnames[epoch];
+    // czytamy jego header, który nie będzie konstruowany od nowa
+    headere = headerlst[epoch];
+    output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed edycji
+    output_filename.erase(output_filename.end()-7, output_filename.end());
+    output_filename = output_filename + "noedt.DAT";
+
+    // -- zapelniamy tymczasowe tablice --
+    for (unsigned long int ee = 0; ee < Ilst[epoch].size(); ee++)
+    {
+        is.push_back(Ilst[epoch][ee]);
+        v.push_back(Vlst[epoch][ee]);
+        lhc.push_back(LHClst[epoch][ee]);
+        rhc.push_back(RHClst[epoch][ee]);
+    }
+
+    // -- kopiujemy do backupowego file --
+    // tutaj ify są potrzebne z prostego względu:
+    // program wspiera wczytywanie zarówno z podanej listy plików, jak i czyta plku wybierane w selectorze ręcznie
+    // w pierwszym przypadku, w kontenerze "avrnames" będą tylko nazwy plików
+    // w drugim - całkowite absolutne ścieżki
+    // dlatego chcemy być konsekwentni i w każdym wypadku podajemy absolutną ścieżkę do plików
+    // w przypadku załadowania listy, ścieżka do niej jest przetrzymywana w zmiennej "working directory"
+    if (loaded_from_listfile == 1)
+    {
+        // otwiera plik, do którego robimy backupa
+        cp_destination_rot.open((working_directory + "/" + output_filename).c_str(), std::ios::binary);
+        // otwiera plik, z którego robimy backupa
+        copied_file.open((working_directory + "/" + filename).c_str(), std::ios::binary);
+        // zapisujemy drugie do pierwszego za pomocą strumienia
+        cp_destination_rot << copied_file.rdbuf();
+        // zamykamy plik z backupem
+        cp_destination_rot.close();
+        // zamykamy plik, z którego robimy backupa
+        copied_file.close();
+        // przywołujemy metodę, która zapisze do pliku AVR
+        save_avr_file(working_directory + "/" + filename, headere, is,v,lhc,rhc);
+        // ustalamy, co zwróci nasza metoda
+        returned_filenames[0] = working_directory + "/" + output_filename;
+        returned_filenames[1] = working_directory + "/" + filename;
+
+    }
+    else
+    {
+        // otwiera plik, do którego robimy backupa
+        cp_destination_rot.open((output_filename).c_str(), std::ios::binary);
+        // otwiera plik, z którego robimy backupa
+        copied_file.open(filename.c_str(), std::ios::binary);
+        // zapisujemy drugie do pierwszego za pomocą strumienia
+        cp_destination_rot << copied_file.rdbuf();
+        // zamykamy plik z backupem
+        cp_destination_rot.close();
+        // zamykamy plik, z którego robimy backupa
+        copied_file.close();
+        // przywołujemy metodę, która zapisze do pliku AVR
+        save_avr_file(filename, headere, is,v,lhc,rhc);
+        // ustalamy, co zwróci nasza metoda
+        returned_filenames[0] = output_filename;
+        returned_filenames[1] = filename;
+    }
+
+    // -- zwracamy --
+    return returned_filenames;
+}
+
+// -- pomocnicza metoda do "save rotated spectras" --
+// -- zapisuje pliki fits --
+vector < string > body::save_edited_fitsfile(int epoch)
+{
+    // -- blok tymczasowych zmiennych --
+    string filename; // tymczasowa zmienna, będzie przechowywać nazwę pliku edytowanego
+    vector < double > lhc ( (int) n_chanslst[epoch]), rhc( (int) n_chanslst[epoch]); // tymczasowe kontenery, będą przechowywać polaryzacje etc.
+    string output_filename; // nazwa pliku, do którego zapisany będzie backup
+    // -- kontener, za pomocą którego zwracamy nazwy plików --
+    vector < string > returned_filenames(2);
+    // -- kopiowanie plikow --
+    ofstream cp_destination_rot; // obiekt pliku, do którego będziemy kopiować
+    ifstream copied_file; // obiekt pliku, używany do robienia backapu
+
+    // -- czytamy nazwę pliku, który będzie obrabiany --
+    filename = avrnames[epoch];
+    output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed edycji
+    output_filename.erase(output_filename.end()-8, output_filename.end());
+    output_filename = output_filename + "noedt.fits";
+
+    // -- zapelniamy tymczasowe tablice --
+    // w fitsach przechowujemy tylko LHC i RHC, także tutaj tylko te dwie
+    // zapisujemy od tyłu, bo taki jest pomysł RS
+    for (unsigned long int ee = 0; ee < Ilst[epoch].size(); ee++)
+    {
+        lhc[lhc.size() - 1 - ee] = LHClst[epoch][ee];
+        rhc[lhc.size() - 1 - ee] = RHClst[epoch][ee];
+        //lhc.push_back(LHClst[epoch][ee]);
+        //rhc.push_back(RHClst[epoch][ee]);
+    }
+
+    // -- kopiujemy do backupowego file --
+    // tutaj ify są potrzebne z prostego względu:
+    // program wspiera wczytywanie zarówno z podanej listy plików, jak i czyta plku wybierane w selectorze ręcznie
+    // w pierwszym przypadku, w kontenerze "avrnames" będą tylko nazwy plików
+    // w drugim - całkowite absolutne ścieżki
+    // dlatego chcemy być konsekwentni i w każdym wypadku podajemy absolutną ścieżkę do plików
+    // w przypadku załadowania listy, ścieżka do niej jest przetrzymywana w zmiennej "working directory"
+    if (loaded_from_listfile == 1)
+    {
+        // otwiera plik, do którego robimy backupa
+        cp_destination_rot.open((working_directory + "/" + output_filename).c_str(), std::ios::binary);
+        // otwiera plik, z którego robimy backupa
+        copied_file.open((working_directory + "/" + filename).c_str(), std::ios::binary);
+        // zapisujemy drugie do pierwszego za pomocą strumienia
+        cp_destination_rot << copied_file.rdbuf();
+        // zamykamy plik z backupem
+        cp_destination_rot.close();
+        // zamykamy plik, z którego robimy backupa
+        copied_file.close();
+        // przywołujemy metodę, która zapisze do pliku AVR
+        save_new_cols_in_fits_file(working_directory + "/" + filename, lhc, rhc);
+        // ustalamy, co zwróci nasza metoda
+        returned_filenames[0] = working_directory + "/" + output_filename;
+        returned_filenames[1] = working_directory + "/" + filename;
+
+    }
+    else
+    {
+        // otwiera plik, do którego robimy backupa
+        cp_destination_rot.open((output_filename).c_str(), std::ios::binary);
+        // otwiera plik, z którego robimy backupa
+        copied_file.open(filename.c_str(), std::ios::binary);
+        // zapisujemy drugie do pierwszego za pomocą strumienia
+        cp_destination_rot << copied_file.rdbuf();
+        // zamykamy plik z backupem
+        cp_destination_rot.close();
+        // zamykamy plik, z którego robimy backupa
+        copied_file.close();
+        // przywołujemy metodę, która zapisze do pliku AVR
+        save_new_cols_in_fits_file(working_directory + "/" + filename, lhc, rhc);
+        // ustalamy, co zwróci nasza metoda
+        returned_filenames[0] = output_filename;
+        returned_filenames[1] = filename;
+    }
+
+    // -- zwracamy --
+    return returned_filenames;
+}
+
+// -- zapisuje wszystkie edytowane widma --
 void body::save_rotated_spectras()
 {
+    // -- warunek podstawowy - sprawdza, czy została wykonana jakaś edycja na widmie dynamicznym (w domyśle rotacja albo przeliczenie I/V ) --
     if (made_rotation == 0)
     {
         QMessageBox::information(&window, tr("Error!"), tr("There are no edited spectras, so nothing will be saved"));
@@ -6133,90 +6777,56 @@ void body::save_rotated_spectras()
     upewka = QMessageBox::question(&window, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectras (non - rotated versions will be stored at *noedt.DAT)?"), QMessageBox::Yes| QMessageBox::No);
     if (upewka == QMessageBox::No)
     {
-        //cout << "noioo" << endl;
+        // -- jeśli klikniesz nie, nie pójdzie dalej --
         return;
     }
 
-    // -- blok tymczasowych zmiennych --
-    string filename;
-    int epoch;
-    string headere;
-    vector < double > is,v,lhc,rhc;
-    string output_filename;
-    string cpy_message = "";
-    //cpy_message = cpy_message + "Copied to\n"
-    string message = "";
-    message = message + "Saved edited spectras to:\n";
+    // -- zmienne --
+    int epoch; // epoka, będzie przechowywała w pętli informację, którą obserwację będziemy zapisywać. Jest to czysto pomocnicza zmienna
+    string cpy_message = ""; // przechowuje informację, jaki tekst będzie na naszej wiadomości o wykonaniu backupa
+    string message = ""; // przechowuje informację, jaki tekst będzie na informacji o tym, jakie pliki zostały edytowane
+    message = message + "Saved edited spectra to:\n"; // wiadomix, dajemy pierwszą linię wiadomości (wcześniej było "spectras", mega krindżówa xD)
 
-    // -- kopiowanie plikow --
-    ofstream cp_destination_rot;
-    ifstream copied_file;
+    // -- tymczasowy kontener ze stringami --
+    // funkcje "save edited avr" i "save edited fits" zwracają kontener z dwoma stringami
+    // poniższy kontener ma za zadanie je przejmować
+    vector < string > tmp_filenames(2);
+
     // -- zaczynamy petle zapisu --
     for(int i = 0; i < rotated_spectras.size(); i++)
     {
         // -- ustalamy z czym mamy do czynienia --
         epoch = rotated_spectras[i];
-        filename = avrnames[epoch];
-        headere = headerlst[epoch];
-        output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed rotacji
-        output_filename.erase(output_filename.end()-7, output_filename.end());
-        output_filename = output_filename + "noedt.DAT";
 
-        // -- kopiujemy do backupowego file --
-        if (loaded_from_listfile == 1)
+        // -- sprawdzamy, czy ten plik to AVR czy fits --
+        if (filetype[epoch] == 0)
         {
-            cp_destination_rot.open((working_directory + "/" + output_filename).c_str(), std::ios::binary);
-            copied_file.open((working_directory + "/" + filename).c_str(), std::ios::binary);
-            cp_destination_rot << copied_file.rdbuf();
-            cp_destination_rot.close();
-            copied_file.close();
-            cpy_message = cpy_message + working_directory + "/" + filename + " copied to " + working_directory + "/" + output_filename + "\n";
+            // -- jeśli AVR, przywołujemy pomocniczą metodę do zapisu pliku AVR --
+            // wykona ona też stosowny backup
+            // nazwa pliku po edycji oraz pliku z backupem zostają zwrócone
+            // za pomocą konrenera std::vector < string > (2)
+            tmp_filenames = save_edited_avr(epoch);
         }
         else
         {
-            cp_destination_rot.open((output_filename).c_str(), std::ios::binary);
-            copied_file.open(filename.c_str(), std::ios::binary);
-            cp_destination_rot << copied_file.rdbuf();
-            cp_destination_rot.close();
-            copied_file.close();
-            cpy_message = cpy_message + filename + " copied to " + output_filename + "\n";
+            // -- jeśli fits, to przywołujemy inną metodę --
+            // -- ona też powinna wykonać stosowny backup --
+            // na chwilę obecną jednak nic nie robi
+            // nazwa pliku po edycji oraz pliku z backupem zostają zwrócone
+            // za pomocą konrenera std::vector < string > (2)
+            tmp_filenames = save_edited_fitsfile(epoch);
         }
 
-
-        //system(("cp " + working_directory + "/" + filename + " " + working_directory + "/" + output_filename).c_str());
-        //cout << "cp " + filename + " " + output_filename << endl;
-
-        //cpy_message = cpy_message + working_directory + "/" + filename + " copied to " + working_directory + "/" + output_filename + "\n";
-
-        // -- zapelniamy tablice --
-        for (int ee = 0; ee < Ilst[epoch].size(); ee++)
-        {
-            is.push_back(Ilst[epoch][ee]);
-            v.push_back(Vlst[epoch][ee]);
-            lhc.push_back(LHClst[epoch][ee]);
-            rhc.push_back(RHClst[epoch][ee]);
-        }
-
-        // -- zapisujemy do pliku --
-        if (loaded_from_listfile == 1)
-        {
-            save_avr_file(working_directory + "/" + filename, headere, is,v,lhc,rhc);
-            message = message + working_directory + "/" + filename + "\n";
-        }
-        else
-        {
-            save_avr_file(filename, headere, is,v,lhc,rhc);
-            message = message + filename + "\n";
-
-        }
-        //cout << headere << endl;
-        // -- czyscimy kontenery --
-        is.clear();
-        v.clear();
-        lhc.clear();
-        rhc.clear();
+        // -- uzupełniamy wiadomość o skopiowanych danych --
+        cpy_message = cpy_message + tmp_filenames[1] + " copied to " + tmp_filenames[0] + "\n";
+        message = message + tmp_filenames[1] + "\n";
 
     }
+
+    // -- czyścimy tablicę z rotowanymi widmami --
+    rotated_spectras.clear();
+
+    // -- wyświetlamy odpowiednie komunikaty --
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(cpy_message));
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
@@ -6307,6 +6917,58 @@ void body::save_avr_file(string target_filename, string header, vector < double 
     }
 
     fle.close();
+}
+
+void body::save_new_cols_in_fits_file(string fitsfilename, vector<double> lhc, vector<double> rhc)
+{
+    QFile::remove((working_directory + "/" + "tmp_for_fitsedt").c_str());
+
+    // -- otwieramy plik fits --
+    FITS fle(fitsfilename.c_str(), Read);
+    // -- otwieramy tymczasowy plik fits --
+    FITS fle_new(working_directory + "/" + "tmp_for_fitsedt", fle);
+
+    // kopiujemy
+    //fle_new.copy(fle.pHDU());
+    fle_new.copy(fle.extension(1));
+
+    // podmieniwamy tablice
+    fle_new.extension(1).column("Pol 1").write(lhc, 0);
+    fle_new.extension(1).column("Pol 2").write(rhc, 0);
+
+    // niszczymy niepotrzebne obiekty
+    fle.destroy();
+    fle_new.destroy();
+
+    remove(fitsfilename.c_str());
+    // kopiujemy tmp do podmienianego pliku
+    QFile::copy((working_directory + "/" + "tmp_for_fitsedt").c_str(), fitsfilename.c_str());
+    QFile::remove((working_directory + "/" + "tmp_for_fitsedt").c_str());
+
+    // niszczymy tmp
+    //fle_new_cpy.remove();
+
+
+    /*
+    // -- czytamy z niego headery
+    PHDU & podstawa = fle->pHDU();
+    ExtHDU & dane = fle->extension(1);
+
+    // -- podmieniamy tablice na nowe -
+    dane.column("Pol 1").write(lhc, 0);
+    dane.column("Pol 2").write(rhc, 0);
+    */
+    // zamykamy plik
+
+    // -- usuwamy ten plik i tworzymy nowy --
+
+    //
+    // -- otwieramy plik fits --
+
+
+    // -- zapisujemy podstawowy header --
+    //pHDU().write();
+    //Table * newTable = fle->extension(1).column("Pol 1");
 }
 
 // -- czyta, ile o ile kanałów ma być przerotowane widmo przy wywołaniu slotu 'rotate()' --
@@ -7379,7 +8041,7 @@ void body::update_dynamic_spectrum()
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_spec(1), y_dot_spec(1);
     // predkosc radialna
-    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    x_dot_spec[0] = VELlst[xind][yind]; // kliknięta prędkość radialna
     // gestosć strumienia
     if (I_pressed == 1)
         y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
