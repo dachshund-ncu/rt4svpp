@@ -32,7 +32,7 @@ sudo apt install g++
 
 sudo apt install qt5-default
 
-CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local/lib"
+CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local"
 
 
 When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "rt4sv++".
