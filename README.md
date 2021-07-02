@@ -1,7 +1,7 @@
 # Source code for rt4sv++
 This tool is designed to view data from NCU 32m radio telescope.
 It comes with qt ui.
-AppImage release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
+Release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
 
 
 -- Some major comments --
@@ -10,7 +10,7 @@ This tool is designed for NCU Institute of Astronomy employees and students - if
 
 -- Usage --
 
-Just download suitable release and enjoy. .Deb release is non-static build and may not work if you use older distro. I recommend to use .AppImage version instead.
+Just download suitable release and enjoy. .Deb release is now static and does not require depedencies. Only make sure, you use at least something based on ubuntu 18.04
 
 If you want to build it instead...
 
