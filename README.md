@@ -17,9 +17,24 @@ If you want to build it instead...
 
 -- Compilation on Linux systems --
 
-You will need packages "qt4-default" or "qt5-default" and g++ compiler (works best with version 8)
+- Needed Packages -
+g++
 
-When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "mdrt4sv".
+qt5-default
+
+CCFits and cfitsio libraries (https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
+
+
+- How to install? -
+
+sudo apt install g++
+
+sudo apt install qt5-default
+
+CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local/lib"
+
+
+When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "rt4sv++".
 It is good to type "make clean" after compilation is done.
 
 -- Known problems --
