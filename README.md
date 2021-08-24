@@ -116,4 +116,4 @@ I do not use system-specific libraries and commands inside rt4sv++, so if you co
 4. Will this run on Windows?
 
 Working on Windows with this program seems a bit non-natural to me - but since running it does not require terminal window, it can be done - you just need to compile it correctly. Best way is to download qt tools from qt site and use them to compile. Also remember, that you'll probably need to copy some dll files to executable directory to open it outside qtCreator.
-Also there is no point of building windows version, since it is also in the "Release" section now.
+Also there is no point of building windows version, since it is also in the "Release" section now. Also, I don't know if well CCfits and Cfitsio libraries are aveliable on windows. That's why latest release of windows version does not support FITS files.
