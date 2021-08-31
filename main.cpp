@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     // -- zaczynamy program --
     QApplication program (argc, argv);
     program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));
-    //program.setStyle("Material");
+    program.setStyle("GTK2");
     //program.setStyle(new QWindowsVistaStyle);
     // -- tworzymy okno programu --
     if (argc > 1)

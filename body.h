@@ -11,10 +11,11 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "qcustomplot.h"
+#include "libs/qcustomplot.h"
 #include <deque>
 #include <stdlib.h>
 #include <CCfits/CCfits>
+#include "data/spectral_container.h"
 
 using namespace std;
 
@@ -26,6 +27,8 @@ class body : public QObject
 public:
     body(const char * nazwa);
 
+    // -- do przechowywania danych --
+    spectral_container * dataTable = new spectral_container;
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka

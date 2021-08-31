@@ -294,6 +294,7 @@ body::body(const char * nazwa)
             window.setGeometry(window.x(), window.y(),1360,720);
             display_dynamic_spectrum();
             geometry_window_set = 1;
+            dataTable->loadDataFromList(nazwa);
         }
     }
 
