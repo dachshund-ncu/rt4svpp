@@ -18,7 +18,7 @@ kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <CCfits/CCfits>
 
 // -- definicja klasy --
 class spectral_container
@@ -26,26 +26,25 @@ class spectral_container
 
 // -- publiczne metody i atrybuty --
 public:
-    // - kontenery z danymi 2D-
-    // widma
+    // - kontenery z danymi -
+    // widma (2-D)
     std::vector < std::vector < double > > spectraTableI; // 2d kontener z widmami (polaryzacja I)
     std::vector < std::vector < double > > spectraTableV; // 2d kontener z widmami (polaryzacja V)
     std::vector < std::vector < double > > spectraTableLHC; // 2d kontener z widmami (polaryzacja LHC)
     std::vector < std::vector < double > > spectraTableRHC; // 2d kontener z widmami (polaryzacja RHC)
-    // niepewności
-    std::vector < std::vector < double > > spectraTableIERR; // 2d kontener z widmami (polaryzacja I)
-    std::vector < std::vector < double > > spectraTableVERR; // 2d kontener z widmami (polaryzacja V)
-    std::vector < std::vector < double > > spectraTableLHCERR; // 2d kontener z widmami (polaryzacja LHC)
-    std::vector < std::vector < double > > spectraTableRHCERR; // 2d kontener z widmami (polaryzacja RHC)
+    // niepewności (1-D)
+    std::vector < double > spectraTableIERR; // 1d kontener z widmami (polaryzacja I)
+    std::vector < double > spectraTableVERR; // 1d kontener z widmami (polaryzacja V)
+    std::vector < double > spectraTableLHCERR; // 1d kontener z widmami (polaryzacja LHC)
+    std::vector < double > spectraTableRHCERR; // 1d kontener z widmami (polaryzacja RHC)
     // prędkości
     std::vector < std::vector < double > > velocityTable; // 2d kontener z prędkościami radialnymi
-    // rok, miesiąc, dzień, godzina, minuta, sekunda:
-    std::vector < std::vector < double > > datetimeTable; // 2d kontener z dniem, etc.
     // - kontenery z danymi 1D -
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
     std::vector < double >  jdTable; // 1D kontener z epokami (jd)
     std::vector < double >  decyrTable; // 1D kontener z epokami (decimal year)
+        std::vector < std::vector < double > > datetimeTable; // 2d kontener z datą (yr, month, day, hr, min, sec)
     // tsys
     std::vector < double >  tsysTable; // 1D kontener z TSYS
     // pozycja
@@ -54,8 +53,11 @@ public:
     std::vector < double >  zTable; // 1D kontener z odległościami zenitalnymi
     // częstotliwości, prędkości centralne
     std::vector < double > restFreqsTable; // 1D kontener z częstotliwościami spoczynkowymi [MHz]
-    std::vector < double > baseBandWidthTable; // 1D kontener z szerokościami wstęgi [MHz]
+    std::vector < double > bandWidthTable; // 1D kontener z szerokościami wstęgi [MHz]
     std::vector < double > vlsrTable; // 1D kontener z prędkościami centralnymi [Km/s]
+    std::vector < std::string > isotimeTable; // 1D kontener z czasem w formacie ISO
+    // czy plik to fits czy AVR
+    std::vector < std::string > fileTypeTab; // 1D kontener z nazwą typu pliku (FITS lub AVR)
 
     // - metody -
     // metoda inicjująca
@@ -65,14 +67,18 @@ public:
 
 
 private:
-    // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
-    void loadSingleSpectrumFromFile(std::string spectrumFileName);
-    // sortowanie bąbelkowe epokami
-    void bubbleSortEpochs();
-    // czyści wszystkie kontenery (ale nie zwalnia pamięci)
-    void clearAllTables();
-    // czyści wszystkie kontenery (i zwalnia pamięć)
-    void clearAllMemory();
+    void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
+    void loadSingleSpectrum(std::ifstream & file);    // metoda wczytywania pliku AVR
+    void loadSingleSpectrum(CCfits::FITS & file);    // metoda wczytywania pliku FITS
+    void bubbleSortEpochs();    // sortowanie bąbelkowe epokami
+    void clearAllTables(); // czyści wszystkie kontenery (ale nie zwalnia pamięci)
+    bool isPies(std::string fileName);    // sprawdza czy fits czy avr
+    double JD (double year, double month, double day); // liczy JD
+    double decimalyear(double year, double month, double day); // liczy zmiennoprzecinkowy rok
+    double calculate_RMS(std::vector < double > polarization, std::vector < unsigned long int > limits);     // liczy RMS
+    std::vector < double > makeTimeFromIsotime(std::string isotime); // liczy czas (jd, mjd, decyr) z isotime
+    std::vector < double > extractDoublesFromIsotime(std::string isotime); // extrah*je double (yr, month, day, hr,min,day) z isotime
+    std::vector < std::vector < double > > recreate_from_rlhc(std::vector < double > lhc, std::vector < double > rhc);     // przelicza LHC i RHC na I oraz V
 };
 
 #endif // SPECTRAL_CONTAINER_H
