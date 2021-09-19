@@ -18,6 +18,7 @@ kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <QtWidgets>
 #include <CCfits/CCfits>
 
 // -- definicja klasy --
@@ -32,19 +33,19 @@ public:
     std::vector < std::vector < double > > spectraTableV; // 2d kontener z widmami (polaryzacja V)
     std::vector < std::vector < double > > spectraTableLHC; // 2d kontener z widmami (polaryzacja LHC)
     std::vector < std::vector < double > > spectraTableRHC; // 2d kontener z widmami (polaryzacja RHC)
-    // niepewności (1-D)
+    // niepewności RMS (1-D)
     std::vector < double > spectraTableIERR; // 1d kontener z widmami (polaryzacja I)
     std::vector < double > spectraTableVERR; // 1d kontener z widmami (polaryzacja V)
     std::vector < double > spectraTableLHCERR; // 1d kontener z widmami (polaryzacja LHC)
     std::vector < double > spectraTableRHCERR; // 1d kontener z widmami (polaryzacja RHC)
-    // prędkości
+    // prędkości (dla każdej epoki generowana jest osobna tablica)
     std::vector < std::vector < double > > velocityTable; // 2d kontener z prędkościami radialnymi
-    // - kontenery z danymi 1D -
+    // - pozostałe kontenery z danymi -
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
     std::vector < double >  jdTable; // 1D kontener z epokami (jd)
     std::vector < double >  decyrTable; // 1D kontener z epokami (decimal year)
-        std::vector < std::vector < double > > datetimeTable; // 2d kontener z datą (yr, month, day, hr, min, sec)
+    std::vector < std::vector < double > > datetimeTable; // 2d kontener z datą (yr, month, day, hr, min, sec)
     // tsys
     std::vector < double >  tsysTable; // 1D kontener z TSYS
     // pozycja
@@ -58,12 +59,19 @@ public:
     std::vector < std::string > isotimeTable; // 1D kontener z czasem w formacie ISO
     // czy plik to fits czy AVR
     std::vector < std::string > fileTypeTab; // 1D kontener z nazwą typu pliku (FITS lub AVR)
+    // nazwy plików
+    std::vector < std::string > fileNamesTab; // nazwy plików [ścieżki absolutne]
 
     // - metody -
     // metoda inicjująca
     spectral_container();
     // zapełnia kontenery, w argumencie jest lista plików, wielokrotnie wzywa loadSingleSpectrumFromFile()
+    // domyślnie, ta metoda będzie wywoływana gdy wywoła się program z listą w argumencie
     void loadDataFromList(std::string listWithFilenames);
+    // to samo, tylko w argumencie przyjmuję listę plików QT
+    // domyślnie, ta metoda będzie wywoływana gdy wybierze się pliki za pomocną graficznego wybieraka
+    void loadDataFromList(QStringList qtListaPlikow);
+
 
 
 private:

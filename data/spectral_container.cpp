@@ -16,22 +16,48 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
     // -- czytamy plik z listą --
     std::ifstream filesList;
     filesList.open(listWithFilenames.c_str());
+
     if (!filesList.good())
     {
         return;
     }
+
+    // -- zdobywamy info o ścieżce całkowitej --
+    QFileInfo infotmp (QString::fromStdString(listWithFilenames));
+    std::string working_directory = infotmp.absolutePath().toStdString();
+
 
     // bufor
     std::string bufor;
     // pętla
     while (filesList.good())
     {
+        // czytamy jedną linię z listy plików
         std::getline(filesList, bufor);
-        loadSingleSpectrumFromFile(bufor);
+
+        // ładujemy plik z listy
+        // w argumencie podajemy ABSOLUTNĄ ścieżkę
+        loadSingleSpectrumFromFile(working_directory + "/" + bufor);
     }
     filesList.close();
 
 }
+
+// - metoda czytająca listę plików -
+void spectral_container::loadDataFromList(QStringList qtListaPlikow)
+{
+    // -- na początek - czyścimy kontenery --
+    clearAllTables();
+
+    // -- i czytamy pliki zgodnie z listą --
+    for(int i = 0; i < qtListaPlikow.size(); i++)
+    {
+        loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
+    }
+    // w liście zawsze będą absolutne ścieżki do plików
+
+}
+
 
 // - metoda czytająca pojedynczy plik z listy -
 void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName)
@@ -53,6 +79,10 @@ void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName
         CCfits::FITS niePies(spectrumFileName, CCfits::Read);
         loadSingleSpectrum(niePies);
     }
+
+    // dodatkowo dodajemy do listy plików nazwę
+    fileNamesTab.push_back(spectrumFileName);
+
 }
 
 void spectral_container::loadSingleSpectrum(std::ifstream &file)
@@ -269,13 +299,24 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
     double freq_step = freq_rang / nchans;
     // prędkość światła
     double c = 299792.458;
-    // -- obliczamy doppler shift (powinien != 0 tylko dla fitsów RS)
-    double f_shift = (dopp_vto + dopp_vob + dopp_vsu) / c * restfreq;
+
+    // DOPPLER TRACKING
+    // całkowita prędkość w kierunku źródła
+    double overall_velocity = vlsr + dopp_vto + dopp_vob + dopp_vsu;
+    // beta
+    double beta = overall_velocity / c;
+    // gamma
+    double gamma = 1.0 / sqrt(1.0 - beta * beta);
+    // fcentr
+    double fcentr = restfreq * (gamma * (1.0 - beta));
+    // fbeg
+    freq_beg = fcentr - (freq_rang / 2.0);
+    // ----------------
 
     // -- generujemy tablice prędkości --
     for (int i = 0; i < nchans; i++)
     {
-        freqs[i] = (freq_beg + i*freq_step) + f_shift;
+        freqs[i] = (freq_beg + i*freq_step);
         vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
     }
 

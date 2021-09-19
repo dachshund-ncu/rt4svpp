@@ -23,4 +23,4 @@ unix:!macx: LIBS += -L /usr/local/lib/ -lCCfits
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 
-unix:!macx: LIBS += -lcfitsio
+unix:!macx: LIBS += /usr/local/lib/ -lcfitsio

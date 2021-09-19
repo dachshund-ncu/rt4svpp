@@ -294,7 +294,7 @@ body::body(const char * nazwa)
             window.setGeometry(window.x(), window.y(),1360,720);
             display_dynamic_spectrum();
             geometry_window_set = 1;
-            dataTable->loadDataFromList(nazwa);
+            //dataTable->loadDataFromList(nazwa);
         }
     }
 
@@ -1614,14 +1614,29 @@ void body::read_fits_file(const char * nazwa_pliku23)
     // -- krok częstotliwości --
     double freq_step = freq_rang / nchans;
     // prędkość światła
-    double c = 299792.458;
+    double c = 299792.458; // km/s
+
+    // DOPPLER TRACKING
+    // całkowita prędkość w kierunku źródła
+    double overall_velocity = vlsr + dopp_vto + dopp_vob + dopp_vsu;
+    // beta
+    double beta = overall_velocity / c;
+    // gamma
+    double gamma = 1.0 / sqrt(1.0 - beta * beta);
+    // fcentr
+    double fcentr = restfreq * (gamma * (1.0 - beta));
+    // fbeg
+    freq_beg = fcentr - (freq_rang / 2.0);
+    // ----------------
+
+
     // -- obliczamy doppler shift (powinien != 0 tylko dla fitsów RS)
-    double f_shift = (dopp_vto + dopp_vob + dopp_vsu) / c * restfreq;
+    //double f_shift = (dopp_vto + dopp_vob + dopp_vsu) / c * restfreq;
 
     // -- generujemy tablice prędkości --
     for (int i = 0; i < nchans; i++)
     {
-        freqs[i] = (freq_beg + i*freq_step) + f_shift;
+        freqs[i] = (freq_beg + i*freq_step);
         vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
     }
 
