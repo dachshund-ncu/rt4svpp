@@ -1618,7 +1618,7 @@ void body::read_fits_file(const char * nazwa_pliku23)
 
     // DOPPLER TRACKING
     // całkowita prędkość w kierunku źródła
-    double overall_velocity = vlsr + dopp_vto + dopp_vob + dopp_vsu;
+    double overall_velocity = vlsr + dopp_vto;// + dopp_vto + dopp_vob;// + dopp_vob + dopp_vsu); // prędkość systemowa + prędkość w kierunku źródła +
     // beta
     double beta = overall_velocity / c;
     // gamma
@@ -1628,10 +1628,6 @@ void body::read_fits_file(const char * nazwa_pliku23)
     // fbeg
     freq_beg = fcentr - (freq_rang / 2.0);
     // ----------------
-
-
-    // -- obliczamy doppler shift (powinien != 0 tylko dla fitsów RS)
-    //double f_shift = (dopp_vto + dopp_vob + dopp_vsu) / c * restfreq;
 
     // -- generujemy tablice prędkości --
     for (int i = 0; i < nchans; i++)
@@ -2199,19 +2195,35 @@ void body::czytaj_ale_lepiej(const char *nazwa_pliku23)
     double c = 299792.458; // km/s
     double beta = vlsr / c;
     double gamma = 1.0 / sqrt(1.0 - beta*beta);
-    double fcentr = freq / (gamma * (1.0 - beta));
+    double fcentr = freq * (gamma * (1.0 - beta));
     double fbegin = fcentr - wst / 2.0;
     double fend = fcentr + wst / 2.0;
     double h = (fend - fbegin) / 2048.0;
     vector < double > freqs;
+
     for (unsigned long int i = 0; i < n_chans; i++)
     {
       freqs.push_back(fbegin + h*i);
     }
+
+    // tworzymy tablicę z odwróconymi prędkościami
+    vector < double > tmp_vel_rev, tmp_vel_nonrev;
+
+    // zapisujemy prędkości odwrócone (zgodnie z orderem freq)
     for (unsigned long int i = 0; i < n_chans; i++)
     {
-      VEL.push_back(c * ((freqs[i] - freq) / freq));
+      tmp_vel_rev.push_back(- c * ( (freqs[i]  / freq) - 1.0) );
     }
+
+    // do drugiej tablicy zapisujemy prędkości w odpowiednim orderze (zgodnie z LHC i RHC)
+    for (unsigned long int i = 0; i < n_chans; i++)
+    {
+        tmp_vel_nonrev.push_back(tmp_vel_rev[tmp_vel_rev.size() - 1 - i] );
+    }
+
+    VEL = tmp_vel_nonrev;
+
+
     for (unsigned long int i = 0; i < n_chans; i++)
     {
       CHAN.push_back(i+1);
