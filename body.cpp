@@ -1618,7 +1618,11 @@ void body::read_fits_file(const char * nazwa_pliku23)
 
     // DOPPLER TRACKING
     // całkowita prędkość w kierunku źródła
-    double overall_velocity = vlsr + dopp_vto;// + dopp_vto + dopp_vob;// + dopp_vob + dopp_vsu); // prędkość systemowa + prędkość w kierunku źródła +
+    double overall_velocity = vlsr + dopp_vto;
+    cout << vlsr << endl;
+    cout << dopp_vsu << endl;
+    cout << dopp_vto << endl;
+    cout << dopp_vob << endl;
     // beta
     double beta = overall_velocity / c;
     // gamma
@@ -1635,6 +1639,8 @@ void body::read_fits_file(const char * nazwa_pliku23)
         freqs[i] = (freq_beg + i*freq_step);
         vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
     }
+
+
 
     // -- odwracamy tablice, by VEL było od najmniejszej --
     vector < double > vel_rev((int) nchans), lhc_rev((int) nchans), rhc_rev((int) nchans);

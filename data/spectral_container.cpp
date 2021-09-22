@@ -302,8 +302,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
 
     // DOPPLER TRACKING
     // całkowita prędkość w kierunku źródła
-    double overall_velocity = vlsr + dopp_vto + dopp_vob + dopp_vsu;
-    // beta
+    double overall_velocity = vlsr + dopp_vto;
     double beta = overall_velocity / c;
     // gamma
     double gamma = 1.0 / sqrt(1.0 - beta * beta);
