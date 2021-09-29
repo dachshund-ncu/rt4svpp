@@ -1619,10 +1619,6 @@ void body::read_fits_file(const char * nazwa_pliku23)
     // DOPPLER TRACKING
     // całkowita prędkość w kierunku źródła
     double overall_velocity = vlsr + dopp_vto;
-    cout << vlsr << endl;
-    cout << dopp_vsu << endl;
-    cout << dopp_vto << endl;
-    cout << dopp_vob << endl;
     // beta
     double beta = overall_velocity / c;
     // gamma
