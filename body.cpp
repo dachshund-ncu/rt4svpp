@@ -289,12 +289,14 @@ body::body(const char * nazwa)
                 working_directory = info.absolutePath().toStdString();
 
             }
-            read_time_series();
+            // tymczasowo wyłączam
+            // read_time_series();
+
             list_filename = string(nazwa);
             window.setGeometry(window.x(), window.y(),1360,720);
             display_dynamic_spectrum();
             geometry_window_set = 1;
-            //dataTable->loadDataFromList(nazwa);
+            dataTable->loadDataFromList(nazwa);
         }
     }
 

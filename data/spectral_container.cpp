@@ -1,5 +1,5 @@
 #include "spectral_container.h"
-#include <CCfits/CCfits>
+//#include <CCfits/CCfits>
 // - metoda inicjująca klasę -
 spectral_container::spectral_container()
 {
@@ -35,9 +35,13 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
         // czytamy jedną linię z listy plików
         std::getline(filesList, bufor);
 
-        // ładujemy plik z listy
-        // w argumencie podajemy ABSOLUTNĄ ścieżkę
-        loadSingleSpectrumFromFile(working_directory + "/" + bufor);
+        // -- dodatkowe zabezpieczenie --
+        if (bufor != "")
+        {
+            // ładujemy plik z listy
+            // w argumencie podajemy ABSOLUTNĄ ścieżkę
+            loadSingleSpectrumFromFile(working_directory + "/" + bufor);
+        }
     }
     filesList.close();
 
@@ -70,12 +74,18 @@ void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName
     // pies to plik AVR, brak psa - FITS
     if (isPies(spectrumFileName))
     {
+        std::cout << spectrumFileName << ":  AVR" << std::endl;
+
         std::ifstream pies;
         pies.open(spectrumFileName.c_str());
         loadSingleSpectrum(pies);
+        pies.close();
+
+
     }
     else
     {
+        std::cout << spectrumFileName << ":  FITS" << std::endl;
         CCfits::FITS niePies(spectrumFileName, CCfits::Read);
         loadSingleSpectrum(niePies);
     }
@@ -87,6 +97,155 @@ void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName
 
 void spectral_container::loadSingleSpectrum(std::ifstream &file)
 {
+    // tworzymy tablicę stringów
+    // każdy jej element będzie przechowywał jedną linię w pliku
+    std::vector < string > linesInFile;
+
+    // dodatkowo bufor do funkcji getline
+    std::string bufor;
+
+    // wczytujemy plik do kontenera
+    while(file.good())
+    {
+        std::getline(file, bufor);
+        linesInFile.push_back(bufor);
+    }
+
+    // -- elewacja i azymut --
+    bufor = linesInFile[3];
+    std::vector < double > elaz;
+    double bufor_double;
+    std::stringstream eeeel(bufor);
+    while(eeeel >> bufor_double)
+    {
+        elaz.push_back(bufor_double);
+    }
+    double az = elaz[0] + elaz[1] / 60.0;
+    double el = elaz[2] + elaz[3] / 60.0;
+    double z = 90.0 - el;
+    // -----------------------
+
+    // ------ RA i DEC -------
+    // nie zbieramy na razie informacji o RA i DEC
+    // -----------------------
+
+    // -- restfreq, vlsr i nazwa źródła --
+    bufor = linesInFile[10];
+    std::stringstream restf_ss(bufor);
+    std::vector < double > dane;
+    while(restf_ss >> bufor_double)
+    {
+        dane.push_back(bufor_double);
+    }
+    // -- zapisujemy dane --
+    double vlsr = dane[3];
+    double freq = dane[4];
+    double wst  = dane[1];
+    double n_chans = dane[0];
+    // -- wczytujemy nazwę źródła, pomijając białe znaki --
+    std::string srcname = linesInFile[11];
+    srcname.erase(remove(srcname.begin(), srcname.end(), ' '), srcname.end());
+    // ------------------------------------
+
+    // -- data --
+    bufor = linesInFile[4];
+    double day, month, year, hour, min, sec;
+    day = std::stod(bufor.substr(4,2));
+    month = std::stod(bufor.substr(6,2));
+    year = std::stod("20" + bufor.substr(8,2));
+    std::vector < double > hms;
+    bufor = linesInFile[13];
+    std::stringstream hms_ss(bufor);
+    while(hms_ss >> bufor_double)
+    {
+        hms.push_back(bufor_double);
+    }
+    hour = hms[0];
+    min = hms[1];
+    sec = hms[2];
+    // dodatkowo
+    double hour2;
+    double day2;
+    hour2 = hour + min / 60.0 + sec / 3600.0;
+    day2 = day + hour2 / 24.0;
+    double jd = JD(year, month, day2);
+    double mjd = jd - 2400000.5;
+    double decyr = decimalyear(year, month, day2);
+    std::vector < double > datetime_tmp(6);
+    datetime_tmp[0] = year;
+    datetime_tmp[1] = month;
+    datetime_tmp[2] = day;
+    datetime_tmp[3] = hour;
+    datetime_tmp[4] = min;
+    datetime_tmp[5] = sec;
+    // ----------
+
+    // -- tsys --
+    bufor = linesInFile[6];
+    double tsystmp;
+    std::stringstream tsys_ss(bufor);
+    tsys_ss >> tsystmp;
+    // ----------
+
+    // -- header --
+    std::string headertmp = "";
+    for (unsigned long int i = 0; i < 14; i++)
+    {
+        headertmp = headertmp + linesInFile[i] + "\n";
+    }
+    // ------------
+
+    // ---- CZYTANIE DANYCH ----
+    std::vector < double > I, V, LHC, RHC;
+    I = loadPOLfromAVR(linesInFile, 17);
+    V = loadPOLfromAVR(linesInFile, 287);
+    LHC = loadPOLfromAVR(linesInFile, 557);
+    RHC = loadPOLfromAVR(linesInFile, 827);
+    // -------------------------
+
+    // ---- DOPPLER TRACKING ---
+    std::vector < std::vector < double > > freqsAndVels;
+    freqsAndVels = doppler_track(vlsr, freq, wst, 2048.0);
+    std::vector < double > vels = freqsAndVels[1];
+    std::vector < double > freqs = freqsAndVels[0];
+    // -------------------------
+
+    // ---- RMS ----
+    std::vector < unsigned long int > rms_limits = {100, 400, (unsigned long int) 2048 - 400, (unsigned long int) 2048 - 100};
+    double rmsI = calculate_RMS(I, rms_limits);
+    double rmsV = calculate_RMS(V, rms_limits);
+    double rmsLHC = calculate_RMS(LHC, rms_limits);
+    double rmsRHC = calculate_RMS(RHC, rms_limits);
+    // -------------
+
+    // ---- isotime ----
+    std::string isotime = construct_isotime(year, month, day, hour, min, sec);
+    // -----------------
+
+    // ---- dodajemy do kontnerów ----
+    // 2-D
+    spectraTableI.push_back(I);
+    spectraTableV.push_back(V);
+    spectraTableLHC.push_back(LHC);
+    spectraTableRHC.push_back(RHC);
+    velocityTable.push_back(vels);
+    // 1-D
+    spectraTableIERR.push_back(rmsI);
+    spectraTableVERR.push_back(rmsV);
+    spectraTableLHCERR.push_back(rmsLHC);
+    spectraTableRHCERR.push_back(rmsRHC);
+    mjdTable.push_back(mjd);
+    jdTable.push_back(jd);
+    decyrTable.push_back(decyr);
+    datetimeTable.push_back(datetime_tmp);
+    azTable.push_back(az);
+    elTable.push_back(el);
+    zTable.push_back(z);
+    restFreqsTable.push_back(freq);
+    bandWidthTable.push_back(wst);
+    vlsrTable.push_back(vlsr);
+    isotimeTable.push_back(isotime);
+    tsysTable.push_back(tsystmp);
 
 }
 
@@ -293,6 +452,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
         rhc[(int) nchans - 1 - i] = 0.0;
     }
 
+    /*
     // -- deklarujemy tablice z częstotliwościami i prędkościami --
     std::vector < double > freqs((int) nchans), vels((int) nchans);
     // -- krok częstotliwości --
@@ -302,7 +462,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
 
     // DOPPLER TRACKING
     // całkowita prędkość w kierunku źródła
-    double overall_velocity = vlsr + dopp_vto;
+
     // beta
     double beta = overall_velocity / c;
     // gamma
@@ -319,17 +479,21 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
         freqs[i] = (freq_beg + i*freq_step);
         vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
     }
+    */
+    double overall_velocity = vlsr + dopp_vto;
+    std::vector < std::vector < double > > freqsAndVels;
+    freqsAndVels = doppler_track(overall_velocity, restfreq, freq_rang, nchans);
+    std::vector < double > vels = freqsAndVels[1];
+    std::vector < double > freqs = freqsAndVels[0];
 
     // -- odwracamy tablice, by VEL było od najmniejszej --
-    std::vector < double > vel_rev((int) nchans), lhc_rev((int) nchans), rhc_rev((int) nchans);
+    std::vector < double > lhc_rev((int) nchans), rhc_rev((int) nchans);
     for (int i = 0; i < nchans; i++)
     {
-        vel_rev[i] = vels[vels.size() - 1 - i];
         lhc_rev[i] = lhc[lhc.size() - 1 - i];
         rhc_rev[i] = rhc[rhc.size() - 1 - i];
     }
     // zapisujemy do oryginalnych
-    vels = vel_rev;
     lhc = lhc_rev;
     rhc = rhc_rev;
 
@@ -634,4 +798,135 @@ std::vector < double > spectral_container::extractDoublesFromIsotime(std::string
         time_temporal.push_back(bufor_double_time);
     }
     return time_temporal;
+}
+
+std::vector < double > spectral_container::loadPOLfromAVR(std::vector < std::string > linesInFile, int line_begin)
+{
+     /*
+     linie w pliku:
+     17  - początek I
+     287 - początek V
+     557 - początek LHC
+     827 - początek RHC
+     */
+
+    // kilka zmiennych na początek
+    std::string bufor;
+    double bufor_double;
+
+    // tymczasowy kontener na początek
+    std::vector < double > tmp_container(2048);
+
+    // -- I --
+    // zapełniamy pierwsze  i ostatnie 23 kanały zerami
+    for(int i = 0; i < 24; i++)
+    {
+        tmp_container[i] = 0.0;
+        tmp_container[2047 - i] = 0.0;
+    }
+
+    // zapełniamy resztę
+    int index_in_table = 23;
+    for (unsigned long int k = 0; k < 250; k++)
+    {
+        bufor = linesInFile[line_begin+k];
+        std::stringstream ss(bufor);
+        while(ss >> bufor_double)
+        {
+            tmp_container[index_in_table] = (bufor_double / 1000.0); // dodajemy do kontenera
+            index_in_table++; // inkrementujemy index w kontenerze
+        }
+
+    }
+
+    // zwracamy kontener
+    return tmp_container;
+
+}
+
+std::vector < std::vector < double > > spectral_container::doppler_track(double overall_velocity, double restfreq, double freq_rang, double nchans)
+{
+    /*
+     celem tej metody jest zwrócenie tablicy z prędkościami radialnymi i częstotliwościami
+     */
+
+    // prędkość światła
+    double c = 299792.458; // km/s
+
+    // DOPPLER TRACKING
+    // beta
+    double beta = overall_velocity / c;
+    // gamma
+    double gamma = 1.0 / sqrt(1.0 - beta * beta);
+    // fcentr
+    double fcentr = restfreq * (gamma * (1.0 - beta));
+    // fbeg
+    double freq_beg = fcentr - (freq_rang / 2.0);
+    double freq_step = freq_rang / nchans;
+    // ----------------
+
+    // tablice z częstotliwościami i prędkościami
+    std::vector < double > freqs((int) nchans), vels((int) nchans);
+
+    // -- generujemy tablice prędkości --
+    for (int i = 0; i < nchans; i++)
+    {
+        freqs[i] = (freq_beg + i*freq_step);
+        vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
+    }
+
+    // -- odwracamy tablice, by VEL było od najmniejszej --
+    std::vector < double > vel_rev((int) nchans), freqs_rev((int) nchans);
+    for (int i = 0; i < nchans; i++)
+    {
+        vel_rev[i] = vels[vels.size() - 1 - i];
+        freqs_rev[i] = freqs[freqs.size() - 1 - i];
+    }
+
+    std::vector < std::vector < double > > for_return(2);
+    for_return[0] = freqs_rev;
+    for_return[1] = vel_rev;
+
+    return for_return;
+}
+
+std::string spectral_container::construct_isotime(double year, double month, double day, double hour, double min, double sec)
+{
+    // deklarujemy stringi, potrzebne do konstrukcji isoformatu
+    // -- konstruujemy pytime format --
+    string time_in_isoformat, yearstr, monthstr, daystr, hourstr, minutestr, secondstr;
+
+    // zapisujemy czas w isoformacie (YYYY-MM-DD)
+    //year
+    yearstr = std::to_string((int)year);
+    // month
+    if (std::to_string((int)month).length() == 1)
+        monthstr = string("0")+std::to_string((int)month);
+    else
+        monthstr = std::to_string((int)month);
+    // day
+    if (std::to_string((int)day).length() == 1)
+        daystr = string("0") + std::to_string((int)day);
+    else
+        daystr = std::to_string((int)day);
+    // hour
+    if (std::to_string((int)hour).length() == 1)
+        hourstr = string("0") + std::to_string((int)hour);
+    else
+        hourstr = std::to_string((int)hour);
+    // minute
+    if (std::to_string((int)min).length() == 1)
+        minutestr = string("0") + std::to_string((int)min);
+    else
+        minutestr = std::to_string((int)min);
+    // second
+    if (std::to_string((int)sec).length() == 1)
+        secondstr = string("0") + std::to_string(sec);
+    else
+        secondstr = std::to_string(sec);
+
+    // zapisujemy do time...
+    time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
+
+    return time_in_isoformat;
 }

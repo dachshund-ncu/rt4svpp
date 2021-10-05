@@ -87,6 +87,9 @@ private:
     std::vector < double > makeTimeFromIsotime(std::string isotime); // liczy czas (jd, mjd, decyr) z isotime
     std::vector < double > extractDoublesFromIsotime(std::string isotime); // extrah*je double (yr, month, day, hr,min,day) z isotime
     std::vector < std::vector < double > > recreate_from_rlhc(std::vector < double > lhc, std::vector < double > rhc);     // przelicza LHC i RHC na I oraz V
+    std::vector < double > loadPOLfromAVR(std::vector < std::string > linesInFile, int line_begin); // wczytuje I z pliku AVR, podanego w argumencie jako kontener stringów
+    std::vector < std::vector < double > > doppler_track (double vlsr, double restfreq, double freq_rang, double nchans);
+    std::string construct_isotime(double year, double month, double day, double hour, double min, double sec);
 };
 
 #endif // SPECTRAL_CONTAINER_H
