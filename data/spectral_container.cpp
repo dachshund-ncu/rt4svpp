@@ -72,22 +72,18 @@ void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName
 
     // tutaj rozpoczyna się czytanie pojedynczego pliku
     // pies to plik AVR, brak psa - FITS
+    int index = fileNamesTab.size() + 1;
     if (isPies(spectrumFileName))
     {
-        std::cout << spectrumFileName << ":  AVR" << std::endl;
-
         std::ifstream pies;
         pies.open(spectrumFileName.c_str());
-        loadSingleSpectrum(pies);
+        loadSingleSpectrum(pies, index);
         pies.close();
-
-
     }
     else
     {
-        std::cout << spectrumFileName << ":  FITS" << std::endl;
         CCfits::FITS niePies(spectrumFileName, CCfits::Read);
-        loadSingleSpectrum(niePies);
+        loadSingleSpectrum(niePies, index);
     }
 
     // dodatkowo dodajemy do listy plików nazwę
@@ -95,7 +91,7 @@ void spectral_container::loadSingleSpectrumFromFile(std::string spectrumFileName
 
 }
 
-void spectral_container::loadSingleSpectrum(std::ifstream &file)
+void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_file)
 {
     // tworzymy tablicę stringów
     // każdy jej element będzie przechowywał jedną linię w pliku
@@ -206,6 +202,7 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file)
     // ---- DOPPLER TRACKING ---
     std::vector < std::vector < double > > freqsAndVels;
     freqsAndVels = doppler_track(vlsr, freq, wst, 2048.0);
+    std::vector < double > chans = freqsAndVels[2];
     std::vector < double > vels = freqsAndVels[1];
     std::vector < double > freqs = freqsAndVels[0];
     // -------------------------
@@ -229,6 +226,7 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file)
     spectraTableLHC.push_back(LHC);
     spectraTableRHC.push_back(RHC);
     velocityTable.push_back(vels);
+    channelTable.push_back(chans);
     // 1-D
     spectraTableIERR.push_back(rmsI);
     spectraTableVERR.push_back(rmsV);
@@ -247,9 +245,12 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file)
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsystmp);
 
+    // --- komunikat że loaded ---
+    print_loaded_comm(index_of_file, isotime, rmsI);
+
 }
 
-void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
+void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_file)
 {
     // deklarujemy tymczasowe zmienne w stacku
     // zostaną zniszczone po wykonaniu funkcji, więc nie musimy się o nie martwić
@@ -548,6 +549,9 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file)
     vlsrTable.push_back(vlsr);
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsys);
+
+    // --- komunikat że loaded ---
+    print_loaded_comm(index_of_file, isotime, rmsI);
 }
 
 // - sortowanie bąbelkowe po epokach -
@@ -866,13 +870,14 @@ std::vector < std::vector < double > > spectral_container::doppler_track(double 
     // ----------------
 
     // tablice z częstotliwościami i prędkościami
-    std::vector < double > freqs((int) nchans), vels((int) nchans);
+    std::vector < double > freqs((int) nchans), vels((int) nchans), channels((int) nchans);
 
     // -- generujemy tablice prędkości --
     for (int i = 0; i < nchans; i++)
     {
         freqs[i] = (freq_beg + i*freq_step);
         vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
+        channels[i] = i + 1;
     }
 
     // -- odwracamy tablice, by VEL było od najmniejszej --
@@ -883,9 +888,10 @@ std::vector < std::vector < double > > spectral_container::doppler_track(double 
         freqs_rev[i] = freqs[freqs.size() - 1 - i];
     }
 
-    std::vector < std::vector < double > > for_return(2);
+    std::vector < std::vector < double > > for_return(3);
     for_return[0] = freqs_rev;
     for_return[1] = vel_rev;
+    for_return[2] = channels;
 
     return for_return;
 }
@@ -929,4 +935,10 @@ std::string spectral_container::construct_isotime(double year, double month, dou
     time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
 
     return time_in_isoformat;
+}
+
+void spectral_container::print_loaded_comm(int obsnum, std::string isotime, double obs_error)
+{
+    // printuje komunikat o załadowanym pliku
+    std::cout << "[" << obsnum << "]   " << isotime << "   rms: " << obs_error << std::endl;
 }

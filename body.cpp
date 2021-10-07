@@ -251,14 +251,19 @@ body::body(const char * nazwa)
     // -- probojemy czytac liste --
     if (strncmp(nazwa, "", 300) == 0)
     {
-        lista.open("lista");
+        //lista.open("lista");
+        dataTable->loadDataFromList("lista");
+        window.setGeometry(window.x(), window.y(),1360,720);
+        display_dynamic_spectrum();
+        geometry_window_set = 1;
+        loaded_data = true;
+
+        /*
         if (lista.good())
         {
             read_time_series();
             list_filename = "lista";
-            window.setGeometry(window.x(), window.y(),1360,720);
-            display_dynamic_spectrum();
-            geometry_window_set = 1;
+
 
         }
         else
@@ -273,11 +278,21 @@ body::body(const char * nazwa)
                 geometry_window_set = 1;
             }
         }
+        */
      }
     else
     {
 
-        lista.open(nazwa);
+        //lista.open(nazwa);
+        // ładujemy pliki
+        dataTable->loadDataFromList(nazwa);
+        list_filename = string(nazwa);
+        window.setGeometry(window.x(), window.y(),1360,720);
+        display_dynamic_spectrum();
+        geometry_window_set = 1;
+        loaded_data = true;
+
+        /*
         if (lista.good())
         {
             QFile plik;
@@ -289,15 +304,8 @@ body::body(const char * nazwa)
                 working_directory = info.absolutePath().toStdString();
 
             }
-            // tymczasowo wyłączam
-            // read_time_series();
-
-            list_filename = string(nazwa);
-            window.setGeometry(window.x(), window.y(),1360,720);
-            display_dynamic_spectrum();
-            geometry_window_set = 1;
-            dataTable->loadDataFromList(nazwa);
         }
+        */
     }
 
     // -- domyślnie ustawiamy dark mode --
@@ -3332,7 +3340,7 @@ void body::load_time_series()
     QStringList fileName1;// qstring z nazwa pliku
     QString fileName;
 
-    QFileDialog dialog(&window,tr("Select a list of AVR files or just AVR files"), tr(""), tr("All Files (*);;AVR files (*AVR.DAT);;FITS files(*fits)"));
+    QFileDialog dialog(&window,tr("Select AVR files or/and FITS file"), tr(""), tr("All Files (*);;AVR files (*AVR.DAT);;FITS files(*fits)"));
     dialog.setFileMode(QFileDialog::ExistingFiles);
     if(dialog.exec())
     {
@@ -3361,45 +3369,21 @@ void body::load_time_series()
     if (info.absolutePath().toStdString() != "")
     {
         working_directory = info.absolutePath().toStdString();
-        cout << working_directory << endl;
+        //cout << working_directory << endl;
 
     }
 
     // -- wczytujemy: jeśli nasza lista plików to AVR, wczyta się w try, jeśli to plik z listą - w catch --
-    try
-    {
-        cout << "----> Trying to load AVR files (if multiple files chosen)" << endl;
-        this->read_time_series_for_list(fileName1);
-        cout << "----> Loaded AVR files" << endl;
-        AVRNAMES_from_load = fileName1;
-    }
-    catch(...)
-    {
-        avr.close();
-        cout << "----> List of files probably chosen, loading from it instead" << endl;
-        lista.open(nazwa_pliku.c_str());
-        //cout << nazwa_pliku << endl;
-        if (lista.good() != true)
-        {
-            //cout << "----> No such file or directory!" << endl;
-            return;
-        }
-        else
-        {
-            cout << "----> Starting to load AVR files (list of files)" << endl;
-            this->read_time_series();
-            cout << "----> Loaded AVR files" << endl;
-            list_filename = nazwa_pliku;
-        }
-
-    }
+    dataTable->loadDataFromList(fileName1);
+    AVRNAMES_from_load = fileName1;
+    loaded_data = 1;
 
     if (single_spectrum_opened == 1)
     {
         kill_single_spectrum();
         display_single_spectrum();
     }
-    loaded_data = 1;
+
     if (geometry_window_set == 0)
     {
         window.setGeometry(window.x(), window.y(),1360,720);
@@ -3511,7 +3495,7 @@ void body::integrate_single(int min, int max, unsigned int marker)
     double sumLHCer = 0.0;
     double sumRHCer = 0.0;
 
-    double h = abs(abs(VELlst[marker][1]) - abs(VELlst[marker][0])); // krok
+    double h = abs( abs(dataTable->velocityTable[marker][1]) - abs(dataTable->velocityTable[marker][1]) )  ; // krok
     for(int i = min-1; i < max; i++)
     {
       if(i == 0 || i == max-1)
@@ -3705,24 +3689,27 @@ void body::plot_dynamic_spectrum()
     // -- kilka rzeczy ustawiamy --
     min_range_vel_index = 0;
     min_obs_number = 0;
-    max_range_vel_index = VELlst[0].size()-1;
-    max_obs_number = mjdlst.size()-1;
-    rozmiar_w_x = mjdlst.size();
-    rozmiar_w_y = CHANlst[0].size();
+    max_range_vel_index = dataTable->velocityTable[0].size()-1;
+    max_obs_number = dataTable->mjdTable.size()-1;
+    rozmiar_w_x = dataTable->mjdTable.size();
+    rozmiar_w_y = dataTable->velocityTable[0].size();
+
+    double min_velocity = dataTable->velocityTable[0][min_range_vel_index];
+    double max_velocity = dataTable->velocityTable[0][max_range_vel_index] - (dataTable->velocityTable[0][2] - dataTable->velocityTable[0][1]);
 
     // -- updatujemy widmo dynamiczne --
     //update_dynamic_spectrum();
 
     // color mapa
-    unsigned long int nx = mjdlst.size();
-    unsigned long int ny = CHANlst[0].size();
+    unsigned long int nx = dataTable->mjdTable.size();
+    unsigned long int ny = dataTable->velocityTable[0].size();
 
     colorMap->data()->setSize(nx,ny);
     //colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
     if (rozmiar_w_x != 1)
-        colorMap->data()->setRange(QCPRange(0, mjdlst.size()-1), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
+        colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(min_velocity, max_velocity ) );
     else
-        colorMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(VELlst[0][0], VELlst[0][VELlst[0].size()-1]-(VELlst[0][2]-VELlst[0][1])));
+        colorMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(min_velocity, max_velocity );
     //double x,y,z;
 
     for (unsigned long int xIndex = 0; xIndex < nx; xIndex++)
@@ -3730,8 +3717,8 @@ void body::plot_dynamic_spectrum()
         for (unsigned long int yIndex = 0; yIndex < ny; yIndex++)
         {
             //colorMap->data()->cellToCoord(xIndex,yIndex, &x, &y);
-            if (Ilst[xIndex][yIndex] > 0.0)
-                colorMap->data()->setCell(xIndex, yIndex, Ilst[xIndex][yIndex]);
+            if (dataTable->spectraTableI[xIndex][yIndex] > 0.0)
+                colorMap->data()->setCell(xIndex, yIndex, dataTable->spectraTableI[xIndex][yIndex]);
             else
                 colorMap->data()->setCell(xIndex, yIndex, 0.0);
         }
@@ -3745,12 +3732,6 @@ void body::plot_dynamic_spectrum()
     colorMap -> rescaleKeyAxis();
     colorMap -> rescaleValueAxis();
     colorMap -> setTightBoundary(false);
-
-    /*
-    if (set_log_scale->isChecked())
-        set_log_scale->setChecked(false);
-    */
-
 
     // -- na koniec --
     dynamic_spectrum_pl.rescaleAxes();
@@ -3784,13 +3765,12 @@ void body::display_dynamic_spectrum()
 
     else if (dynamic_spectrum_opened == 1)
     {
-        // -- kilka rzeczy ustawiamy --
         min_range_vel_index = 0;
         min_obs_number = 0;
-        max_range_vel_index = VELlst[0].size()-1;
-        max_obs_number = mjdlst.size()-1;
-        rozmiar_w_x = mjdlst.size();
-        rozmiar_w_y = CHANlst[0].size();
+        max_range_vel_index = dataTable->velocityTable[0].size()-1;
+        max_obs_number = dataTable->mjdTable.size()-1;
+        rozmiar_w_x = dataTable->mjdTable.size();
+        rozmiar_w_y = dataTable->velocityTable[0].size();
         press_map_met(xind,yind);
         update_dynamic_spectrum();
         return;
@@ -3898,18 +3878,18 @@ void body::press_map(QMouseEvent * event)
     {
         x = 0.0;
     }
-    else if (x > mjdlst.size()-1)
+    else if (x > dataTable->mjdTable.size()-1)
     {
-        x = mjdlst.size()-1;
+        x = dataTable->mjdTable.size()-1;
     }
 
-    if(y < VELlst[0][0])
+    if(y < dataTable->velocityTable[0][0])
     {
-        y = VELlst[0][0];
+        y = dataTable->velocityTable[0][0];
     }
-    else if (y > VELlst[0][VELlst[0].size()-1])
+    else if (y > dataTable->velocityTable[0][dataTable->velocityTable[0].size()-1])
     {
-        y = VELlst[0][VELlst[0].size()-1];
+        y = dataTable->velocityTable[0][dataTable->velocityTable[0].size()-1];
     }
 
 
@@ -3917,10 +3897,10 @@ void body::press_map(QMouseEvent * event)
     xind = int(round(x));
 
     // następnie musimy przeszukać tablicę Vel, by znaleźć indeks, odpowiadający klikniętemu Y:
-    for(int i=0; i < VELlst[0].size(); i++)
+    for(int i=0; i < dataTable->velocityTable[0].size(); i++)
     {
 
-        if (VELlst[0][i] > y+0.5*(VELlst[0][2]-VELlst[0][1]))
+        if (dataTable->velocityTable[0][i] > y+0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]))
         {
             yind = i-1;
             break;
@@ -3965,13 +3945,13 @@ void body::press_map(QMouseEvent * event)
     // ustalamy jak mają rozciągać się linie:
     x_axis_line->start->setCoords(xind, -QCPRange::maxRange);
     x_axis_line->end->setCoords(xind, QCPRange::maxRange);
-    y_axis_line->start->setCoords(-QCPRange::maxRange,VELlst[0][yind]);
-    y_axis_line->end->setCoords(QCPRange::maxRange,VELlst[0][yind]);
+    y_axis_line->start->setCoords(-QCPRange::maxRange,dataTable->velocityTable[0][yind]);
+    y_axis_line->end->setCoords(QCPRange::maxRange,dataTable->velocityTable[0][yind]);
 
     // biały kwadrat, zaznaczający kliknięty piksel:
     rectangle->setPen(pen);
-    rectangle->topLeft->setCoords(double(xind)-0.5, VELlst[0][yind]+0.5*(VELlst[0][2]-VELlst[0][1]));
-    rectangle->bottomRight->setCoords(double(xind)+0.5, VELlst[0][yind]-0.5*(VELlst[0][2]-VELlst[0][1]));
+    rectangle->topLeft->setCoords(double(xind)-0.5, dataTable->velocityTable[0][yind]+0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
+    rectangle->bottomRight->setCoords(double(xind)+0.5, dataTable->velocityTable[0][yind]-0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
 
     // i replot
     dynamic_spectrum_pl.replot();
@@ -3994,8 +3974,8 @@ void body::press_map(QMouseEvent * event)
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Ilst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableI[xind][min_range_vel_index+i];
     }
     }
 
@@ -4004,8 +3984,8 @@ void body::press_map(QMouseEvent * event)
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Vlst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableV[xind][min_range_vel_index+i];
     }
     }
     else if (lhc_pressed == 1)
@@ -4013,8 +3993,8 @@ void body::press_map(QMouseEvent * event)
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = LHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableLHC[xind][min_range_vel_index+i];
     }
     }
     else if (rhc_pressed == 1)
@@ -4022,8 +4002,8 @@ void body::press_map(QMouseEvent * event)
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = RHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableRHC[xind][min_range_vel_index+i];
     }
     }
 
@@ -4056,8 +4036,8 @@ void body::press_map(QMouseEvent * event)
     QPen pen2;
     pen2.setColor(QColor(182,26,26));
     QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[xind][yind];
-    x_vline[1] = VELlst[xind][yind];
+    x_vline[0] = dataTable->velocityTable[xind][yind];
+    x_vline[1] = dataTable->velocityTable[xind][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
@@ -4073,9 +4053,9 @@ void body::press_map(QMouseEvent * event)
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Ilst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableI[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableIERR[min_obs_number + i][yind];
     }
     }
 
@@ -4083,9 +4063,9 @@ void body::press_map(QMouseEvent * event)
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Vlst[min_obs_number + i][yind];
-        error_lcs[i] = VERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableV[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableVERR[min_obs_number + i][yind];
     }
     }
 
@@ -4093,9 +4073,9 @@ void body::press_map(QMouseEvent * event)
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = LHClst[min_obs_number + i][yind];
-        error_lcs[i] = LHCERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableLHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableLHCERR[min_obs_number + i][yind];
     }
     }
 
@@ -4103,9 +4083,9 @@ void body::press_map(QMouseEvent * event)
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = RHClst[min_obs_number + i][yind];
-        error_lcs[i] = RHCERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableRHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableRHCERR[min_obs_number + i][yind];
     }
     }
 
@@ -4154,8 +4134,8 @@ void body::press_map(QMouseEvent * event)
 
 
     QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
+    lcsx_vline[0] = dataTable->mjdTable[xind];
+    lcsx_vline[1] = dataTable->mjdTable[xind];
     if (rozmiar_w_x == 1)
     {
         lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;

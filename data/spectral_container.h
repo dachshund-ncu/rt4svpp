@@ -40,6 +40,7 @@ public:
     std::vector < double > spectraTableRHCERR; // 1d kontener z widmami (polaryzacja RHC)
     // prędkości (dla każdej epoki generowana jest osobna tablica)
     std::vector < std::vector < double > > velocityTable; // 2d kontener z prędkościami radialnymi
+    std::vector < std::vector < double > > channelTable; // 2d kontener z kanałami
     // - pozostałe kontenery z danymi -
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
@@ -76,8 +77,8 @@ public:
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
-    void loadSingleSpectrum(std::ifstream & file);    // metoda wczytywania pliku AVR
-    void loadSingleSpectrum(CCfits::FITS & file);    // metoda wczytywania pliku FITS
+    void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
+    void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS
     void bubbleSortEpochs();    // sortowanie bąbelkowe epokami
     void clearAllTables(); // czyści wszystkie kontenery (ale nie zwalnia pamięci)
     bool isPies(std::string fileName);    // sprawdza czy fits czy avr
@@ -90,6 +91,7 @@ private:
     std::vector < double > loadPOLfromAVR(std::vector < std::string > linesInFile, int line_begin); // wczytuje I z pliku AVR, podanego w argumencie jako kontener stringów
     std::vector < std::vector < double > > doppler_track (double vlsr, double restfreq, double freq_rang, double nchans);
     std::string construct_isotime(double year, double month, double day, double hour, double min, double sec);
+    void print_loaded_comm(int obsnum, std::string isotime, double obs_error);
 };
 
 #endif // SPECTRAL_CONTAINER_H
