@@ -62,6 +62,9 @@ public:
     std::vector < std::string > fileTypeTab; // 1D kontener z nazwą typu pliku (FITS lub AVR)
     // nazwy plików
     std::vector < std::string > fileNamesTab; // nazwy plików [ścieżki absolutne]
+    // pojedyncze stałe
+    std::string nameOfSource; // nazwa źródła
+    std::string saveDirectory; // nazwa katalogu, w którym będą zapistwane pliki
 
     // - metody -
     // metoda inicjująca
@@ -72,7 +75,9 @@ public:
     // to samo, tylko w argumencie przyjmuję listę plików QT
     // domyślnie, ta metoda będzie wywoływana gdy wybierze się pliki za pomocną graficznego wybieraka
     void loadDataFromList(QStringList qtListaPlikow);
-
+    // liczy całkę z wszystkich polaryzacji i zapisuje do pliku
+    void integrate4Pols(int min_channel, int max_channel, bool isotimeInclude);
+    std::string getIntegrationFileName(int min_channel, int max_channel);
 
 
 private:
@@ -92,6 +97,13 @@ private:
     std::vector < std::vector < double > > doppler_track (double vlsr, double restfreq, double freq_rang, double nchans);
     std::string construct_isotime(double year, double month, double day, double hour, double min, double sec);
     void print_loaded_comm(int obsnum, std::string isotime, double obs_error);
+    // -- całkowanie widma --
+    std::vector < double > integratePol(int min_channel, int max_channel, std::vector < std::vector < double > > & veltab, std::vector < std::vector < double > > &poltab );
+    std::vector < double > integratePolErr(std::vector < std::vector < double > > & veltab, std::vector < double > & errtab );
+    double integrateSingleEpoch(int min_channel, int max_channel, std::vector < double > veltab, std::vector < double > poltab);
+    double integrateSingleEpochErr(std::vector < double > veltab, double epochRms);
+    void saveIntegrationToFile(int min_channel, int max_channel, std::vector < std::vector < double > > & integrationResults, std::vector < std::vector < double > > & integrationErrors, bool isotimeInclude);
+    // ----------------------
 };
 
 #endif // SPECTRAL_CONTAINER_H

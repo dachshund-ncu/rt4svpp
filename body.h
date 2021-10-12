@@ -815,13 +815,6 @@ public:
     vector < string > avrnames; // lista z plikami avr
     vector < string > flagged_avr_files; // lista z oflagowanymi plikami avr
 
-    vector < vector < double > >  LHClst;
-    vector < vector < double > >  RHClst;
-    vector < vector < double > >  Vlst;
-    vector < vector < double > >  Ilst;
-    vector < vector < double > >  VELlst;
-    vector < vector < int > >  CHANlst;
-    vector < vector < double > >  ERRlst, VERRlst, LHCERRlst, RHCERRlst;
     vector < double > VI_I, VI_LHC, VI_RHC, VI_V;
     vector < double > FI_I, FI_LHC, FI_RHC, FI_V;
     vector < double > chi2_I, chi2_LHC, chi2_RHC, chi2_V;
@@ -834,19 +827,6 @@ public:
     double mean_rms_LHC = 0.0;
     double mean_rms_RHC = 0.0;
 
-    // METODY - nie do przyciskow
-    void czytaj(const char *nazwa_pliku); // zapełnia zmienne i kontenery danymi
-    void czytaj_ale_lepiej(const char *nazwa_pliku);
-    void wczytaj_I(vector < string > linie_w_pliku); // dodatkowa metoda, czyta I
-    void wczytaj_V(vector < string > linie_w_pliku); // dodatkowa metoda, czyta V
-    void wczytaj_LHC(vector < string > linie_w_pliku); // dodatkowa metoda, czyta LHC
-    void wczytaj_RHC(vector < string > linie_w_pliku); // dodatkowa metoda, czyta RHC
-
-    vector < vector < double > > recreate_from_rlhc(vector < double > lhc, vector < double > rhc);
-    void wypisz(); // wypisuje dane w wybranym w zadaniu szyku
-    double JD(double year, double day, double month); // zwraca dzien julianski z podanego roku, dnia i miesiaca
-    void read_time_series ();
-    void read_time_series_for_list(QStringList lista_plikow);
     void integrate_single(int min, int max, unsigned int marker);
     void read_chan4rms();
     void press_map_met(unsigned long int x, unsigned long int y);

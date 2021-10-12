@@ -45,6 +45,9 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
     }
     filesList.close();
 
+    // zapisujemy dodatkowo katalog do zapisywania
+    saveDirectory = working_directory;
+
 }
 
 // - metoda czytająca listę plików -
@@ -59,6 +62,9 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
         loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
     }
     // w liście zawsze będą absolutne ścieżki do plików
+    // dlatego ekstrahujemy z jej pierwszego elementu
+    QFileInfo info(qtListaPlikow[0]);
+    saveDirectory = info.absolutePath().toStdString();
 
 }
 
@@ -244,6 +250,9 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     vlsrTable.push_back(vlsr);
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsystmp);
+
+    // srcname
+    nameOfSource = srcname;
 
     // --- komunikat że loaded ---
     print_loaded_comm(index_of_file, isotime, rmsI);
@@ -549,6 +558,9 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     vlsrTable.push_back(vlsr);
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsys);
+
+    // nazwa źródła
+    nameOfSource = sourcename;
 
     // --- komunikat że loaded ---
     print_loaded_comm(index_of_file, isotime, rmsI);
@@ -941,4 +953,113 @@ void spectral_container::print_loaded_comm(int obsnum, std::string isotime, doub
 {
     // printuje komunikat o załadowanym pliku
     std::cout << "[" << obsnum << "]   " << isotime << "   rms: " << obs_error << std::endl;
+}
+
+void spectral_container::integrate4Pols(int min_channel, int max_channel, bool isotimeInclude)
+{
+    std::vector < std::vector < double > > integrationResults, integrationErrs;
+    // wyniki integracji
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableI));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableV));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableLHC));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableRHC));
+    // niepewności
+    integrationErrs.push_back(integratePolErr(velocityTable, spectraTableIERR));
+    integrationErrs.push_back(integratePolErr(velocityTable, spectraTableVERR));
+    integrationErrs.push_back(integratePolErr(velocityTable, spectraTableLHCERR));
+    integrationErrs.push_back(integratePolErr(velocityTable, spectraTableRHCERR));
+    // zapisujemy do pliku
+    saveIntegrationToFile(min_channel, max_channel, integrationResults, integrationErrs, isotimeInclude);
+}
+
+std::vector < double > spectral_container::integratePol(int min_channel, int max_channel, std::vector<std::vector<double> > &veltab, std::vector<std::vector<double> > &poltab)
+{
+    // deklarujemy tablicę, do której będziemy zapisywać wartości
+    std::vector < double > integration_res(poltab.size());
+    // w pętli liczymy kolejne wartości całki
+    for (unsigned long int i = 0; i < poltab.size(); i++)
+    {
+        integration_res[i] = integrateSingleEpoch(min_channel, max_channel, veltab[i], poltab[i]);
+    }
+    return integration_res;
+}
+
+std::vector < double > spectral_container::integratePolErr(std::vector<std::vector<double> > &veltab, std::vector<double> &errtab)
+{
+    std::vector < double > errors(errtab.size());
+
+    for(unsigned long int i = 0.0; i < errtab.size(); i++)
+    {
+        errors[i] = integrateSingleEpochErr(veltab[i], errtab[i]);
+    }
+    return errors;
+}
+
+double spectral_container::integrateSingleEpoch(int min_channel, int max_channel, std::vector<double> veltab, std::vector<double> poltab)
+{
+    // zabezpieczenie
+    if (min_channel < 1)
+        min_channel = 1;
+    if (max_channel > (int) poltab.size())
+        max_channel = (int) poltab.size();
+
+    // tutaj będzie się dziać cała całkowa magia
+    double suma; // suma całki
+    double h = abs(veltab[1] - veltab[0]);
+    // pętla, licząca całkę
+    for(int i = min_channel-1; i < max_channel; i++)
+    {
+        if(i == min_channel - 1 || i == max_channel-1)
+            suma = suma + poltab[i] / 2.0;
+        else
+            suma = suma + poltab[i];
+    }
+    suma = suma * h;
+    return suma;
+}
+
+double spectral_container::integrateSingleEpochErr(std::vector<double> veltab, double epochRms)
+{
+    double h = abs(veltab[1] - veltab[0]);
+    double error = epochRms * 5.0 * h;
+    return error;
+}
+
+void spectral_container::saveIntegrationToFile(int min_channel, int max_channel, std::vector<std::vector<double> > &integrationResults, std::vector<std::vector<double> > &integrationErrors, bool isotimeInclude)
+{
+    // otwieramy plik do zapistwania
+    std::ofstream integ;
+    integ.open(getIntegrationFileName(min_channel, max_channel).c_str());
+
+    // piszemy nagłówek pliku
+    if(isotimeInclude)
+        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << std::endl;
+    else
+        integ << "# MJD year I err V err LHC err RHC err" << std::endl;
+
+    integ << "# integrated from channel " << min_channel << " to " << max_channel << std::endl;
+
+    // pętla, zapisująca dane
+    for (int i = 0; i < (int) integrationResults[0].size(); i++)
+    {
+        // czas
+        if (isotimeInclude)
+        {
+            integ << std::fixed << std::setprecision(11) << isotimeTable[i] << "   ";
+        }
+        integ << std::fixed << std::setprecision(11) << mjdTable[i] << "   " << decyrTable[i] << "   ";
+        // dane (pętla po I,V,RHC,LHC)
+        for (int polind = 0; polind < 4; polind++)
+            integ << integrationResults[polind][i] << "   " << integrationErrors[polind][i] << "   "; // I
+        integ << std::endl;
+    }
+
+    // zamykamy plik
+    integ.close();
+}
+
+std::string spectral_container::getIntegrationFileName(int min_channel, int max_channel)
+{
+    std::string integration_file_name = saveDirectory + "/" + nameOfSource + "_integrated_from_" + std::to_string(min_channel) + "_to_" + std::to_string(max_channel) + ".dat";
+    return integration_file_name;
 }

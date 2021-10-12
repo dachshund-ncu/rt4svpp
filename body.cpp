@@ -1395,95 +1395,7 @@ void body::load_time_series()
 
 }
 
-// -- liczy jd z yr,mnth, day --
-double body::JD(double year, double month, double day)
-{
-  // metoda opisana na: https://gist.github.com/jiffyclub/1294443 (dostep: 25.09.2019, 1:00 UTC)
-  // maly tweaking
-  double yearp, monthp, A,B,C,D;
-  if(month == 1 || month == 2)
-  {
-    yearp = year - 1.0;
-    monthp = month + 12.0;
-  }
-  else
-  {
-    yearp = year;
-    monthp = month;
-  }
 
-  // sprawdzamy jak sie ma nasza data w stosunku do 15 pazdziernika 1582, czyli poczatku kalendarza
-  // gregorianskiego
-
-  if (year < 1582.0 || (year == 1582.0 && month < 10.0) || (year == 1582.0 && month < 10.0 && day < 15.0) )
-  {
-    // przed startem gregorianskiego
-    B = 0.0;
-  }
-  else
-  {
-    // po starcie gregorianskiego
-    A = trunc(yearp / 100.0);
-    B = 2.0  - A + trunc(A / 4.0);
-  }
-
-  if (yearp < 0.0)
-  {
-    C = trunc((365.25 * yearp) - 0.75);
-  }
-  else
-  {
-    C = trunc((365.25 * yearp));
-  }
-
-  D = trunc(30.6001 * (monthp + 1.0));
-
-  jd = B+C+D+day + 1720994.5;
-  return jd;
-
-
-}
-
-double body::decimalyear(double year, double month, double day)
-{
-    double days_in_year = 365.25;
-    vector < int > days_in_month(12);
-    days_in_month[0] = 31;
-    days_in_month[1] = 28;
-    days_in_month[2] = 31;
-    days_in_month[3] = 30;
-    days_in_month[4] = 31;
-    days_in_month[5] = 30;
-    days_in_month[6] = 31;
-    days_in_month[7] = 31;
-    days_in_month[8] = 30;
-    days_in_month[9] = 31;
-    days_in_month[10] = 30;
-    days_in_month[11] = 31;
-
-    // sprawdzamy, czy rok jest przestepny
-    if (int(year) % 4 == 0)
-    {
-        if(int(year) % 100 != 0 || int(year) % 400)
-        {
-            days_in_month[1] = 29;
-            days_in_year = 366.25;
-        }
-
-    }
-
-    // liczyny days w tym roku
-    double days_into_year = 0.0;
-    for(int i = 0; i < int(month)-1; i++)
-    {
-        days_into_year = days_into_year + double(days_in_month[i]);
-    }
-    days_into_year = days_into_year + day;
-
-    double decim = year + days_into_year / days_in_year;
-    return decim;
-
-}
 // -- liczy calke z pojedynczego widma --
 void body::integrate_single(int min, int max, unsigned int marker)
 {
@@ -1575,8 +1487,8 @@ void body::integrate_time_series()
     // -- konwertujemy tera wartosci z text edit na inty--
     try
     {
-        min = stoi(mins.toStdString())-1;
-        max = stoi(maxs.toStdString())-1;
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
     }
     catch(...)
     {
@@ -1592,92 +1504,21 @@ void body::integrate_time_series()
         return;
     }
     // początkowy channel mniejszy od zera
-    if (min < 0)
+    if (min < 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
         return;
     }
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size()-1)
-        max = dataTable->spectraTableI[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size())
+        max = dataTable->spectraTableI[0].size();
 
-    chan4int_start = min;
-    chan4int_end = max;
+    // --- całka właściwa ---
+    dataTable->integrate4Pols(min, max, include_pytime->isChecked());
 
-    // -- czyścimy tablice --
-    // czyscimy tablice z int
-    integrated_fluxlst_I.clear();
-    integrated_fluxlst_V.clear();
-    integrated_fluxlst_LHC.clear();
-    integrated_fluxlst_RHC.clear();
-    integrated_fluxlst_I_er.clear();
-    integrated_fluxlst_V_er.clear();
-    integrated_fluxlst_LHC_er.clear();
-    integrated_fluxlst_RHC_er.clear();
-
-    // -- integrujemy --
-    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
-    {
-        integrate_single(min, max, i);
-        integrated_fluxlst_I.push_back(integrated_flux_I);
-        integrated_fluxlst_V.push_back(integrated_flux_V);
-        integrated_fluxlst_LHC.push_back(integrated_flux_LHC);
-        integrated_fluxlst_RHC.push_back(integrated_flux_RHC);
-        integrated_fluxlst_I_er.push_back(integrated_flux_I_er);
-        integrated_fluxlst_V_er.push_back(integrated_flux_V_er);
-        integrated_fluxlst_LHC_er.push_back(integrated_flux_LHC_er);
-        integrated_fluxlst_RHC_er.push_back(integrated_flux_RHC_er);
-    }
-    //cout << "----> Integrated over channels " << chan4int_start << " -> " << chan4int_end << endl;
-    //QMessageBox::information(&window, tr("Message to you"), tr("Integrated over channels " + QString::fromStdString(to_string(min)) + " -> " +  QString::fromStdString(to_string(max))));
-
-    // -- zapisujemy do pliku --
-    ofstream integ;
-    string filename = working_directory + "/" + srcname + "_integrated_flux_density_" + to_string(min+1) + "_to_" + to_string(max+1) +  ".DAT";
-    integ.open(filename.c_str());
-    //integ << "# MJD year I V LHC RHC" << endl;
-    //integ << "# MJD year I err V err LHC err RHC err" << endl;
-
-    if(include_pytime->isChecked())
-    {
-        // wpisujemy naglowek do pliku
-        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
-        // petla zapisujaca
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
-        }
-        //cout << "Zaznaczono pytime" << endl;
-    }
-    else
-    {
-        // wpisujemy naglowek do pliku
-        integ << "# MJD year I err V err LHC err RHC err" << endl;
-        // petla zapisujaca
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
-        }
-    }
-
-    integ.close();
-    //integrated_fluxlst_I.clear();
-    //integrated_fluxlst_V.clear();
-    //integrated_fluxlst_LHC.clear();
-    //integrated_fluxlst_RHC.clear();
-    //integrated_fluxlst_I_er.clear();
-    //integrated_fluxlst_V_er.clear();
-    //integrated_fluxlst_LHC_er.clear();
-    //integrated_fluxlst_RHC_er.clear();
-   // cout << endl;
-    //cout << "----> Saved to " << filename << endl;
-    //cout << endl;
+    // --- wiadomość końcowa ---
     string message = "";
-    message = "Integrated over channels " + to_string(min+1) + " -> " + to_string(max+1) + "\n" + "Saved to " + filename;
+    message = "Integrated over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
     close_window_for_integrate();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 }
