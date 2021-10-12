@@ -247,8 +247,10 @@ body::body(const char * nazwa)
     set_wd_widget();
     set_calibrate_widget();
 
+    //cout << "Widgets set" << endl;
 
     // -- probojemy czytac liste --
+    /*
     if (strncmp(nazwa, "", 300) == 0)
     {
         //lista.open("lista");
@@ -258,56 +260,17 @@ body::body(const char * nazwa)
         geometry_window_set = 1;
         loaded_data = true;
 
-        /*
-        if (lista.good())
-        {
-            read_time_series();
-            list_filename = "lista";
-
-
-        }
-        else
-        {
-            lista.open("list");
-            if (lista.good())
-            {
-                read_time_series();
-                list_filename = "lista";
-                window.setGeometry(window.x(), window.y(),1360,720);
-                display_dynamic_spectrum();
-                geometry_window_set = 1;
-            }
-        }
-        */
      }
     else
     {
-
-        //lista.open(nazwa);
-        // ładujemy pliki
         dataTable->loadDataFromList(nazwa);
         list_filename = string(nazwa);
         window.setGeometry(window.x(), window.y(),1360,720);
         display_dynamic_spectrum();
         geometry_window_set = 1;
         loaded_data = true;
-
-        /*
-        if (lista.good())
-        {
-            QFile plik;
-            QString nazwa_plikueeee;
-            nazwa_plikueeee = QString::fromStdString(nazwa);
-            QFileInfo info(nazwa_plikueeee);
-            if (info.absolutePath().toStdString() != "")
-            {
-                working_directory = info.absolutePath().toStdString();
-
-            }
-        }
-        */
     }
-
+    */
     // -- domyślnie ustawiamy dark mode --
     dark_mode_switch->setChecked(1);
     set_dark_mode();
@@ -1305,12 +1268,13 @@ void body::plot_single_spectrum()
     // przygotowujemy dane
     unsigned int marker = 0;
     // wektor z danymi
-    QVector < double > x(n_chanslst[marker]), y(n_chanslst[marker]);
+    //QVector < double > x(n_chanslst[marker]), y(n_chanslst[marker]);
+    QVector < double > x (dataTable->channelTable[marker].size()), y(dataTable->channelTable[marker].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[marker].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[marker].size(); i++)
     {
-        x[i] = VELlst[marker][i];
-        y[i] = Ilst[marker][i];
+        x[i] = dataTable->velocityTable[marker][i];
+        y[i] = dataTable->spectraTableI[marker][i];
     }
     // -- dodajemy grafike --
     spectrum.addGraph();
@@ -1343,9 +1307,9 @@ void body::plot_single_spectrum()
 
     // -- ladujemy combo boxa --
 
-    for(int i = 0; i < mjdlst.size(); i++)
+    for(int i = 0; i < dataTable->mjdTable.size(); i++)
     {
-        list_of_observations->addItem(QString::fromStdString(to_string(i+1) + "   " + to_string(mjdlst[i])));
+        list_of_observations->addItem(QString::fromStdString(to_string(i+1) + "   " + to_string(dataTable->mjdTable[i])));
     }
 
     // -- replotujemy single spectrum --
@@ -1370,1972 +1334,11 @@ void body::kill_single_spectrum()
     single_spectrum_opened=0;
     // - clearujemy list_of_obs -
     list_of_observations->clear();
-    // -- ustalamy szerokości kolumny --
-    /*
-    grid->setColumnStretch(1,1);
-    grid->setColumnStretch(2,1);
-    grid->setColumnStretch(3,1);
-    grid->setColumnStretch(4,1);
-    grid->setColumnStretch(5,1);
-    */
-}
-
-// -- czyta plik fits, którego nazwa została podana w argumencie --
-void body::read_fits_file(const char * nazwa_pliku23)
-{
-    // ustalamy na początek boole (nie pamiętam już po co xD)
-    check_if_loading_not_interrupted = 0;
-
-    // -- wczytujemy plik FITS --
-    FITS * fitsfile = new FITS(nazwa_pliku23, Read);
-
-    // -- czytamy w pliku fits header nr. 2 (czyli o indeksie 1) --
-    // w tym celu towrzymy obiekt ExtHDU
-    ExtHDU & table = fitsfile->extension(1);
-
-    // -- czytamy wszystkie potrzebne wartości w headerze --
-    // -- do tego będą potrzebne nam rozmaite zmienne --
-    double vlsr, freq_beg, freq_mid, freq_end, freq_rang, equinox, nchans, restfreq, el, az, z, tsys1, tsys2, dopp_vsu, dopp_vob, dopp_vto;
-    double year, month, day, hour, min,sec;
-    string zstr, tsysstr, vlsr_str, freq_beg_str, freq_mid_str, freq_end_str, freq_rang_str, equinox_str, nchans_str, restfreq_str, el_str, az_str, z_str, tsys1_str, tsys2_str, dopp_vsu_str, dopp_vob_str, dopp_vto_str;
-    string sourcename, isotime, ra, dec;
-
-    // -- odczytujemy z pliku fits --
-    // VSYS
-    try
-    {
-        table.readKey("VSYS", vlsr);
-    }
-    catch(...)
-    {
-        table.readKey("VSYS", vlsr_str);
-        vlsr = stod(vlsr_str);
-    }
-
-    // FRQ_BEG
-    try
-    {
-        table.readKey("FRQ_BEG", freq_beg);
-    }
-    catch(...)
-    {
-        table.readKey("FRQ_BEG", freq_beg_str);
-        freq_beg = stod(freq_beg_str);
-    }
-
-    // FRQ_END
-    try
-    {
-        table.readKey("FRQ_END", freq_end);
-    }
-    catch(...)
-    {
-        table.readKey("FRQ_END", freq_end_str);
-        freq_end = stod(freq_end_str);
-    }
-
-    // FRQ_RANG
-    try
-    {
-        table.readKey("FRQ_RANG", freq_rang);
-    }
-    catch(...)
-    {
-        table.readKey("FRQ_RANG", freq_rang_str);
-        freq_rang = stod(freq_rang_str);
-    }
-
-    // EQUINOX
-    try
-    {
-        table.readKey("EQUINOX", equinox);
-    }
-    catch(...)
-    {
-        table.readKey("EQUINOX", equinox_str);
-        equinox = stod(equinox_str);
-    }
-
-    // NAXIS2
-    try
-    {
-        table.readKey("NAXIS2", nchans);
-    }
-    catch(...)
-    {
-        table.readKey("NAXIS2", nchans_str);
-        nchans = stod(nchans_str);
-    }
-
-    // FREQ
-    try
-    {
-        table.readKey("FREQ", restfreq);
-    }
-    catch(...)
-    {
-        table.readKey("FREQ", restfreq_str);
-        restfreq = stod(restfreq_str);
-    }
-
-    // AZ
-    try
-    {
-        table.readKey("AZ", az);
-    }
-    catch(...)
-    {
-        table.readKey("AZ", az_str);
-        az = stod(az_str);
-    }
-
-    // Z
-    try
-    {
-        table.readKey("Z", z);
-    }
-        catch(...)
-    {
-        table.readKey("Z", zstr);
-        z = stod(zstr);
-    }
-
-    // TSYS1 TSYS2
-    try
-    {
-        table.readKey("TSYS1", tsys1);
-        table.readKey("TSYS2", tsys2);
-    }
-    catch(...)
-    {
-        try
-        {
-            table.readKey("TSYS", tsys1);
-            table.readKey("TSYS", tsys2);
-        }
-        catch(...)
-        {
-            table.readKey("TSYS", tsysstr);
-            tsys1 = stod(tsysstr);
-            tsys2 = stod(tsysstr);
-        }
-
-    }
-
-    // -- czytamy rzeczy, specyficzne dla RS --
-    // -- dla autokorelatora wartości z tych pól będą równe 0 --
-    try
-    {
-        table.readKey("DOPP_VSU", dopp_vsu);
-    }
-    catch(...)
-    {
-        table.readKey("DOPP_VSU", dopp_vsu_str);
-        dopp_vsu = stod(dopp_vsu_str);
-    }
-
-    try
-    {
-        table.readKey("DOPP_VOB", dopp_vob);
-    }
-    catch(...)
-    {
-        table.readKey("DOPP_VOB", dopp_vob_str);
-        dopp_vob = stod(dopp_vob_str);
-    }
-
-    try
-    {
-        table.readKey("DOPP_VTO", dopp_vto);
-    }
-    catch(...)
-    {
-        table.readKey("DOPP_VTO", dopp_vto_str);
-        dopp_vto = stod(dopp_vto_str);
-    }
-
-    // stringi
-    table.readKey("OBJECT", sourcename);
-    table.readKey("DATE-OBS", isotime);
-    table.readKey("SRC_RA", ra);
-    table.readKey("SRC_DEC", dec);
-
-    // -- obliczamy kilka rzeczy --
-    // elewacja
-    el = 90.0 - z;
-
-    // zamieniamy restfreq na MHZ
-    restfreq = restfreq / 1000000;
-
-    // daty
-    // zapisujemy do innej zmiennej, oryginał jeszcze się przyda
-    string isotime2 = isotime;
-    // formatujemy, by między numerami były białe znaki
-    isotime2.replace(isotime2.find_first_of("-"), 1, " ");
-    isotime2.replace(isotime2.find_first_of("-"), 1, " ");
-    isotime2.replace(isotime2.find_first_of("T"), 1, " ");
-    isotime2.replace(isotime2.find_first_of(":"), 1, " ");
-    isotime2.replace(isotime2.find_first_of(":"), 1, " ");
-    // zapisujemy do zmiennych double
-    stringstream wppl(isotime2);
-    // tymczasowa tablica i bufor double
-    vector < double > time_temporal;
-    double bufor_double_time;
-    // pętla parsująca string na double
-    while(wppl >> bufor_double_time)
-    {
-        time_temporal.push_back(bufor_double_time);
-    }
-    // zapisujemy z tablicy do naszych zmiennych
-    year = time_temporal[0];
-    month = time_temporal[1];
-    day = time_temporal[2];
-    hour = time_temporal[3];
-    min = time_temporal[4];
-    sec = time_temporal[5];
-    // dodatkowa zmienna day2, integrująca godziny
-    double day2 = day + hour / 24.0 + min / 24.0 / 60.0 + sec / 24.0 / 3600.0;
-    // bierzemy sobie coś, co nazywa się JD:
-    jd = JD(year, month, day2);
-    mjd = jd - 2400000.5;
-    double decyr = decimalyear(year, month, day2); // zmiennoprzecinkowy rok
-
-
-    // -- czytamy dane --
-    vector < double > lhc((int) nchans), rhc ((int) nchans);
-    table.column("Pol 1").read(lhc, 0, nchans);
-    table.column("Pol 2").read(rhc, 0, nchans);
-
-    // -- obcinamy krawędzie wstęgi --
-    for(int i = 0; i < 24; i++)
-    {
-        // - na początku wstęgi -
-        lhc[i] = 0.0;
-        rhc[i] = 0.0;
-
-        // - i na końcu -
-        lhc[(int) nchans - 1 - i] = 0.0;
-        rhc[(int) nchans - 1 - i] = 0.0;
-
-    }
-
-    // -- deklarujemy tablice z częstotliwościami i prędkościami --
-    vector < double > freqs((int) nchans), vels((int) nchans);
-    // -- krok częstotliwości --
-    double freq_step = freq_rang / nchans;
-    // prędkość światła
-    double c = 299792.458; // km/s
-
-    // DOPPLER TRACKING
-    // całkowita prędkość w kierunku źródła
-    double overall_velocity = vlsr + dopp_vto;
-    // beta
-    double beta = overall_velocity / c;
-    // gamma
-    double gamma = 1.0 / sqrt(1.0 - beta * beta);
-    // fcentr
-    double fcentr = restfreq * (gamma * (1.0 - beta));
-    // fbeg
-    freq_beg = fcentr - (freq_rang / 2.0);
-    // ----------------
-
-    // -- generujemy tablice prędkości --
-    for (int i = 0; i < nchans; i++)
-    {
-        freqs[i] = (freq_beg + i*freq_step);
-        vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
-    }
-
-
-
-    // -- odwracamy tablice, by VEL było od najmniejszej --
-    vector < double > vel_rev((int) nchans), lhc_rev((int) nchans), rhc_rev((int) nchans);
-    for (int i = 0; i < nchans; i++)
-    {
-        vel_rev[i] = vels[vels.size() - 1 - i];
-        lhc_rev[i] = lhc[lhc.size() - 1 - i];
-        rhc_rev[i] = rhc[rhc.size() - 1 - i];
-    }
-    // zapisujemy do oryginalnych
-    vels = vel_rev;
-    lhc = lhc_rev;
-    rhc = rhc_rev;
-
-    // -- tworzymy tablice I oraz V --
-    // na podstawie wczytanych LHC i RHC
-    vector < vector < double > > IV(2);
-    vector < double > i_tmp_lst((int) nchans), v_tmp_lst((int) nchans);
-    IV = recreate_from_rlhc(lhc, rhc);
-    i_tmp_lst = IV[0];
-    v_tmp_lst = IV[1];
-
-    // -- generujemy tablice z kanałami --
-    vector < int > nanamichan((int) nchans);
-    for(int i = 0; i < nchans; i++)
-    {
-        nanamichan[i] = i+1;
-    }
-
-    // -- liczymy RMS --
-    // - definiujemy kanały do obliczania RMS --
-    // na początek sprawdzamy plik chan4rms.sv
-    if(chan4rms_loaded == 0)
-    {
-        // jeśli nie jest załadowany, to lecimy z tym koksem:
-        rms_start_channel1 = 100;
-        rms_end_channel1 = 400;
-        rms_start_channel2 = (int) nchans - 400;
-        rms_end_channel2 = (int) nchans - 100;
-    }
-
-    // -- definiujemy kilka lokalnych zmiennych --
-    double suma = 0.0; // przechowuje sumę kwadratów wartości w kanałach, tymczasowa
-    double rms_fits; // przechowuje wartość RMS (sqrt( suma / (n-1)), tymczasowa
-    vector < double > I_rms_tmp((int) nchans), V_rms_tmp((int) nchans), LHC_rms_tmp((int) nchans), RHC_rms_tmp((int) nchans);
-
-    // -----------------------------------------------
-    // -- rms I --
-    int n = 0; // zerujemy "n"
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + i_tmp_lst[i]*i_tmp_lst[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + i_tmp_lst[i]*i_tmp_lst[i];
-      n = n+1;
-    }
-    rms_fits = sqrt(suma / (n-1));
-
-    for(int i = 0; i < nchans; i++)
-    {
-      I_rms_tmp[i] = rms_fits;
-    }
-    // -----------------------------------------------
-    // -- rms V --
-    n = 0; // zerujemy "n"
-    suma = 0.0; // zerujemy "sumę"
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + v_tmp_lst[i]*v_tmp_lst[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + v_tmp_lst[i]*v_tmp_lst[i];
-      n = n+1;
-    }
-    rms_fits = sqrt(suma / (n-1));
-
-    for(int i = 0; i < nchans; i++)
-    {
-      V_rms_tmp[i] = rms_fits;
-    }
-    // -----------------------------------------------
-    // -- rms LHC --
-    n = 0; // zerujemy "n"
-    suma = 0.0; // zerujemy "sumę"
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + lhc[i]*lhc[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + lhc[i]*lhc[i];
-      n = n+1;
-    }
-    rms_fits = sqrt(suma / (n-1));
-
-    for(int i = 0; i < nchans; i++)
-    {
-      LHC_rms_tmp[i] = rms_fits;
-    }
-    // -----------------------------------------------
-    // -- rms RHC --
-    n = 0; // zerujemy "n"
-    suma = 0.0; // zerujemy "sumę"
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + rhc[i]*rhc[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + rhc[i]*rhc[i];
-      n = n+1;
-    }
-    rms_fits = sqrt(suma / (n-1));
-
-    for(int i = 0; i < nchans; i++)
-    {
-      RHC_rms_tmp[i] = rms_fits;
-    }
-    // -----------------------------------------------
-
-    // -- formatujemy nazwę źródła --
-    sourcename.erase(remove(srcname.begin(), srcname.end(), ' '), srcname.end());
-
-    // -- ustalamy zmienną globalną srcname --
-    srcname = sourcename;
-    // -- ustalamy tsys --
-    double tsys = (tsys1 + tsys2) / 2.0; // jest to średnia z obu polaryzacji - tak jest w wynikach z rt4s
-
-    // -- zapisujemy do kontenerów --
-    // -- zapelniamy kontenery 1D --
-    jdlst.push_back(jd);
-    mjdlst.push_back(mjd);
-    ellst.push_back(el);
-    azlst.push_back(az);
-    declst.push_back(0.0); // TYMCZASOWO
-    ralst.push_back(0.0); // TYMCZASOWO
-    freqlst.push_back(restfreq);
-    vlsrlst.push_back(vlsr);
-    wstlst.push_back(freq_rang);
-    n_chanslst.push_back(nchans);
-    rmslst.push_back(rms_fits);
-    dlst.push_back(day);
-    mlst.push_back(month);
-    ylst.push_back(year);
-    hrlst.push_back(hour);
-    minutelst.push_back(min);
-    seclst.push_back(sec);
-    yrlst.push_back(decyr);
-    tsyslst.push_back(tsys);
-
-    // -- zapełniamy kontenery 2D --
-    headerlst.push_back("headertmp");
-    LHClst.push_back(lhc);
-    RHClst.push_back(rhc);
-    Vlst.push_back(v_tmp_lst);
-    Ilst.push_back(i_tmp_lst);
-    VELlst.push_back(vels);
-    CHANlst.push_back(nanamichan);
-    ERRlst.push_back(I_rms_tmp);
-    VERRlst.push_back(V_rms_tmp);
-    LHCERRlst.push_back(LHC_rms_tmp);
-    RHCERRlst.push_back(RHC_rms_tmp);
-
-    // -- czyscimy tymczasowe kontenery --
-    check_if_loading_not_interrupted = 1;
-
-    // -- zamykamy plik fits, bo jeśli nie zamykany wali błędami --
-    fitsfile->destroy();
-
-    // -- ustawiamy, jaki to typ w tablicy --
-    filetype.push_back(1); // 0 - AVR 1 - fits
-}
-
-vector < vector < double > > body::recreate_from_rlhc (vector < double > lhc, vector < double > rhc)
-{
-    // --- deklarujemy potrzebne tablice ---
-    vector < vector < double > > IV;
-    vector < double > I;
-    vector < double > V;
-
-    // -- blok zapełniający te tablice za pomocą wczytanych LHC i RHC --
-    for(unsigned long int i = 0; i < lhc.size(); i++)
-    {
-        // -- dodajemy I --
-        I.push_back( (lhc[i] + rhc[i]) / 2.0 );
-        // -- dodajemy V --
-        V.push_back( (rhc[i] - lhc[i]) / 2.0);
-    }
-    // -- dodajemy do zwracanej tablicy --
-    IV.push_back(I);
-    IV.push_back(V);
-    // -- zwracamy --
-    return IV;
-}
-
-void body::wczytaj_I(vector<string> linie_w_pliku)
-{
-    // kilka zmiennych na poczatek:
-    string bufor;
-    double bufor_double;
-    // -- I --
-    // zapełniamy pierwsze 23 miejsca zerami
-    for(int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[17 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            I.push_back(bufor_double / 1000.0);
-    }
-
-
-    for (int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0);
-    }
-}
-
-void body::wczytaj_V(vector<string> linie_w_pliku)
-{
-    // kilka zmiennych na poczatek:
-    string bufor;
-    double bufor_double;
-    // -- V --
-    for(int i = 0; i < 24; i++)
-    {
-        V.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[287 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            V.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        V.push_back(0.0);
-    }
-}
-
-void body::wczytaj_LHC(vector < string > linie_w_pliku)
-{
-    // kilka zmiennych na poczatek:
-    string bufor;
-    double bufor_double;
-    // -- LHC --
-    for(int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[557 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            LHC.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0);
-    }
-}
-
-
-void body::wczytaj_RHC(vector < string > linie_w_pliku)
-{
-    // kilka zmiennych na poczatek:
-    string bufor;
-    double bufor_double;
-    // -- RHC --
-    for(int i = 0; i < 24; i++)
-    {
-        RHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[827 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            RHC.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        RHC.push_back(0.0);
-    }
-}
-
-void body::czytaj_ale_lepiej(const char *nazwa_pliku23)
-{
-
-    // ustalamy na początek boole (nie pamiętam już po co xD)
-    check_if_loading_not_interrupted = 0;
-
-    // otwieramy czytany plik - wykorzystujemy w tym celu obiekt fstream
-    avr.open(nazwa_pliku23);
-
-    // najważniejsze - tworzymy tablicę stringów
-    // każdy jej element będzie przechowywał jedną linię pliku
-    vector < string > linie_w_pliku;
-
-    // i bufor do funkcji getline
-    string bufor;
-    //cout << "wczytujemy" << endl;
-    //wczytujemy plik do kontenera
-    while(avr.good())
-    {
-        getline(avr, bufor);
-        linie_w_pliku.push_back(bufor);
-    }
-    // zamykamy plik
-    avr.close();
-    //cout << "sprawdzamy" << endl;
-    //cout << endl << linie_w_pliku[0] << endl;
-    if(linie_w_pliku[0].substr(0,3) != "???")
-        return;
-
-    //cout << "elaz" << endl;
-    // --- elewacja i azymut ---
-    bufor = linie_w_pliku[3];
-    vector < double > elaz;
-    double bufor_double;
-    stringstream eeeel(bufor);
-    while(eeeel >> bufor_double)
-    {
-        elaz.push_back(bufor_double);
-    }
-    az = elaz[0] + elaz[1] / 60.0;
-    el = elaz[2] + elaz[3] / 60.0;
-    // -------------------------
-
-    //cout << "radec" << endl;
-    // --- RA i DEC ---
-    bufor = linie_w_pliku[1];
-    vector < double > radec;
-    stringstream radec_ss(bufor);
-    while (radec_ss >> bufor_double)
-    {
-        radec.push_back(bufor_double);
-    }
-    // zapisujemy
-    ra = radec[0] + radec[1] / 60.0 + radec[2] / 3600.0;
-    if (radec[3] >= 0.0)
-        dec = radec[3] + radec[4] / 60.0 + radec[5] / 3600.0;
-    else
-    {
-        dec = abs(radec[3]) + radec[4] / 60.0 + radec[5] / 3600.0;
-        dec = -1.0 * dec;
-    }
-    // ----------------
-
-    //cout << "restf i vlsr" << endl;
-    // --- restf i vlsr oraz srcname ---
-    bufor = linie_w_pliku[10];
-    stringstream restf_ss(bufor);
-    vector < double > dane;
-    while(restf_ss >> bufor_double)
-    {
-        dane.push_back(bufor_double);
-    }
-    // -- zapisujemy dane --
-    vlsr = dane[3]; // pr radialna
-    freq = dane[4]; // częstotliwość dla v = 0.0
-    wst = dane[1]; // szerokość wstęgi
-    n_chans = dane[0]; // ilość kanałów
-    // -- wczytujemy nazwę źródła, pomijając białe znaki --
-    srcname = linie_w_pliku[11]; // nazwa źródełka
-    // - usuwamy białe znaki -
-    srcname.erase(remove(srcname.begin(), srcname.end(), ' '), srcname.end());
-    // ----------------------
-
-    //cout << "data" << endl;
-    // --- data ---
-    bufor = linie_w_pliku[4];
-    double day,month,year;
-    day = stod(bufor.substr(4,2));
-    month = stod(bufor.substr(6,2));
-    year = stod("20" + bufor.substr(8,2));
-    vector < double > hms;
-    double hour, min, sec;
-    bufor = linie_w_pliku[13];
-    stringstream hms_ss(bufor);
-    while(hms_ss >> bufor_double)
-    {
-        hms.push_back(bufor_double);
-    }
-    hour = hms[0];
-    min = hms[1];
-    sec = hms[2];
-
-    // zamiany jeszcze
-    double hour2; // zmiennoprzecinkowa godzina
-    double day2; // zmiennoprzecinkowy dzień
-    hour2 = hour + min / 60.0 + sec / 3600.0;
-    day2 = day + hour2 / 24.0;
-    jd = JD(year, month, day2);
-    mjd = jd - 2400000.5;
-    double decyr = decimalyear(year, month, day2); // zmiennoprzecinkowy rok
-    // -------------
-
-    //cout << "tsys" << endl;
-    // --- tsys ---
-    bufor = linie_w_pliku[6];
-    double tsystmp;
-    stringstream tsys_ss(bufor);
-    tsys_ss >> tsystmp;
-    //cout << tsystmp << endl;
-    tsyslst.push_back(tsystmp);
-    //cout << setw(10) << fixed << setprecision(9) << tsystmp << endl;
-    // ------------
-    //cout << "header" << endl;
-    // --- header ---
-    string headertmp = "";
-    for(unsigned long int i = 0; i < 14; i++)
-    {
-        headertmp = headertmp + linie_w_pliku[i] + "\n";
-    }
-
-    // -- koniec --
-
-
-
-    // ----- NAJWAŻNIEJSZE ------
-    // czytamy dane z pliku
-    //cout << "czytamy dane" << endl;
-
-    // watki
-    std::thread first(&body::wczytaj_I, this, linie_w_pliku);
-    std::thread second(&body::wczytaj_V, this, linie_w_pliku);
-    std::thread third(&body::wczytaj_LHC, this, linie_w_pliku);
-    std::thread forth(&body::wczytaj_RHC, this, linie_w_pliku);
-
-    first.join();
-    second.join();
-    third.join();
-    forth.join();
-
-
-    //vector < vector < double > > IR;
-    //IR = recreate_from_rlhc(LHC, RHC);
-    //I = IR[0];
-    //V = IR[1];
-
-    //wczytaj_I(linie_w_pliku);
-    //wczytaj_V(linie_w_pliku);
-    //wczytaj_LHC(linie_w_pliku);
-    //wczytaj_RHC(linie_w_pliku);
-
-    /*
-    // -- I --
-    // zapełniamy pierwsze 23 miejsca zerami
-
-    for(int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[17 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            I.push_back(bufor_double / 1000.0);
-    }
-
-
-    for (int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0);
-    }
-
-    // -- V --
-    for(int i = 0; i < 24; i++)
-    {
-        V.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[287 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            V.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        V.push_back(0.0);
-    }
-
-    // -- LHC --
-    for(int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[557 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            LHC.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0);
-    }
-
-    // -- RHC --
-    for(int i = 0; i < 24; i++)
-    {
-        RHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-
-    for(unsigned long int k = 0; k < 250; k++)
-    {
-        bufor = linie_w_pliku[827 + k];
-        stringstream ss(bufor);
-        while(ss >> bufor_double)
-            RHC.push_back(bufor_double / 1000.0);
-    }
-
-    for (int i = 0; i < 24; i++)
-    {
-        RHC.push_back(0.0);
-    }
-    // --------------------------------
-
-    // -- tworzymy tablicę z I i V --
-
-    vector < vector < double > > IR;
-    IR = recreate_from_rlhc(LHC, RHC);
-    I = IR[0];
-    V = IR[1];
-    */
-
-
-    //cout << "predkosci" << endl;
-    // --- Tworzymy tablice z predkosciami radialnymi ---
-    double c = 299792.458; // km/s
-    double beta = vlsr / c;
-    double gamma = 1.0 / sqrt(1.0 - beta*beta);
-    double fcentr = freq * (gamma * (1.0 - beta));
-    double fbegin = fcentr - wst / 2.0;
-    double fend = fcentr + wst / 2.0;
-    double h = (fend - fbegin) / 2048.0;
-    vector < double > freqs;
-
-    for (unsigned long int i = 0; i < n_chans; i++)
-    {
-      freqs.push_back(fbegin + h*i);
-    }
-
-    // tworzymy tablicę z odwróconymi prędkościami
-    vector < double > tmp_vel_rev, tmp_vel_nonrev;
-
-    // zapisujemy prędkości odwrócone (zgodnie z orderem freq)
-    for (unsigned long int i = 0; i < n_chans; i++)
-    {
-      tmp_vel_rev.push_back(- c * ( (freqs[i]  / freq) - 1.0) );
-    }
-
-    // do drugiej tablicy zapisujemy prędkości w odpowiednim orderze (zgodnie z LHC i RHC)
-    for (unsigned long int i = 0; i < n_chans; i++)
-    {
-        tmp_vel_nonrev.push_back(tmp_vel_rev[tmp_vel_rev.size() - 1 - i] );
-    }
-
-    VEL = tmp_vel_nonrev;
-
-
-    for (unsigned long int i = 0; i < n_chans; i++)
-    {
-      CHAN.push_back(i+1);
-    }
-    //cout << "rms" << endl;
-    // --- liczymy rms ---
-    double suma = 0.0;
-    //double n = 100.0;
-    if(chan4rms_loaded == 0)
-    {
-        rms_start_channel1 = 100;
-        rms_end_channel1 = 400;
-        rms_start_channel2 = CHAN.size() - 400;
-        rms_end_channel2 = CHAN.size() - 100;
-    }
-
-    // -- rms I --
-    int n = 0;
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + I[i]*I[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + I[i]*I[i];
-      n = n+1;
-    }
-    rms = sqrt(suma / (n-1));
-
-    for(int i = 0; i < n_chans; i++)
-    {
-      ERR.push_back(rms);
-    }
-
-    // -- rms V --
-    n = 0;
-    suma = 0.0;
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + V[i]*V[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + V[i]*V[i];
-      n = n+1;
-    }
-    rms = sqrt(suma / (n-1));
-
-    for(int i = 0; i < n_chans; i++)
-    {
-      VERR.push_back(rms);
-    }
-
-    // -- rms LHC --
-    n = 0;
-    suma = 0.0;
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + LHC[i]*LHC[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + LHC[i]*LHC[i];
-      n = n+1;
-    }
-    rms = sqrt(suma / (n-1));
-
-    for(int i = 0; i < n_chans; i++)
-    {
-      LHCERR.push_back(rms);
-    }
-
-    // -- rms RHC --
-    n = 0;
-    suma = 0.0;
-    for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-    {
-      suma = suma + RHC[i]*RHC[i];
-      n = n+1;
-    }
-    for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-    {
-      suma = suma + RHC[i]*RHC[i];
-      n = n+1;
-    }
-    rms = sqrt(suma / (n-1));
-
-    for(int i = 0; i < n_chans; i++)
-    {
-      RHCERR.push_back(rms);
-    }
-
-    if (I.size() < 512)
-    {
-        return;
-    }
-
-
-    // -- zapelniamy stale kontenery --
-    jdlst.push_back(jd);
-    mjdlst.push_back(mjd);
-    ellst.push_back(el);
-    azlst.push_back(az);
-    declst.push_back(dec);
-    ralst.push_back(ra);
-    freqlst.push_back(freq);
-    vlsrlst.push_back(vlsr);
-    wstlst.push_back(wst);
-    n_chanslst.push_back(n_chans);
-    rmslst.push_back(rms);
-    dlst.push_back(day);
-    mlst.push_back(month);
-    ylst.push_back(year);
-    hrlst.push_back(hour);
-    minutelst.push_back(min);
-    seclst.push_back(sec);
-    yrlst.push_back(decyr);
-
-    // -- konstruujemy pytime format --
-    string time_in_isoformat, yearstr, monthstr, daystr, hourstr, minutestr, secondstr;
-
-    // zapisujemy czas w isoformacie (YYYY-MM-DD)
-    //year
-    yearstr = to_string((int)year);
-    // month
-    if (to_string((int)month).length() == 1)
-        monthstr = string("0")+to_string((int)month);
-    else
-        monthstr = to_string((int)month);
-    // day
-    if (to_string((int)day).length() == 1)
-        daystr = string("0") + to_string((int)day);
-    else
-        daystr = to_string((int)day);
-    // hour
-    if (to_string((int)hour).length() == 1)
-        hourstr = string("0") + to_string((int)hour);
-    else
-        hourstr = to_string((int)hour);
-    // minute
-    if (to_string((int)min).length() == 1)
-        minutestr = string("0") + to_string((int)min);
-    else
-        minutestr = to_string((int)min);
-    // second
-    if (to_string((int)sec).length() == 1)
-        secondstr = string("0") + to_string(sec);
-    else
-        secondstr = to_string(sec);
-
-    // zapisujemy do time...
-    time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
-    pytime_format.push_back(time_in_isoformat);
-
-    // -- i podwojne --
-    headerlst.push_back(headertmp);
-    LHClst.push_back(LHC);
-    RHClst.push_back(RHC);
-    Vlst.push_back(V);
-    Ilst.push_back(I);
-    VELlst.push_back(VEL);
-    CHANlst.push_back(CHAN);
-    ERRlst.push_back(ERR);
-    VERRlst.push_back(VERR);
-    LHCERRlst.push_back(LHCERR);
-    RHCERRlst.push_back(RHCERR);
-    // -- czyscimy tymczasowe kontenery --
-    header.clear();
-    LHC.clear();
-    RHC.clear();
-    V.clear();
-    I.clear();
-    VEL.clear();
-    CHAN.clear();
-    ERR.clear();
-    VERR.clear();
-    LHCERR.clear();
-    RHCERR.clear();
-
-    check_if_loading_not_interrupted = 1;
-
-    // -- ustawiamy, jaki to typ w tablicy --
-    filetype.push_back(0); // AVR
-
-}
-
-// -- czyta plik AVR o podanej w argumencie nazwie --
-void body::czytaj(const char* nazwa_pliku23)
-{
-
-  check_if_loading_not_interrupted = 0;
-  // otwieramy obiekt z czytanym plikiem
-  avr.open(nazwa_pliku23);
-  //avr.clear();
-  //avr.seekg(0);
-  //cout << nazwa_pliku23 << endl;
-  string bufor, bufor2; // bufor do jednej linii tekstu
-  // --- CZYTAMY EL I AZ ---
-  double elaz[4]; // do ladowania wartosci
-  // pomijamy trzy linijki w pliku
-  for (int i = 0; i < 3; i++)
-  {
-    getline(avr, bufor);
-  }
-  // odczytujemy kat elewacji
-  for(int i = 0; i < 4; i++)
-  {
-    avr >> elaz[i]; // azymut to 0 i 1, el to 2 i 3
-  }
-  // zapisujemy wyniki do danych klasy
-  az = elaz[0] + elaz[1] / 60.0;
-  el = elaz[2] + elaz[3] / 60.0;
-  // przesuwamy kursor z powrotem na początek pliku
-  avr.seekg(0);
-  // --- KONIEC CZYTANIA EL I AZ ---
-
-  // --- CZYTAMY RA I DEC ---
-  double radec[6]; // do przechowywania ra i dec
-  getline(avr,bufor); // pomijamy pierwsza linie
-  // krotka petla czytajaca co potrzeba
-  for(int i = 0; i < 6; i++)
-  {
-    avr >> radec[i]; // ra to 0,1,2 dec to 3,4,5
-  }
-  // zapisujemy wartosci ra i dec
-  ra = radec[0] + radec[1] / 60.0 + radec[2] / 3600.0;
-  dec = radec[3] + radec[4] / 60.0 + radec[5] / 3600.0;
-  // przesuwamy kursor na poczatek
-  avr.seekg(0);
-  // --- KONIEC CZYTANIA RA I DEC ---
-
-  // --- CZYTAMY RESTF I VLSR ---
-  double dane[5]; // tymczasowa tablica
-  // pomijamy 10 linii
-  for(int i = 0; i < 10; i++)
-  {
-    getline(avr, bufor);
-  }
-  // czytamy 11
-  for(int i = 0; i < 5; i++)
-  {
-    avr >> dane[i];
-  }
-
-  vlsr = dane[3];
-  freq = dane[4];
-  wst = dane[1];
-  n_chans = dane[0];
-
-  getline(avr, bufor);
-  avr >> srcname;
-
-  // przesuwamy kursor z powrotem na początek pliku
-  avr.seekg(0);
-  // --- KONIEC CZYTANIA RESTF I VLSR ---
-
-  // --- CZYTAMY DATE ---
-  for(int i = 0; i < 5; i++)
-  {
-    getline(avr, bufor);
-    //cout << bufor << endl;
-  }
-
-  double day, month, year;
-  //cout << "jestem" << endl;
-  //cout << bufor.substr(4,2) << endl;
-  day = stod(bufor.substr(4,2));
-  month = stod(bufor.substr(6,2));
-  year = stod("20" + bufor.substr(8,2));
-  //cout << "nie jestem" << endl;
-  // co
-  for(int i = 0;i<8;i++)
-  {
-      getline(avr,bufor);
-  }
-  double hour, min, sec;
-  avr >> hour;
-  avr >> min;
-  avr >> sec;
-  double hour2;
-  double day2;
-  //cout << hour << "  " << min << "  " << sec << endl;
-  hour2 = hour + min / 60.0 + sec / 3600.0;
-  day2 = day + hour2 / 24.0;
-  //string dayp;
-  //dayp = bufor.substr(4,2);
-  //cout << day << month << year <<endl;
-  jd = JD(year, month, day2);
-  mjd = jd - 2400000.5;
-  double decyr = decimalyear(year, month, day2);
-  // kursor
-  avr.seekg(0);
-  // --- KONIEC CZYTANIA DATY ---
-
-  // -- ZAPELNIAMY HEADERY --
-  string headertmp = "";
-  for (int i = 0; i < 14; i++)
-  {
-      getline(avr,bufor);
-      headertmp = headertmp+bufor + "\n";
-  }
-  //header.push_back(headertmp);
-  //headertmp = "";
-  avr.seekg(0);
-
-  // --- ZAPELNIAMY TSYS ---
-  double tsystmp;
-  string bufortsystmp;
-  for(int i = 0; i < 6; i++)
-  {
-    getline(avr, bufortsystmp);
-  }
-  avr >> tsystmp;
-  avr.seekg(0);
-  tsyslst.push_back(tsystmp);
-
-  // --- ZAPEŁNIAMY KONTERERY ---
-  vector < double > tab; // do jednej linii w pliku
-  double dbuf; // do jednej liczby
-  //char spr;
-  // petla czytajaca:
-
-    /*
-  // -- I --
-    for(int i = 0; i < 17; i++)
-      getline(avr, bufor); // pomijamy 17 linijek i czytamy dalej
-
-    for(int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-    for(int k = 0; k < 250; k++)
-    {
-      //avr.seekg(-1, ios::cur); // cofamy kursor o 1 pozycje (na poczatek linii)
-      getline(avr, bufor); // czytamy linie
-      stringstream ss(bufor); // taka zmienna do konwertowania
-      while (ss >> dbuf)
-        I.push_back(dbuf / 1000.0); // zapisujemy wiersz do kontenera tab
-    }
-    for(int i = 0; i < 24; i++)
-    {
-        I.push_back(0.0);
-    }
-    for(int i = 0; i < 3; i++)
-      getline(avr, bufor); // pomijamy 3 linijki i czytamy dalej
-
-    //cout << I.size() << endl;
-
-
-
-    // -- V --
-    for(int i = 0; i < 17; i++)
-      getline(avr, bufor); // pomijamy 14 linijek i czytamy dalej
-
-    for(int i = 0; i < 24; i++)
-    {
-        V.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-    for(int k = 0; k < 250; k++)
-    {
-
-      getline(avr, bufor); // czytamy linie
-      stringstream ss(bufor); // taka zmienna do konwertowania
-      while (ss >> dbuf)
-        V.push_back(dbuf / 1000.0); // zapisujemy wiersz do kontenera tab
-     }
-
-      for(int i = 0; i < 24; i++)
-      {
-          V.push_back(0.0);
-      }
-      for(int i = 0; i < 3; i++)
-        getline(avr, bufor); // pomijamy 3 linijki i czytamy dalej
-
-     //cout << V.size() << endl;
-    */
-
-
-    // -- pomijamy pierwsze... 554 linijki
-    for(int i = 0; i < 554; i++)
-    {
-        getline(avr, bufor);
-        //cout << i << "   " << bufor << endl;
-    }
-
-
-    /*
-    // -- LHC --
-    for(int i = 0; i < 17; i++)
-      getline(avr, bufor); // pomijamy 17 linijek i czytamy dalej
-    */
-
-    for(int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0); // pominelismy 24 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-    for(int k = 0; k < 250; k++)
-    {
-      getline(avr, bufor); // czytamy linie
-      stringstream ss(bufor); // taka zmienna do konwertowania
-      while (ss >> dbuf)
-        LHC.push_back(dbuf / 1000.0); // zapisujemy wiersz do kontenera tab
-    }
-
-    for(int i = 0; i < 24; i++)
-    {
-        LHC.push_back(0.0);
-    }
-
-    for(int i = 0; i < 3; i++)
-      getline(avr, bufor); // pomijamy 3 linijki i czytamy dalej
-
-    //cout << LHC.size() << endl;
-
-    // -- RHC --
-    for(int i = 0; i < 17; i++)
-      getline(avr, bufor); // pomijamy 14 linijek i czytamy dalej
-
-    for(int i = 0; i < 24; i++)
-    {
-        RHC.push_back(0.0); // pominelismy 23 kanaly obserwacji, zapelniamy je zamiast tego zerami
-    }
-    for(int k = 0; k < 250; k++)
-    {
-        getline(avr, bufor); // czytamy linie
-        stringstream ss(bufor); // taka zmienna do konwertowania
-        while (ss >> dbuf)
-          RHC.push_back(dbuf / 1000.0); // zapisujemy wiersz do kontenera tab
-    }
-
-    for(int i = 0; i < 24; i++)
-    {
-         RHC.push_back(0.0);
-    }
-
-
-    // -- tworzymy tablicę z I i V --
-    vector < vector < double > > IR;
-    IR = recreate_from_rlhc(LHC, RHC);
-    I = IR[0];
-    V = IR[1];
-
-  //cout << RHC.size() << endl;
-
-  avr.close();
-  if (I.size() < 512)
-  {
-      return;
-  }
-  // ZAMYKAMY PLIK
-
-  // --- Tworzymy tablice z predkosciami radialnymi ---
-  double c = 299792.458; // km/s
-  double beta = vlsr / c;
-  double gamma = 1.0 / sqrt(1.0 - beta*beta);
-  double fcentr = freq / (gamma * (1.0 - beta));
-  double fbegin = fcentr - wst / 2.0;
-  double fend = fcentr + wst / 2.0;
-  double h = (fend - fbegin) / 2048.0;
-  vector < double > freqs;
-  for (int i = 0; i < n_chans; i++)
-  {
-    freqs.push_back(fbegin + h*i);
-  }
-  for (int i = 0; i < n_chans; i++)
-  {
-    VEL.push_back(c * ((freqs[i] - freq) / freq));
-  }
-  for (int i = 0; i < n_chans; i++)
-  {
-    CHAN.push_back(i+1);
-  }
-
-  // --- liczymy rms ---
-  double suma = 0.0;
-  //double n = 100.0;
-  if(chan4rms_loaded == 0)
-  {
-      rms_start_channel1 = 100.0;
-      rms_end_channel1 = 400.0;
-      rms_start_channel2 = CHAN.size() - 400.0;
-      rms_end_channel2 = CHAN.size() - 100.0;
-  }
-
-  // -- rms I --
-  int n = 0;
-  for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-  {
-    suma = suma + I[i]*I[i];
-    n = n+1;
-  }
-  for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-  {
-    suma = suma + I[i]*I[i];
-    n = n+1;
-  }
-  rms = sqrt(suma / (n-1));
-
-  for(int i = 0; i < n_chans; i++)
-  {
-    ERR.push_back(rms);
-  }
-
-  // -- rms V --
-  n = 0;
-  suma = 0.0;
-  for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-  {
-    suma = suma + V[i]*V[i];
-    n = n+1;
-  }
-  for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-  {
-    suma = suma + V[i]*V[i];
-    n = n+1;
-  }
-  rms = sqrt(suma / (n-1));
-
-  for(int i = 0; i < n_chans; i++)
-  {
-    VERR.push_back(rms);
-  }
-
-  // -- rms LHC --
-  n = 0;
-  suma = 0.0;
-  for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-  {
-    suma = suma + LHC[i]*LHC[i];
-    n = n+1;
-  }
-  for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-  {
-    suma = suma + LHC[i]*LHC[i];
-    n = n+1;
-  }
-  rms = sqrt(suma / (n-1));
-
-  for(int i = 0; i < n_chans; i++)
-  {
-    LHCERR.push_back(rms);
-  }
-
-  // -- rms RHC --
-  n = 0;
-  suma = 0.0;
-  for (int i = rms_start_channel1; i < rms_end_channel1; i++)
-  {
-    suma = suma + RHC[i]*RHC[i];
-    n = n+1;
-  }
-  for (int i = rms_start_channel2; i < rms_end_channel2; i++)
-  {
-    suma = suma + RHC[i]*RHC[i];
-    n = n+1;
-  }
-  rms = sqrt(suma / (n-1));
-
-  for(int i = 0; i < n_chans; i++)
-  {
-    RHCERR.push_back(rms);
-  }
-
-  // -- zapelniamy stale kontenery --
-  jdlst.push_back(jd);
-  mjdlst.push_back(mjd);
-  ellst.push_back(el);
-  azlst.push_back(az);
-  declst.push_back(dec);
-  ralst.push_back(ra);
-  freqlst.push_back(freq);
-  vlsrlst.push_back(vlsr);
-  wstlst.push_back(wst);
-  n_chanslst.push_back(n_chans);
-  rmslst.push_back(rms);
-  dlst.push_back(day);
-  mlst.push_back(month);
-  ylst.push_back(year);
-  hrlst.push_back(hour);
-  minutelst.push_back(min);
-  seclst.push_back(sec);
-  yrlst.push_back(decyr);
-
-  // -- konstruujemy pytime format --
-  string time_in_isoformat, yearstr, monthstr, daystr, hourstr, minutestr, secondstr;
-
-  // zapisujemy czas w isoformacie (YYYY-MM-DD)
-  //year
-  yearstr = to_string((int)year);
-  // month
-  if (to_string((int)month).length() == 1)
-      monthstr = string("0")+to_string((int)month);
-  else
-      monthstr = to_string((int)month);
-  // day
-  if (to_string((int)day).length() == 1)
-      daystr = string("0") + to_string((int)day);
-  else
-      daystr = to_string((int)day);
-  // hour
-  if (to_string((int)hour).length() == 1)
-      hourstr = string("0") + to_string((int)hour);
-  else
-      hourstr = to_string((int)hour);
-  // minute
-  if (to_string((int)min).length() == 1)
-      minutestr = string("0") + to_string((int)min);
-  else
-      minutestr = to_string((int)min);
-  // second
-  if (to_string((int)sec).length() == 1)
-      secondstr = string("0") + to_string(sec);
-  else
-      secondstr = to_string(sec);
-
-  // zapisujemy do time...
-  time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
-  pytime_format.push_back(time_in_isoformat);
-
-  // -- i podwojne --
-  headerlst.push_back(headertmp);
-  LHClst.push_back(LHC);
-  RHClst.push_back(RHC);
-  Vlst.push_back(V);
-  Ilst.push_back(I);
-  VELlst.push_back(VEL);
-  CHANlst.push_back(CHAN);
-  ERRlst.push_back(ERR);
-  VERRlst.push_back(VERR);
-  LHCERRlst.push_back(LHCERR);
-  RHCERRlst.push_back(RHCERR);
-  // -- czyscimy tymczasowe kontenery --
-  header.clear();
-  LHC.clear();
-  RHC.clear();
-  V.clear();
-  I.clear();
-  VEL.clear();
-  CHAN.clear();
-  ERR.clear();
-  VERR.clear();
-  LHCERR.clear();
-  RHCERR.clear();
-
-  check_if_loading_not_interrupted = 1;
-}
-
-// -- zwraca false na fits, true na avr --
-bool body::check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path)
-{
-    ifstream tmpavr; // tymczasowy obiekt pliku
-    string buforek; // przechowuje tekst czytany z pliku
-    // otwieramy plik
-    if (name_with_absolute_path == true)
-    {
-        tmpavr.open( ( filename_of_tested_file ).c_str() );
-    }
-    else
-    {
-        tmpavr.open((working_directory + "/" + filename_of_tested_file).c_str() );
-    }
-
-
-    // -- robimy fikołka --
-    try
-    {
-        // -- sposób sprawdzania, czy mamy do czynienia z plikiem AVR czy nie jest bardzo prosty --
-        // po prostu sprawdzamy, czy ma na początku trzy znaki zapytania (XD)
-        // głupie, ale działa
-        tmpavr >> buforek;
-        tmpavr.close();
-        if (buforek == "???")
-        {
-            // jeśli mamy te trzy znaki zapytania, zwracamy true
-            return true;
-        }
-        else
-        {
-            // jeśli nie mamy tych trzech znaków zapytania, zwracamy false
-            return false;
-        }
-    }
-    catch (...)
-    {
-        // jeśli z jakiegoś powodu wypier*****o przy czytaniu to cóż
-        // zwracamy jakby to był fits
-        // bo w takim trybie prędzej fitsa nie przeczyta
-        return false;
-    }
-
-}
-
-// -- czyta pliki z podanej listy plikow --
-void body::read_time_series_for_list(QStringList lista_plikow)
-{
-    // przed czytaniem - czyscimy tablice -
-    jdlst.clear();
-    mjdlst.clear();
-    ellst.clear();
-    azlst.clear();
-    declst.clear();
-    ralst.clear();
-    freqlst.clear();
-    vlsrlst.clear();
-    wstlst.clear();
-    n_chanslst.clear();
-    rmslst.clear();
-    dlst.clear();
-    mlst.clear();
-    ylst.clear();
-    hrlst.clear();
-    minutelst.clear();
-    seclst.clear();
-    pytime_format.clear();
-    tsyslst.clear();
-
-    // i kontenery tez
-    headerlst.clear();
-    LHClst.clear();
-    RHClst.clear();
-    Vlst.clear();
-    Ilst.clear();
-    VELlst.clear();
-    CHANlst.clear();
-    ERRlst.clear();
-    VERRlst.clear();
-    LHCERRlst.clear();
-    RHCERRlst.clear();
-    avrnames.clear();
-    window.show();
-
-    // -- i tablice z rotowanymi obserwacjami --
-    rotated_spectras.clear();
-
-    // -- i indeksy wybranego pola --
-    xind = 0;
-    yind = 0;
-
-    // -- pobieramy chan4rms jeśli możemy --
-    read_chan4rms();
-
-    flagged_files_loaded = read_flagged_files();
-
-
-    string bufor_do_listy; // maly bufor do przechowywania linii z listy
-    int marker = 0; // maly marker, bedzie nam potrzebny
-
-    // -- progressbar --
-    //cout << "startujemy" << endl;
-    QProgressDialog postep;//(&window);
-    postep.setLabelText("Loading files... please wait");
-    int pasek_postepu = 0;
-    postep.setMinimum(0);
-    postep.setMaximum(lista_plikow.size());
-    postep.setVisible(true);
-
-    // właściwa pętla wczytująca
-    for(int i = 0; i < lista_plikow.size(); i++)
-    {
-      bufor_do_listy = lista_plikow[i].toStdString();
-
-      // jesli jest zerowej dlugosci, to mamy koniec pliku i wywalamy z petli
-      if(bufor_do_listy.size() < 1)
-      {
-        break;
-      }
-      // czytamy plik z listy
-      if(!check_if_flagged(bufor_do_listy))
-      {
-          // -- sprawdzamy, czy mamy do czynienia z plikiem "fits" czy "AVR" --
-          // mają one oddzielne metody wczytywania i mogą być wczytywane obok siebie
-          if(check_if_avr_or_fits(bufor_do_listy, true)) // dajemy "true" bo nazwy plików tutaj są ze ścieżką absolutną
-              this->czytaj_ale_lepiej((bufor_do_listy).c_str());
-          else
-              this->read_fits_file((bufor_do_listy).c_str());
-
-          // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
-         if (check_if_loading_not_interrupted == 0)
-             throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
-
-         // -- dodajemy nazwę pliku do listy z nazwami plików --
-          avrnames.push_back(bufor_do_listy);
-
-         // -- konstruujemy komunikat wypisujący --
-          cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
-         // inkrementujemy marker
-          marker = marker + 1;
-      }
-      else
-      {
-          // -- jesli czeck if flagged zwraca true to pomijamy --
-          cout << "------> " << bufor_do_listy << " is flagged, so i will not read it" << endl;
-      }
-      // -- zwiększamy postęp paska postępu --
-      pasek_postepu = pasek_postepu + 1;
-      postep.setValue(postep.value()+1);
-      //by na windowsie też postepowal
-      QCoreApplication::processEvents(); // zabawne, żę bez tego na windowsie pasek stoi w miejscu
-    }
-
-    max_range_vel_index = VELlst[0].size()-1;
-    max_obs_number = mjdlst.size()-1;
-    rozmiar_w_x = mjdlst.size();
-    rozmiar_w_y = CHANlst[0].size();
-    string title;
-    title = string("RT4SV++: ");
-    title.append(srcname);
-    window.setWindowTitle(QString::fromStdString(title));
-    loaded_data = 1;
-    made_rotation = 0;
-
-    // -- obsloga flag --
-    if (flagged_files_loaded)
-        cout << endl << "----> Loaded flags" << endl;
-
-    if (flagged_files_on_spectrum == 1)
-    {
-        for(int i = 0; i < flagi.size(); i++)
-        {
-            dynamic_spectrum_pl.removeItem(flagi[i]);
-        }
-        flagi.clear();
-        flagged_files_on_spectrum = 0;
-        flags_number = 0;
-
-    }
-
-    if (dynamic_spectrum_opened)
-        display_dynamic_spectrum();
-
-    calibration_done = 0;
-    if (calibration_section_opened == 1)
-        close_cal_layout();
-
-    // -- jeśli mamy calconfig.sv --
-    caltabs_loaded = 0;
-    if(read_calconfig())
-    {
-        load_l1_caltab(caltab_LHC_path);
-        load_r1_caltab(caltab_RHC_path);
-        if (caltabs_loaded == 0)
-        {
-            load_l1_caltab(working_directory + "/" + caltab_LHC_path);
-            load_r1_caltab(working_directory + "/" + caltab_RHC_path);
-            if (caltabs_loaded == 0)
-            {
-                QMessageBox::information(&window, tr("Error!"), tr("Found calconfig.sv, but failed to load caltabs!"));
-            }
-            else
-            {
-                calibrate_method();
-                cout << "----> calconfig.sv found! Calibrating observations from caltabs:" << endl;
-                cout << "----> " << working_directory + "/" + caltab_LHC_path << endl;
-                cout << "----> " << working_directory + "/" + caltab_RHC_path << endl;
-            }
-
-        }
-        else
-        {
-            calibrate_method();
-            cout << "----> calconfig.sv found! Calibrating observations from caltabs:" << endl;
-            cout << "----> " << caltab_LHC_path << endl;
-            cout << "----> " << caltab_RHC_path << endl;
-        }
-
-
-    }
-    if(rms_section_opened == 1)
-    {
-        open_rms_section_slot();
-    }
-    loaded_from_listfile = 0;
-
-    // - liczymy sredni rms -
-    calculate_mean_rms();
-}
-
-// -- czyta pliki z calej listy --
-void body::read_time_series()
-{
-   // do czasow
-   //auto start = std::chrono::high_resolution_clock::now();
-
-  // przed czytaniem - czyscimy tablice -
-  jdlst.clear();
-  mjdlst.clear();
-  ellst.clear();
-  azlst.clear();
-  declst.clear();
-  ralst.clear();
-  freqlst.clear();
-  vlsrlst.clear();
-  wstlst.clear();
-  n_chanslst.clear();
-  rmslst.clear();
-  dlst.clear();
-  mlst.clear();
-  ylst.clear();
-  hrlst.clear();
-  minutelst.clear();
-  seclst.clear();
-  pytime_format.clear();
-  tsyslst.clear();
-
-  // i kontenery tez
-  headerlst.clear();
-  LHClst.clear();
-  RHClst.clear();
-  Vlst.clear();
-  Ilst.clear();
-  VELlst.clear();
-  CHANlst.clear();
-  ERRlst.clear();
-  VERRlst.clear();
-  LHCERRlst.clear();
-  RHCERRlst.clear();
-  avrnames.clear();
-  window.show();
-
-  // -- i tablice z rotowanymi obserwacjami --
-  rotated_spectras.clear();
-
-  // -- i indeksy wybranego pola --
-  xind = 0;
-  yind = 0;
-
-  // -- pobieramy chan4rms jeśli możemy --
-  read_chan4rms();
-
-  flagged_files_loaded = read_flagged_files();
-
-
-  string bufor_do_listy; // maly bufor do przechowywania linii z listy
-  int marker = 0; // maly marker, bedzie nam potrzebny
-
-  int lista_length = 0;
-
-  while(lista.good())
-  {
-       // czytamy linie z pliku
-       getline(lista, bufor_do_listy);
-       lista_length = lista_length + 1;
-       //cout << bufor_do_listy << endl;
-  }
-
-  // wracamy na początek pliku
-
-  lista.clear();
-  lista.seekg(0);//1, ios::beg);
-  //cout << lista.tellg() << endl;
-
-  // -- progressbar --
-  QProgressDialog postep;//(&window);
-  postep.setLabelText("Loading files... please wait");
-  int pasek_postepu = 0;
-  postep.setMinimum(0);
-  postep.setMaximum(lista_length);
-  postep.setVisible(true);
-
-  // główna pętla wczytująca dane
-  while(lista.good())
-  {
-
-    // czytamy linie z pliku
-    getline(lista, bufor_do_listy);
-
-    // sprawdzamy, czy ta linia aby cokolwiek zawiera
-    if(bufor_do_listy.size() < 1)
-    {
-      break;
-    }
-    // czytamy plik z listy
-    if(!check_if_flagged(bufor_do_listy))
-    {
-        // -- sprawdzamy, czy mamy do czynienia z plikiem "fits" czy "AVR" --
-        // mają one oddzielne metody wczytywania i mogą być wczytywane obok siebie
-        if(check_if_avr_or_fits(bufor_do_listy, false)) // dajemy "false" bo tutaj nazwy plików mają ścieżkę względną
-            this->czytaj_ale_lepiej((working_directory + "/" + bufor_do_listy).c_str());
-        else
-            this->read_fits_file((working_directory + "/" + bufor_do_listy).c_str());
-
-        // sprawdzamy, czy ładowanie nie zostało przerwane w trakcie
-       if (check_if_loading_not_interrupted == 0)
-           throw 2; // jeśli tak, wyrzucamy exception (funkcja zostanie przerwana)
-
-       // -- dodajemy nazwę pliku do listy z nazwami plików --
-        avrnames.push_back(bufor_do_listy);
-
-       // -- konstruujemy komunikat wypisujący --
-        cout << "------>   [" << marker+1 << "]    " << "MJD: " << mjdlst[marker] << " date: " << ylst[marker] << " " << mlst[marker] << " " << dlst[marker] << "   rms: " << rmslst[marker] << endl;
-       // inkrementujemy marker
-        marker = marker + 1;
-    }
-    else
-    {
-        // -- jesli czeck if flagged zwraca true to pomijamy --
-        cout << "------> " << bufor_do_listy << " is flagged, so i will not read it" << endl;
-    }
-    // -- zwiększamy postęp paska postępu --
-    pasek_postepu = pasek_postepu + 1;
-    postep.setValue(postep.value()+1);
-    //by na windowsie też postepowal
-    QCoreApplication::processEvents(); // zabawne, żę bez tego na windowsie pasek stoi w miejscu
-  }
-
-  // -- zamykamy plik z listą --
-  lista.close();
-  max_range_vel_index = VELlst[0].size()-1;
-  max_obs_number = mjdlst.size()-1;
-  rozmiar_w_x = mjdlst.size();
-  rozmiar_w_y = CHANlst[0].size();
-  string title;
-  title = string("RT4SV++: ");
-  title.append(srcname);
-  window.setWindowTitle(QString::fromStdString(title));
-  loaded_data = 1;
-  made_rotation = 0;
-
-  // -- obsloga flag --
-  if (flagged_files_loaded)
-      cout << endl << "----> Loaded flags" << endl;
-
-  if (flagged_files_on_spectrum == 1)
-  {
-      for(int i = 0; i < flagi.size(); i++)
-      {
-          dynamic_spectrum_pl.removeItem(flagi[i]);
-      }
-      flagi.clear();
-      flagged_files_on_spectrum = 0;
-      flags_number = 0;
-
-  }
-  if (dynamic_spectrum_opened)
-  {
-      display_dynamic_spectrum();
-  }
-
-  calibration_done = 0;
-  if (calibration_section_opened == 1)
-      close_cal_layout();
-
-  // -- jeśli mamy calconfig.sv --
-  caltabs_loaded = 0;
-  if(read_calconfig())
-  {
-      load_l1_caltab(caltab_LHC_path);
-      load_r1_caltab(caltab_RHC_path);
-      if (caltabs_loaded == 0)
-      {
-          load_l1_caltab(working_directory + "/" + caltab_LHC_path);
-          load_r1_caltab(working_directory + "/" + caltab_RHC_path);
-          if (caltabs_loaded == 0)
-          {
-              QMessageBox::information(&window, tr("Error!"), tr("Found calconfig.sv, but failed to load caltabs!"));
-          }
-          else
-          {
-              calibrate_method();
-              cout << "----> calconfig.sv found! Calibrating observations from caltabs:" << endl;
-              cout << "----> " << working_directory + "/" + caltab_LHC_path << endl;
-              cout << "----> " << working_directory + "/" + caltab_RHC_path << endl;
-          }
-
-      }
-      else
-      {
-          calibrate_method();
-          cout << "----> calconfig.sv found! Calibrating observations from caltabs:" << endl;
-          cout << "----> " << caltab_LHC_path << endl;
-          cout << "----> " << caltab_RHC_path << endl;
-      }
-
-
-  }
-
-  if(rms_section_opened == 1)
-  {
-      open_rms_section_slot();
-  }
-  loaded_from_listfile = 1;
-
-  // - liczymy sredni rms -
-  calculate_mean_rms();
-
-  // -- koniec --
-  //auto finish = std::chrono::high_resolution_clock::now();
-
-  //std::chrono::duration<double> elapsed = finish - start;
-
-  //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
 void body::load_time_series()
 {
-    AVRNAMES_from_load.clear();
     string nazwa_pliku; // string z nazwa pliku
     QStringList fileName1;// qstring z nazwa pliku
     QString fileName;
@@ -3375,7 +1378,6 @@ void body::load_time_series()
 
     // -- wczytujemy: jeśli nasza lista plików to AVR, wczyta się w try, jeśli to plik z listą - w catch --
     dataTable->loadDataFromList(fileName1);
-    AVRNAMES_from_load = fileName1;
     loaded_data = 1;
 
     if (single_spectrum_opened == 1)
@@ -3500,17 +1502,17 @@ void body::integrate_single(int min, int max, unsigned int marker)
     {
       if(i == 0 || i == max-1)
       {
-        sumI = sumI + Ilst[marker][i] / 2.0;
-        sumV = sumV + Vlst[marker][i] / 2.0;
-        sumLHC = sumLHC + LHClst[marker][i] / 2.0;
-        sumRHC = sumRHC + RHClst[marker][i] / 2.0;
+        sumI = sumI + dataTable->spectraTableI[marker][i] / 2.0;
+        sumV = sumV + dataTable->spectraTableV[marker][i] / 2.0;
+        sumLHC = sumLHC + dataTable->spectraTableLHC[marker][i] / 2.0;
+        sumRHC = sumRHC + dataTable->spectraTableRHC[marker][i] / 2.0;
       }
       else
       {
-        sumI = sumI + Ilst[marker][i];
-        sumV = sumV + Vlst[marker][i];
-        sumLHC = sumLHC + LHClst[marker][i];
-        sumRHC = sumRHC + RHClst[marker][i];
+        sumI = sumI + dataTable->spectraTableI[marker][i];
+        sumV = sumV + dataTable->spectraTableV[marker][i];
+        sumLHC = sumLHC + dataTable->spectraTableLHC[marker][i];
+        sumRHC = sumRHC + dataTable->spectraTableRHC[marker][i];
       }
     }
     /*
@@ -3518,17 +1520,17 @@ void body::integrate_single(int min, int max, unsigned int marker)
     {
       if(i == 0 || i == max-1)
       {
-        sumIer = sumIer + ERRlst[marker][i] / 2.0;
-        sumVer = sumVer + VERRlst[marker][i] / 2.0;
-        sumLHCer = sumLHCer + LHCERRlst[marker][i] / 2.0;
-        sumRHCer = sumRHCer + RHCERRlst[marker][i] / 2.0;
+        sumIer = sumIer + dataTable->spectraTableIERR[marker][i] / 2.0;
+        sumVer = sumVer + VdataTable->spectraTableIERR[marker][i] / 2.0;
+        sumLHCer = sumLHCer + LHCdataTable->spectraTableIERR[marker][i] / 2.0;
+        sumRHCer = sumRHCer + RHCdataTable->spectraTableIERR[marker][i] / 2.0;
       }
       else
       {
-          sumIer = sumIer + ERRlst[marker][i];
-          sumVer = sumVer + VERRlst[marker][i];
-          sumLHCer = sumLHCer + LHCERRlst[marker][i];
-          sumRHCer = sumRHCer + RHCERRlst[marker][i];
+          sumIer = sumIer + dataTable->spectraTableIERR[marker][i];
+          sumVer = sumVer + VdataTable->spectraTableIERR[marker][i];
+          sumLHCer = sumLHCer + LHCdataTable->spectraTableIERR[marker][i];
+          sumRHCer = sumRHCer + RHCdataTable->spectraTableIERR[marker][i];
       }
     }
     */
@@ -3547,10 +1549,10 @@ void body::integrate_single(int min, int max, unsigned int marker)
     integrated_flux_LHC = sumLHC;
     integrated_flux_RHC = sumRHC;
 
-    integrated_flux_I_er = ERRlst[marker][0] * 5.0 * h;
-    integrated_flux_V_er = VERRlst[marker][0] * 5.0 * h;
-    integrated_flux_LHC_er = LHCERRlst[marker][0] * 5.0 * h;
-    integrated_flux_RHC_er = RHCERRlst[marker][0] * 5.0 * h;
+    integrated_flux_I_er = dataTable->spectraTableIERR[marker] * 5.0 * h;
+    integrated_flux_V_er = dataTable->spectraTableVERR[marker] * 5.0 * h;
+    integrated_flux_LHC_er = dataTable->spectraTableLHCERR[marker] * 5.0 * h;
+    integrated_flux_RHC_er = dataTable->spectraTableRHCERR[marker] * 5.0 * h;
 
 }
 
@@ -3596,8 +1598,8 @@ void body::integrate_time_series()
         return;
     }
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > Ilst[0].size()-1)
-        max = Ilst[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size()-1)
+        max = dataTable->spectraTableI[0].size()-1;
 
     chan4int_start = min;
     chan4int_end = max;
@@ -3614,7 +1616,7 @@ void body::integrate_time_series()
     integrated_fluxlst_RHC_er.clear();
 
     // -- integrujemy --
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
         integrate_single(min, max, i);
         integrated_fluxlst_I.push_back(integrated_flux_I);
@@ -3641,11 +1643,11 @@ void body::integrate_time_series()
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
         //cout << "Zaznaczono pytime" << endl;
     }
@@ -3654,11 +1656,11 @@ void body::integrate_time_series()
         // wpisujemy naglowek do pliku
         integ << "# MJD year I err V err LHC err RHC err" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
     }
 
@@ -3705,11 +1707,11 @@ void body::plot_dynamic_spectrum()
     unsigned long int ny = dataTable->velocityTable[0].size();
 
     colorMap->data()->setSize(nx,ny);
-    //colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+    //colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(dataTable->velocityTable[0][min_range_vel_index], dataTable->velocityTable[0][max_range_vel_index]-(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1])));
     if (rozmiar_w_x != 1)
         colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(min_velocity, max_velocity ) );
     else
-        colorMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(min_velocity, max_velocity );
+        colorMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(min_velocity, max_velocity ));
     //double x,y,z;
 
     for (unsigned long int xIndex = 0; xIndex < nx; xIndex++)
@@ -3743,7 +1745,6 @@ void body::display_dynamic_spectrum()
 {
     if (loaded_data == 0)
     {
-        //cout << "----> Please, load data first" << endl;
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
@@ -3845,14 +1846,6 @@ void body::kill_dynamic_spectrum()
     vbox_main.removeWidget(kill_dynspec);
     kill_dynspec->setVisible(false);
 
-    // -- ustalamy szerokości kolumn --
-    /*
-    grid->setColumnStretch(1,1);
-    grid->setColumnStretch(2,1);
-    grid->setColumnStretch(3,1);
-    grid->setColumnStretch(4,1);
-    grid->setColumnStretch(5,1);
-    */
     // -- ustalamy boola --
     dynamic_spectrum_opened = 0;
 }
@@ -3907,8 +1900,6 @@ void body::press_map(QMouseEvent * event)
         }
     }
 
-
-
     // dodatkowe zabezpieczenia
     if (yind > max_range_vel_index)
         yind = max_range_vel_index-1;
@@ -3933,232 +1924,22 @@ void body::press_map(QMouseEvent * event)
         xind = 0;
     }
 
-    // teraz linie pionowe na widmie dynamicznym
-    QPen pen;
-    pen.setColor(QColor(255,255,255)); // dajemy im biały kolor
-    x_axis_line->setPen(pen);
-    y_axis_line->setPen(pen);
+    press_map_met(xind, yind);
 
-    // ustalamy kursor na dynspec na krzyżyk
-    dynamic_spectrum_pl.setCursor(QCursor(Qt::CrossCursor));
+}
 
-    // ustalamy jak mają rozciągać się linie:
-    x_axis_line->start->setCoords(xind, -QCPRange::maxRange);
-    x_axis_line->end->setCoords(xind, QCPRange::maxRange);
-    y_axis_line->start->setCoords(-QCPRange::maxRange,dataTable->velocityTable[0][yind]);
-    y_axis_line->end->setCoords(QCPRange::maxRange,dataTable->velocityTable[0][yind]);
-
-    // biały kwadrat, zaznaczający kliknięty piksel:
-    rectangle->setPen(pen);
-    rectangle->topLeft->setCoords(double(xind)-0.5, dataTable->velocityTable[0][yind]+0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
-    rectangle->bottomRight->setCoords(double(xind)+0.5, dataTable->velocityTable[0][yind]-0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
-
-    // i replot
-    dynamic_spectrum_pl.replot();
-
-    // -- sprawdzamy, czy byly grafiki juz wczesniej otwierane w oknie --
-    if (graphs_next_to_dynamical_spectrum == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        lcs_dynamic_spectrum.addGraph();
-
-        graphs_next_to_dynamical_spectrum = 1;
-    }
-
-    // -- twotzymy widmo, ktore wyswietli sie po kliknieciu w widmo dynamiczne --
-    // - warunki ze wzgledu na przyciski polaryzacji -
-    QVector < double > velocity(rozmiar_w_y), flux(rozmiar_w_y);
-
-    if (I_pressed == 1)
-    {
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
-        flux[i] = dataTable->spectraTableI[xind][min_range_vel_index+i];
-    }
-    }
-
-    else if (v_pressed == 1)
-    {
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
-        flux[i] = dataTable->spectraTableV[xind][min_range_vel_index+i];
-    }
-    }
-    else if (lhc_pressed == 1)
-    {
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
-        flux[i] = dataTable->spectraTableLHC[xind][min_range_vel_index+i];
-    }
-    }
-    else if (rhc_pressed == 1)
-    {
-    for (int i = 0; i < rozmiar_w_y; i++)
-    {
-        //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
-        flux[i] = dataTable->spectraTableRHC[xind][min_range_vel_index+i];
-    }
-    }
-
-
-    single_dynamic_spectrum.graph(0)->setData(velocity,flux);
-    single_dynamic_spectrum.xAxis->setLabel("Vel");
-    single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-    double veldiff = *max_element(velocity.begin(), velocity.end()) - *min_element(velocity.begin(), velocity.end());
-    single_dynamic_spectrum.xAxis->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-    single_dynamic_spectrum.xAxis2->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
-    single_dynamic_spectrum.yAxis2->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
-
-    // -- pokazujemy ticki na gornej osi --
-    single_dynamic_spectrum.xAxis2->setVisible(true);
-    single_dynamic_spectrum.yAxis2->setVisible(true);
-    single_dynamic_spectrum.xAxis2->setTickLabels(false);
-    single_dynamic_spectrum.yAxis2->setTickLabels(false);
-    single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    if (vel_line_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        vel_line_added = 1;
-    }
-
-
-    // -- ustawiamy pionową linię --
-    // -- stylistyka --
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = dataTable->velocityTable[xind][yind];
-    x_vline[1] = dataTable->velocityTable[xind][yind];
-    y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
-    y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    single_dynamic_spectrum.graph(1)->setPen(pen2);
-
-
-    //first_item_position
-    //inf_vel_line->anchor()
-
-    // -- tworzymy krzywa blasku, ktora wyswietli sie w krzywej blasku --
-    QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
-    if(I_pressed==1)
-    {
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = dataTable->mjdTable[min_obs_number + i];
-        lcs_flux[i] = dataTable->spectraTableI[min_obs_number + i][yind];
-        error_lcs[i] = dataTable->spectraTableIERR[min_obs_number + i][yind];
-    }
-    }
-
-    else if(v_pressed==1)
-    {
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = dataTable->mjdTable[min_obs_number + i];
-        lcs_flux[i] = dataTable->spectraTableV[min_obs_number + i][yind];
-        error_lcs[i] = dataTable->spectraTableVERR[min_obs_number + i][yind];
-    }
-    }
-
-    else if(lhc_pressed==1)
-    {
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = dataTable->mjdTable[min_obs_number + i];
-        lcs_flux[i] = dataTable->spectraTableLHC[min_obs_number + i][yind];
-        error_lcs[i] = dataTable->spectraTableLHCERR[min_obs_number + i][yind];
-    }
-    }
-
-    else if(rhc_pressed==1)
-    {
-    for (int i = 0; i < rozmiar_w_x; i++)
-    {
-        epoch[i] = dataTable->mjdTable[min_obs_number + i];
-        lcs_flux[i] = dataTable->spectraTableRHC[min_obs_number + i][yind];
-        error_lcs[i] = dataTable->spectraTableRHCERR[min_obs_number + i][yind];
-    }
-    }
-
-    errorBars->setAntialiased(false);
-    errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    if(!dark_mode_switch->isChecked())
-        errorBars->setPen(QPen(QColor(180,180,180)));
-    else
-        errorBars->setPen(QPen(QColor(105,105,105)));
-
-    lcs_dynamic_spectrum.graph(0)->setData(epoch,lcs_flux);
-    errorBars->setData(error_lcs);
-
-    //lcs_dynamic_spectrum.graph(0)->setPen(QPen(Qt::blue));
-    lcs_dynamic_spectrum.graph(0)->setLineStyle(QCPGraph::lsNone);
-    lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
-    lcs_dynamic_spectrum.xAxis->setLabel("MJD");
-    lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
-
-    if (rozmiar_w_x == 1)
-    {
-        lcs_dynamic_spectrum.rescaleAxes();
-    }
-    else
-    {
-        double diffrence = *max_element(epoch.begin(), epoch.end()) - *min_element(epoch.begin(), epoch.end());
-        lcs_dynamic_spectrum.xAxis->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-        lcs_dynamic_spectrum.yAxis->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-        lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
-        lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
-    }
-
-    // -- pokazujemy ticki na gornej osi --
-    lcs_dynamic_spectrum.xAxis2->setVisible(true);
-    lcs_dynamic_spectrum.yAxis2->setVisible(true);
-    lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
-    lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-
-    if (lcs_line_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        lcs_line_added = 1;
-    }
-
-
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = dataTable->mjdTable[xind];
-    lcsx_vline[1] = dataTable->mjdTable[xind];
-    if (rozmiar_w_x == 1)
-    {
-        lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
-        lcsy_vline[1] = lcs_dynamic_spectrum.yAxis->range().upper;
-    }
-    else
-    {
-        lcsy_vline[0] = *min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-        lcsy_vline[1] = *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end()));
-    }
-    lcs_dynamic_spectrum.graph(1)->setData(lcsx_vline, lcsy_vline);
-    QPen pen3;
-    pen3.setColor(QColor(182,26,26));
-    lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-
+void body::set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_cl)
+{
     // -- setujemy tekst do displayowania informacji --
+    // --------------
+    // Lewy
     string text_mjdlabel = "";
     text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
+    text_mjdlabel.append(to_string(int(dataTable->mjdTable[x_index_cl])));
 
 
     text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
+    text_mjdlabel.append(to_string(dataTable->channelTable[x_index_cl][y_index_cl]));
 
     text_mjdlabel.append(string("\nVel: "));
 
@@ -4170,37 +1951,36 @@ void body::press_map(QMouseEvent * event)
 
     streamObjvel << std::setprecision(3);
 
-    streamObjvel << VELlst[xind][yind];
+    streamObjvel << dataTable->velocityTable[x_index_cl][y_index_cl];
     std::string strObjvel = streamObjvel.str();
     text_mjdlabel.append(strObjvel);
 
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
 
-    */
     mjd_label.setText(QString::fromStdString(text_mjdlabel));
     QFont f( "Arial", 11, QFont::Bold);
     mjd_label.setFont(f);
+    // --------------
+
+    // ---------------
+    // Prawy
     string cocochanel_txt = "";
 
-
     cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
+    cocochanel_txt.append(to_string(int(dataTable->datetimeTable[x_index_cl][0])));
     cocochanel_txt.append(string(" "));
 
 
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
+    if (int(dataTable->datetimeTable[x_index_cl][1]) < 10)
+        cocochanel_txt.append("0" + to_string(int(dataTable->datetimeTable[x_index_cl][1])));
     else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
+        cocochanel_txt.append(to_string(int(dataTable->datetimeTable[x_index_cl][1])));
 
     cocochanel_txt.append(string(" "));
 
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
+    if (int(dataTable->datetimeTable[x_index_cl][2]) < 10)
+        cocochanel_txt.append("0" + to_string(int(dataTable->datetimeTable[x_index_cl][2])));
     else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
+        cocochanel_txt.append(to_string(int(dataTable->datetimeTable[x_index_cl][2])));
 
     cocochanel_txt.append(string("\n"));
     cocochanel_txt.append(string("Value: "));
@@ -4215,116 +1995,35 @@ void body::press_map(QMouseEvent * event)
 
     if (I_pressed==1)
     {
-        streamObj3 << Ilst[xind][yind];
+        streamObj3 << dataTable->spectraTableI[x_index_cl][y_index_cl];
         std::string strObj3 = streamObj3.str();
         cocochanel_txt.append(strObj3);
     }
     else if (v_pressed==1)
     {
-        streamObj3 << Vlst[xind][yind];
+        streamObj3 << dataTable->spectraTableV[x_index_cl][y_index_cl];
         std::string strObj3 = streamObj3.str();
         cocochanel_txt.append(strObj3);
     }
     else if (lhc_pressed==1)
     {
-        streamObj3 << LHClst[xind][yind];
+        streamObj3 << dataTable->spectraTableLHC[x_index_cl][y_index_cl];
         std::string strObj3 = streamObj3.str();
         cocochanel_txt.append(strObj3);
     }
     else if (rhc_pressed==1)
     {
-        streamObj3 << RHClst[xind][yind];
+        streamObj3 << dataTable->spectraTableRHC[x_index_cl][y_index_cl];
         std::string strObj3 = streamObj3.str();
         cocochanel_txt.append(strObj3);
     }
 
     cocochanel_txt.append(string("\n"));
     cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
+    cocochanel_txt.append(to_string(x_index_cl+1));
 
     cocochanel.setFont(f);
     cocochanel.setText(QString::fromStdString(cocochanel_txt));
-    set_down_IVLHCRHCbuttons();
-
-
-
-    // ----- dodatkowa rzecz ! ---------------
-    // -- dodajemy odpowiednią kropkę na krzywej blasku --
-    if (dot_single_added == 0)
-    {
-        single_dynamic_spectrum.addGraph();
-        dot_single_added = 1;
-    }
-
-    // -- ustawiamy sobie kropkę na single spectrum --
-    QVector < double > x_dot_spec(1), y_dot_spec(1);
-    // predkosc radialna
-    x_dot_spec[0] = VELlst[xind][yind]; // kliknięta prędkość radialna
-    // gestosć strumienia
-    if (I_pressed == 1)
-        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
-    else if (lhc_pressed == 1)
-        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
-    else if (rhc_pressed == 1)
-        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
-    else if (v_pressed == 1)
-        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
-
-
-    single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
-    if(dark_mode_switch->isChecked())
-        single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
-    else
-        single_dynamic_spectrum.graph(2)->setPen(pen2);
-    single_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
-    single_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
-
-
-    // -- dodajemy kropkę na krzywej blasku --
-    if (dot_lcs_added == 0)
-    {
-        lcs_dynamic_spectrum.addGraph();
-        dot_lcs_added = 1;
-    }
-
-    // -- ustawiamy sobie kropkę na single spectrum --
-    QVector < double > x_dot_lcs(1), y_dot_lcs(1);
-    // predkosc radialna
-    x_dot_lcs[0] = mjdlst[xind]; // kliknięta epoka
-    // gestosć strumienia
-    if (I_pressed == 1)
-        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
-    else if (lhc_pressed == 1)
-        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
-    else if (rhc_pressed == 1)
-        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
-    else if (v_pressed == 1)
-        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
-    // -- stylistyka --
-    lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
-    if(dark_mode_switch->isChecked())
-        lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
-    else
-        lcs_dynamic_spectrum.graph(2)->setPen(pen2);
-    lcs_dynamic_spectrum.graph(2)->setLineStyle(QCPGraph::lsNone);
-    lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
-
-    // -- dark i light mode --
-    if (dark_mode_switch->isChecked())
-    {
-        single_dynamic_spectrum.graph(0)->setPen(graph_dark);
-        lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
-    }
-    else
-    {
-        single_dynamic_spectrum.graph(0)->setPen(graph_light);
-        lcs_dynamic_spectrum.graph(0)->setPen(graph_light);
-    }
-
-    single_dynamic_spectrum.replot();
-    lcs_dynamic_spectrum.replot();
-
-
 }
 
 // -- obsluguje granice w osi predkosci na widmie dynamicznym (max) --
@@ -4530,28 +2229,36 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     xind = x;
     yind = y;
+
+    // teraz linie pionowe na widmie dynamicznym
     QPen pen;
-    pen.setColor(QColor(255,255,255));
+    pen.setColor(QColor(255,255,255)); // dajemy im biały kolor
     x_axis_line->setPen(pen);
     y_axis_line->setPen(pen);
+
+    // ustalamy kursor na dynspec na krzyżyk
     dynamic_spectrum_pl.setCursor(QCursor(Qt::CrossCursor));
+
+    // ustalamy jak mają rozciągać się linie:
     x_axis_line->start->setCoords(xind, -QCPRange::maxRange);
     x_axis_line->end->setCoords(xind, QCPRange::maxRange);
-    y_axis_line->start->setCoords(-QCPRange::maxRange,VELlst[0][yind]);
-    y_axis_line->end->setCoords(QCPRange::maxRange,VELlst[0][yind]);
+    y_axis_line->start->setCoords(-QCPRange::maxRange,dataTable->velocityTable[0][yind]);
+    y_axis_line->end->setCoords(QCPRange::maxRange,dataTable->velocityTable[0][yind]);
+
+    // biały kwadrat, zaznaczający kliknięty piksel:
     rectangle->setPen(pen);
-    rectangle->topLeft->setCoords(double(xind)-0.5, VELlst[0][yind]+0.5*(VELlst[0][2]-VELlst[0][1]));
-    rectangle->bottomRight->setCoords(double(xind)+0.5, VELlst[0][yind]-0.5*(VELlst[0][2]-VELlst[0][1]));
+    rectangle->topLeft->setCoords(double(xind)-0.5, dataTable->velocityTable[0][yind]+0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
+    rectangle->bottomRight->setCoords(double(xind)+0.5, dataTable->velocityTable[0][yind]-0.5*(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1]));
+
+    // i replot
     dynamic_spectrum_pl.replot();
-    //cout << "Kliknieto w x: " << xind << " i w y: " << VELlst[0][yind] << endl;
-   // single_dynamic_spectrum
-    //lcs_dynamic_spectrum
 
     // -- sprawdzamy, czy byly grafiki juz wczesniej otwierane w oknie --
     if (graphs_next_to_dynamical_spectrum == 0)
     {
         single_dynamic_spectrum.addGraph();
         lcs_dynamic_spectrum.addGraph();
+
         graphs_next_to_dynamical_spectrum = 1;
     }
 
@@ -4561,43 +2268,43 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     if (I_pressed == 1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
+    for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Ilst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableI[xind][min_range_vel_index+i];
     }
     }
 
     else if (v_pressed == 1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
+    for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Vlst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableV[xind][min_range_vel_index+i];
     }
     }
     else if (lhc_pressed == 1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
+    for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = LHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableLHC[xind][min_range_vel_index+i];
     }
     }
     else if (rhc_pressed == 1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_y; i++)
+    for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = RHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableRHC[xind][min_range_vel_index+i];
     }
     }
 
-    single_dynamic_spectrum.replot();
+
     single_dynamic_spectrum.graph(0)->setData(velocity,flux);
     single_dynamic_spectrum.xAxis->setLabel("Vel");
     single_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
@@ -4606,6 +2313,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     single_dynamic_spectrum.yAxis->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
     single_dynamic_spectrum.xAxis2->setRange(*min_element(velocity.begin(), velocity.end()) - 0.05 * veldiff, *max_element(velocity.begin(), velocity.end())  + 0.05 * veldiff);
     single_dynamic_spectrum.yAxis2->setRange(*min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end())), *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end())));
+
     // -- pokazujemy ticki na gornej osi --
     single_dynamic_spectrum.xAxis2->setVisible(true);
     single_dynamic_spectrum.yAxis2->setVisible(true);
@@ -4613,65 +2321,70 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     single_dynamic_spectrum.yAxis2->setTickLabels(false);
     single_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
-
     if (vel_line_added == 0)
     {
         single_dynamic_spectrum.addGraph();
         vel_line_added = 1;
     }
+
+
+    // -- ustawiamy pionową linię --
+    // -- stylistyka --
+    QPen pen2;
+    pen2.setColor(QColor(182,26,26));
     QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[0][yind];
-    x_vline[1] = VELlst[0][yind];
+    x_vline[0] = dataTable->velocityTable[xind][yind];
+    x_vline[1] = dataTable->velocityTable[xind][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-    single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
     single_dynamic_spectrum.graph(1)->setPen(pen2);
-    single_dynamic_spectrum.replot();
+
+
+    //first_item_position
+    //inf_vel_line->anchor()
+
     // -- tworzymy krzywa blasku, ktora wyswietli sie w krzywej blasku --
     QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
     if(I_pressed==1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
+    for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Ilst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableI[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableIERR[min_obs_number + i];
     }
     }
 
     else if(v_pressed==1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
+    for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Vlst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableV[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableVERR[min_obs_number + i];
     }
     }
 
     else if(lhc_pressed==1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
+    for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = LHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableLHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableLHCERR[min_obs_number + i];
     }
     }
 
     else if(rhc_pressed==1)
     {
-    for (unsigned long int i = 0; i < rozmiar_w_x; i++)
+    for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = RHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableRHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableRHCERR[min_obs_number + i];
     }
     }
-    //cout << epoch[0] << endl;
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
@@ -4688,6 +2401,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     lcs_dynamic_spectrum.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
     lcs_dynamic_spectrum.xAxis->setLabel("MJD");
     lcs_dynamic_spectrum.yAxis->setLabel("Flux density (Jy)");
+
     if (rozmiar_w_x == 1)
     {
         lcs_dynamic_spectrum.rescaleAxes();
@@ -4700,13 +2414,13 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
         lcs_dynamic_spectrum.xAxis2->setRange(*min_element(epoch.begin(), epoch.end()) - 0.05 * diffrence, *max_element(epoch.begin(), epoch.end())  + 0.05 * diffrence);
         lcs_dynamic_spectrum.yAxis2->setRange(*min_element(lcs_flux.begin(), lcs_flux.end()) - 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())), *max_element(lcs_flux.begin(), lcs_flux.end())  + 0.05 * (*max_element(lcs_flux.begin(), lcs_flux.end())));
     }
-     // -- pokazujemy ticki na gornej osi --
+
+    // -- pokazujemy ticki na gornej osi --
     lcs_dynamic_spectrum.xAxis2->setVisible(true);
     lcs_dynamic_spectrum.yAxis2->setVisible(true);
     lcs_dynamic_spectrum.xAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.yAxis2->setTickLabels(false);
     lcs_dynamic_spectrum.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    lcs_dynamic_spectrum.replot();
 
 
     if (lcs_line_added == 0)
@@ -4714,10 +2428,11 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
         lcs_dynamic_spectrum.addGraph();
         lcs_line_added = 1;
     }
-    QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
 
+
+    QVector < double > lcsx_vline(2), lcsy_vline(2);
+    lcsx_vline[0] = dataTable->mjdTable[xind];
+    lcsx_vline[1] = dataTable->mjdTable[xind];
     if (rozmiar_w_x == 1)
     {
         lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
@@ -4732,141 +2447,11 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     QPen pen3;
     pen3.setColor(QColor(182,26,26));
     lcs_dynamic_spectrum.graph(1)->setPen(pen3);
-    lcs_dynamic_spectrum.replot();
-    // -- setujemy tekst do displayowania informacji --
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
 
 
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-
-
-
-    /*
-    text_mjdlabel.append(string("      Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        text_mjdlabel.append(strObj3);
-    }
-    */
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    /*
-    text_mjdlabel.append(string("     Number: "));
-    text_mjdlabel.append(to_string(xind+1));
-
-    */
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
     set_down_IVLHCRHCbuttons();
+    set_dynamic_spectrum_labels_for_clicked(xind, yind);
+
 
     // ----- dodatkowa rzecz ! ---------------
     // -- dodajemy odpowiednią kropkę na krzywej blasku --
@@ -4879,16 +2464,16 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_spec(1), y_dot_spec(1);
     // predkosc radialna
-    x_dot_spec[0] = VELlst[0][yind]; // kliknięta prędkość radialna
+    x_dot_spec[0] = dataTable->velocityTable[xind][yind]; // kliknięta prędkość radialna
     // gestosć strumienia
     if (I_pressed == 1)
-        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableI[xind][yind]; // kliknięta gęstość strumienia
     else if (lhc_pressed == 1)
-        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableLHC[xind][yind]; // kliknięta gęstość strumienia
     else if (rhc_pressed == 1)
-        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableRHC[xind][yind]; // kliknięta gęstość strumienia
     else if (v_pressed == 1)
-        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableV[xind][yind]; // kliknięta gęstość strumienia
 
 
     single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
@@ -4910,16 +2495,16 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_lcs(1), y_dot_lcs(1);
     // predkosc radialna
-    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    x_dot_lcs[0] = dataTable->mjdTable[xind]; // kliknięta epoka
     // gestosć strumienia
     if (I_pressed == 1)
-        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableI[xind][yind]; // kliknięta gęstość strumienia
     else if (lhc_pressed == 1)
-        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableLHC[xind][yind]; // kliknięta gęstość strumienia
     else if (rhc_pressed == 1)
-        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableRHC[xind][yind]; // kliknięta gęstość strumienia
     else if (v_pressed == 1)
-        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableV[xind][yind]; // kliknięta gęstość strumienia
     // -- stylistyka --
     lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
     if(dark_mode_switch->isChecked())
@@ -4943,7 +2528,6 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     single_dynamic_spectrum.replot();
     lcs_dynamic_spectrum.replot();
-
 }
 
 // -- czyta wartości kanałów z pliku 'chan4int.sv' --
@@ -5105,40 +2689,40 @@ void body::calculate_aver_over_velocity()
     }
 
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > Ilst[0].size()-1)
-        max = Ilst[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size()-1)
+        max = dataTable->spectraTableI[0].size()-1;
 
     chan4int_start = min;
     chan4int_end = max;
 
     // -- integrujemy --
     vector < double > wynik (2);
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
         // I
-        wynik = average_over_velocity(chan4int_start, chan4int_end, Ilst[i], ERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableI[i], dataTable->spectraTableIERR);
         averaged_over_velocity_I.push_back(wynik[0]);
         averaged_over_velocity_I_err.push_back(wynik[1]);
 
         // V
-        wynik = average_over_velocity(chan4int_start, chan4int_end, Vlst[i], VERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableV[i], dataTable->spectraTableVERR);
         averaged_over_velocity_V.push_back(wynik[0]);
         averaged_over_velocity_V_err.push_back(wynik[1]);
 
         // LHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, LHClst[i], LHCERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableLHC[i], dataTable->spectraTableLHCERR);
         averaged_over_velocity_LHC.push_back(wynik[0]);
         averaged_over_velocity_LHC_err.push_back(wynik[1]);
 
         // RHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, RHClst[i], RHCERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableRHC[i], dataTable->spectraTableRHCERR);
         averaged_over_velocity_RHC.push_back(wynik[0]);
         averaged_over_velocity_RHC_err.push_back(wynik[1]);
     }
     //cout << "----> Averaged over channels " << min << " -> " << max << endl;
     // -- zapisujemy do pliku --
     // liczymy srednia predkosc radialna
-    double velaver = (VELlst[0][max] + VELlst[0][min]) / 2.0;
+    double velaver = (dataTable->velocityTable[0][max] + dataTable->velocityTable[0][min]) / 2.0;
     ofstream integ;
     string filename = working_directory + "/" + srcname + "_averaged_over_velocity_chan_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filename.c_str());
@@ -5147,18 +2731,18 @@ void body::calculate_aver_over_velocity()
     {
         integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
         integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
         }
     }
     else
     {
         integ << "# MJD year I err V err LHC err RHC err" << endl;
         integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
-            integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
         }
     }
 
@@ -5258,10 +2842,10 @@ void body::calculate_aver_over_time()
         QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
     }
 
-    if (max > mjdlst.size()-1)
-        max = mjdlst.size()-1;
+    if (max > dataTable->mjdTable.size()-1)
+        max = dataTable->mjdTable.size()-1;
 
-    for(int channel = 0; channel < CHANlst[0].size(); channel++)
+    for(int channel = 0; channel < dataTable->channelTable[0].size(); channel++)
     {
         // tworzymy bloki time series
         vector < double > I_timeseries, I_timeseries_err;
@@ -5270,23 +2854,23 @@ void body::calculate_aver_over_time()
         vector < double > RHC_timeseries, RHC_timeseries_err;
         vector < double > wynik(2);
         // generujemy light_curves
-        for (int i = 0; i < mjdlst.size(); i++)
+        for (int i = 0; i < dataTable->mjdTable.size(); i++)
         {
             // I
-            I_timeseries.push_back(Ilst[i][channel]);
-            I_timeseries_err.push_back(ERRlst[i][channel]);
+            I_timeseries.push_back(dataTable->spectraTableI[i][channel]);
+            I_timeseries_err.push_back(dataTable->spectraTableIERR[i]);
 
             // V
-            V_timeseries.push_back(Vlst[i][channel]);
-            V_timeseries_err.push_back(VERRlst[i][channel]);
+            V_timeseries.push_back(dataTable->spectraTableV[i][channel]);
+            V_timeseries_err.push_back(dataTable->spectraTableVERR[i]);
 
             // LHC
-            LHC_timeseries.push_back(LHClst[i][channel]);
-            LHC_timeseries_err.push_back(LHCERRlst[i][channel]);
+            LHC_timeseries.push_back(dataTable->spectraTableLHC[i][channel]);
+            LHC_timeseries_err.push_back(dataTable->spectraTableLHCERR[i]);
 
             // RHC
-            RHC_timeseries.push_back(RHClst[i][channel]);
-            RHC_timeseries_err.push_back(RHCERRlst[i][channel]);
+            RHC_timeseries.push_back(dataTable->spectraTableRHC[i][channel]);
+            RHC_timeseries_err.push_back(dataTable->spectraTableRHCERR[i]);
         }
 
         // liczymy average
@@ -5311,9 +2895,9 @@ void body::calculate_aver_over_time()
     string filename = working_directory + "/" + srcname + "_averaged_over_time_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filename.c_str());
     integ << "# channel velocity I err V err LHC err RHC err" << endl;
-    for(int i = 0; i < CHANlst[0].size(); i++)
+    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
     {
-        integ << fixed << setprecision(11) << CHANlst[0][i] << "   " <<  VELlst[0][i] << "   " << averaged_over_time_I[i] << "   " <<  averaged_over_time_I_err[i] << "   " << averaged_over_time_V[i] << "   " << averaged_over_time_V_err[i] << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
+        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << averaged_over_time_I[i] << "   " <<  averaged_over_time_I_err[i] << "   " << averaged_over_time_V[i] << "   " << averaged_over_time_V_err[i] << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
     }
     integ.close();
     averaged_over_time_I.clear();
@@ -5526,11 +3110,11 @@ void body::calculate_spectral_index()
         QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
     }
 
-    if (max > mjdlst.size()-1)
-        max = mjdlst.size()-1;
+    if (max > dataTable->mjdTable.size()-1)
+        max = dataTable->mjdTable.size()-1;
 
 
-    for(int channel = 0; channel < CHANlst[0].size(); channel++)
+    for(int channel = 0; channel < dataTable->channelTable[0].size(); channel++)
     {
         // tworzymy bloki time series
         vector < double > I_timeseries, I_timeseries_err;
@@ -5539,23 +3123,23 @@ void body::calculate_spectral_index()
         vector < double > RHC_timeseries, RHC_timeseries_err;
         vector < double > wynik(3);
         // generujemy light_curves
-        for (int i = 0; i < mjdlst.size(); i++)
+        for (int i = 0; i < dataTable->mjdTable.size(); i++)
         {
             // I
-            I_timeseries.push_back(Ilst[i][channel]);
-            I_timeseries_err.push_back(ERRlst[i][channel]);
+            I_timeseries.push_back(dataTable->spectraTableI[i][channel]);
+            I_timeseries_err.push_back(dataTable->spectraTableIERR[i]);
 
             // V
-            V_timeseries.push_back(Vlst[i][channel]);
-            V_timeseries_err.push_back(VERRlst[i][channel]);
+            V_timeseries.push_back(dataTable->spectraTableV[i][channel]);
+            V_timeseries_err.push_back(dataTable->spectraTableVERR[i]);
 
             // LHC
-            LHC_timeseries.push_back(LHClst[i][channel]);
-            LHC_timeseries_err.push_back(LHCERRlst[i][channel]);
+            LHC_timeseries.push_back(dataTable->spectraTableLHC[i][channel]);
+            LHC_timeseries_err.push_back(dataTable->spectraTableLHCERR[i]);
 
             // RHC
-            RHC_timeseries.push_back(RHClst[i][channel]);
-            RHC_timeseries_err.push_back(RHCERRlst[i][channel]);
+            RHC_timeseries.push_back(dataTable->spectraTableRHC[i][channel]);
+            RHC_timeseries_err.push_back(dataTable->spectraTableRHCERR[i]);
         }
         // liczymy average
         // I
@@ -5587,27 +3171,27 @@ void body::calculate_spectral_index()
     string filename = working_directory + "/" + srcname + "_VI_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filename.c_str());
     integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < CHANlst[0].size(); i++)
+    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
     {
-        integ << fixed << setprecision(11) << CHANlst[0][i] << "   " <<  VELlst[0][i] << "   " << VI_I[i] << "   " <<  VI_V[i] << "   " << VI_LHC[i] << "   " << VI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
+        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << VI_I[i] << "   " <<  VI_V[i] << "   " << VI_LHC[i] << "   " << VI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
     }
     integ.close();
 
     string filenamefi = working_directory + "/" + srcname + "_FI_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filenamefi.c_str());
     integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < CHANlst[0].size(); i++)
+    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
     {
-        integ << fixed << setprecision(11) << CHANlst[0][i] << "   " <<  VELlst[0][i] << "   " << FI_I[i] << "   " <<  FI_V[i] << "   " << FI_LHC[i] << "   " << FI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
+        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << FI_I[i] << "   " <<  FI_V[i] << "   " << FI_LHC[i] << "   " << FI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
     }
     integ.close();
 
     string filenamechi2 = working_directory + "/" + srcname + "_chi2_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
     integ.open(filenamechi2.c_str());
     integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < CHANlst[0].size(); i++)
+    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
     {
-        integ << fixed << setprecision(11) << CHANlst[0][i] << "   " <<  VELlst[0][i] << "   " << chi2_I[i] << "   " <<  chi2_V[i] << "   " << chi2_LHC[i] << "   " << chi2_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
+        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << chi2_I[i] << "   " <<  chi2_V[i] << "   " << chi2_LHC[i] << "   " << chi2_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
     }
     integ.close();
 
@@ -5667,12 +3251,12 @@ void body::combo_box_display()
     int marker = n_of_obs;
     last_marker = marker;
     // -- gromadzimy dane --
-    QVector < double > x(n_chanslst[marker]), y(n_chanslst[marker]);
+    QVector < double > x(dataTable->channelTable[marker].size()), y(dataTable->channelTable[marker].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[marker].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[marker].size(); i++)
     {
-        x[i] = VELlst[marker][i];
-        y[i] = Ilst[marker][i];
+        x[i] = dataTable->velocityTable[marker][i];
+        y[i] = dataTable->spectraTableI[marker][i];
     }
     // -- dodajemy do wykresu --
     spectrum.addGraph();
@@ -5695,12 +3279,12 @@ void body::combo_box_display()
 // -- ustala zasięg na wykresie single spectrum --
 void body::set_default_range()
 {
-    QVector < double > x(n_chanslst[last_marker]), y(n_chanslst[last_marker]);
+    QVector < double > x(dataTable->channelTable[last_marker].size()), y(dataTable->channelTable[last_marker].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[last_marker].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[last_marker].size(); i++)
     {
-        x[i] = VELlst[last_marker][i];
-        y[i] = Ilst[last_marker][i];
+        x[i] = dataTable->velocityTable[last_marker][i];
+        y[i] = dataTable->spectraTableI[last_marker][i];
     }
     // ustalamy range
     double veldiff = *max_element(x.begin(), x.end()) - *min_element(x.begin(), x.end());
@@ -5715,17 +3299,6 @@ void body::set_default_range()
 // -- usuwa wybrany plot z single spectrum --
 void body::remove_selected_graph()
 {
-    /*
-    if(spectrum.selectedGraphs().size() > 0)
-    {
-        spectrum.removeGraph(spectrum.selectedGraphs().first());
-        spectrum.replot();
-    }
-    n_graphs_on_single_spec = n_graphs_on_single_spec - 1;
-    */
-    // -- popujemy z tablicy z indeksami plotowanych obserwacji --
-
-
 
     if (n_graphs_on_single_spec > 0)
     {
@@ -5750,19 +3323,18 @@ void body::save_plots_from_single_spectrum()
     {
         int epoch = numbers_of_epochs_on_single_spec[i];
         string filename;
-        string avrname = avrnames[epoch];
+        string avrname = dataTable->fileNamesTab[epoch];
         avrname.erase(avrname.end()-7, avrname.end());
-        if (loaded_from_listfile == 1)
-            filename = working_directory + "/" + avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
-        else
-            filename = avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+
+        filename = avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+
         ofstream plik;
         plik.open(filename);
         plik << "# chan vel I er V er LHC er RHC er" << endl;
-        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << mjdlst[epoch] << endl;
-        for (int ee = 0; ee < CHANlst[epoch].size(); ee++)
+        plik << fixed << setprecision(11) << "# freq: " << dataTable->restFreqsTable[epoch] << "   epoch: " << dataTable->mjdTable[epoch] << endl;
+        for (int ee = 0; ee < dataTable->channelTable[epoch].size(); ee++)
         {
-            plik << fixed << setprecision(11) << CHANlst[epoch][ee] << "   " <<  VELlst[epoch][ee] << "   " << Ilst[epoch][ee] << "   " << ERRlst[epoch][ee] << "   " << Vlst[epoch][ee] <<  "   " << VERRlst[epoch][ee] <<  "   " << LHClst[epoch][ee] <<  "   " << LHCERRlst[epoch][ee] <<  "   " << RHClst[epoch][ee] <<  "   " << RHCERRlst[epoch][ee] << endl;
+            plik << fixed << setprecision(11) << dataTable->channelTable[epoch][ee] << "   " <<  dataTable->velocityTable[epoch][ee] << "   " << dataTable->spectraTableI[epoch][ee] << "   " << dataTable->spectraTableIERR[epoch] << "   " << dataTable->spectraTableV[epoch][ee] <<  "   " << dataTable->spectraTableVERR[epoch] <<  "   " << dataTable->spectraTableLHC[epoch][ee] <<  "   " << dataTable->spectraTableLHCERR[epoch] <<  "   " << dataTable->spectraTableRHC[epoch][ee] <<  "   " << dataTable->spectraTableRHCERR[epoch] << endl;
         }
         plik.close();
         //cout << "----> Saved to " << filename << endl;
@@ -5774,7 +3346,7 @@ void body::save_plots_from_single_spectrum()
 void body::save_all_to_gnuplot_slot()
 {
     // -- ilość źródeł --
-    unsigned long int count_for_gnuplot = Ilst.size();
+    unsigned long int count_for_gnuplot = dataTable->spectraTableI.size();
 
     // -- pasek postepu --
     QProgressDialog postep;//(&window);
@@ -5790,19 +3362,19 @@ void body::save_all_to_gnuplot_slot()
         unsigned long int epoch = i;
         // -- tworzymy zmienną do przechowywania pliku --
         string filename;
-        string avrname = avrnames[epoch];
+        string avrname = dataTable->fileNamesTab[epoch];
         avrname.erase(avrname.end()-7, avrname.end());
         if (loaded_from_listfile == 1)
-            filename = working_directory + "/" + avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+            filename = working_directory + "/" + avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
         else
-            filename = avrname + to_string(int(mjdlst[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
+            filename = avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
         ofstream plik;
         plik.open(filename);
         plik << "# chan vel I er V er LHC er RHC er" << endl;
-        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << mjdlst[epoch] << endl;
-        for (unsigned long int ee = 0; ee < CHANlst[epoch].size(); ee++)
+        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << dataTable->mjdTable[epoch] << endl;
+        for (unsigned long int ee = 0; ee < dataTable->channelTable[epoch].size(); ee++)
         {
-            plik << fixed << setprecision(11) << CHANlst[epoch][ee] << "   " <<  VELlst[epoch][ee] << "   " << Ilst[epoch][ee] << "   " << ERRlst[epoch][ee] << "   " << Vlst[epoch][ee] <<  "   " << VERRlst[epoch][ee] <<  "   " << LHClst[epoch][ee] <<  "   " << LHCERRlst[epoch][ee] <<  "   " << RHClst[epoch][ee] <<  "   " << RHCERRlst[epoch][ee] << endl;
+            plik << fixed << setprecision(11) << dataTable->channelTable[epoch][ee] << "   " <<  dataTable->velocityTable[epoch][ee] << "   " << dataTable->spectraTableI[epoch][ee] << "   " << dataTable->spectraTableIERR[epoch] << "   " << dataTable->spectraTableV[epoch][ee] <<  "   " << dataTable->spectraTableVERR[epoch] <<  "   " << dataTable->spectraTableLHC[epoch][ee] <<  "   " << dataTable->spectraTableLHCERR[epoch] <<  "   " << dataTable->spectraTableRHC[epoch][ee] <<  "   " << dataTable->spectraTableRHCERR[epoch] << endl;
         }
         plik.close();
 
@@ -5936,7 +3508,7 @@ void body::calculate_spectral_index_for_time_series_with_buttons()
 
     // setujemy epoki
     starting_channel_spi->setText(QString::fromStdString(to_string(1)));
-    ending_channel_spi->setText(QString::fromStdString(to_string(Ilst.size())));
+    ending_channel_spi->setText(QString::fromStdString(to_string(dataTable->spectraTableI.size())));
 
     // - przypinamy do vboxa -
     vbox_main.addWidget(aver_over_spi_widget);
@@ -6034,7 +3606,7 @@ void body::calculate_aver_over_time_for_time_series_with_buttons()
 
     // ustalamy epoki na pierwszą i ostatnią
     starting_channel_time->setText(QString::fromStdString(to_string(1)));
-    ending_channel_time->setText(QString::fromStdString(to_string(Ilst.size())));
+    ending_channel_time->setText(QString::fromStdString(to_string(dataTable->spectraTableI.size())));
 
     // ustalamy boola
     aver_over_time_window_opened = 1;
@@ -6068,14 +3640,16 @@ void body::reload_slot()
         return;
     }
 
-    if (AVRNAMES_from_load.size() != 0)
+    if (dataTable->fileNamesTab.size() != 0)
     {
-        read_time_series_for_list(AVRNAMES_from_load);
-    }
-    else if (list_filename != "")
-    {
-        lista.open(list_filename.c_str());
-        read_time_series();
+        // --- tymczasowo ---
+        QStringList tmpqstringlist;
+        for(unsigned long int wplw = 0; wplw < dataTable->fileNamesTab.size(); wplw++)
+        {
+            tmpqstringlist.push_back(QString::fromStdString(dataTable->fileNamesTab[wplw]));
+        }
+        // -------------------
+        dataTable->loadDataFromList(tmpqstringlist);
     }
 
     if (dynamic_spectrum_opened)
@@ -6123,32 +3697,32 @@ void body::make_lcs_slot()
     max = chan4int_end;
     // -- integrujemy --
     vector < double > wynik (2);
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
         // I
-        wynik = average_over_velocity(chan4int_start, chan4int_end, Ilst[i], ERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableI[i], dataTable->spectraTableIERR);
         averaged_over_velocity_I.push_back(wynik[0]);
         averaged_over_velocity_I_err.push_back(wynik[1]);
 
         // V
-        wynik = average_over_velocity(chan4int_start, chan4int_end, Vlst[i], VERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableV[i], dataTable->spectraTableVERR);
         averaged_over_velocity_V.push_back(wynik[0]);
         averaged_over_velocity_V_err.push_back(wynik[1]);
 
         // LHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, LHClst[i], LHCERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableLHC[i], dataTable->spectraTableLHCERR);
         averaged_over_velocity_LHC.push_back(wynik[0]);
         averaged_over_velocity_LHC_err.push_back(wynik[1]);
 
         // RHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, RHClst[i], RHCERRlst[i]);
+        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableRHC[i], dataTable->spectraTableRHCERR);
         averaged_over_velocity_RHC.push_back(wynik[0]);
         averaged_over_velocity_RHC_err.push_back(wynik[1]);
     }
     //cout << "----> Averaged over channels " << min << " -> " << max << endl;
     // -- zapisujemy do pliku --
     // liczymy srednia predkosc radialna
-    double velaver = (VELlst[0][chan4int_start] + VELlst[0][chan4int_end]) / 2.0;
+    double velaver = (dataTable->velocityTable[0][chan4int_start] + dataTable->velocityTable[0][chan4int_end]) / 2.0;
     ofstream integ;
     string filename = working_directory + "/" + srcname + "_lc_chan_" + to_string(min+1) + ".DAT";
     integ.open(filename.c_str());
@@ -6156,27 +3730,27 @@ void body::make_lcs_slot()
     /*
     integ << "# MJD year I err V err LHC err RHC err" << endl;
     integ << "# VEL: " << velaver << endl;
-    for(int i = 0; i < Ilst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
-        integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+        integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
     }
     */
     if(include_pytime->isChecked())
     {
         integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
         integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
         }
     }
     else
     {
         integ << "# MJD year I err V err LHC err RHC err" << endl;
         integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
-            integ << fixed << setprecision(11) << mjdlst[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
+            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
         }
     }
     integ.close();
@@ -6222,7 +3796,7 @@ bool body::check_if_flagged(string avr_filename)
 void body::flag_slot()
 {
     // zapisujemy nazwe oflagowanego pliku
-    string flagged_filename = avrnames[xind];
+    string flagged_filename = dataTable->fileNamesTab[xind];
 
     // -- okno do upewniania sie, ze na pewno chcesz --
     QMessageBox::StandardButton upewka;
@@ -6259,10 +3833,10 @@ void body::flag_slot()
     pennywise.setColor(Qt::black);
     flagi[flags_number-1]->setBrush(pen);
     flagi[flags_number-1]->setPen(pennywise);
-    flagi[flags_number-1]->topLeft->setCoords(double(xind)-0.5, VELlst[xind][0]);
-    //cout << VELlst[xind][0] << endl;
-    //cout << VELlst[xind][VELlst[xind].size()-1] << endl;
-    flagi[flags_number-1]->bottomRight->setCoords(double(xind)+0.5, VELlst[xind][VELlst[xind].size()-1]);
+    flagi[flags_number-1]->topLeft->setCoords(double(xind)-0.5, dataTable->velocityTable[xind][0]);
+    //cout << dataTable->velocityTable[xind][0] << endl;
+    //cout << dataTable->velocityTable[xind][dataTable->velocityTable[xind].size()-1] << endl;
+    flagi[flags_number-1]->bottomRight->setCoords(double(xind)+0.5, dataTable->velocityTable[xind][dataTable->velocityTable[xind].size()-1]);
 
     flagi[flags_number-1]->setLayer("flags");
     dynamic_spectrum_pl.moveLayer(flagi[flags_number-1]->layer(), colorMap->layer(), QCustomPlot::limAbove );
@@ -6283,7 +3857,7 @@ void body::rotate_slot_plus()
     int ch = number_of_rotated_channels; // liczba kanalow
     int rotated_epoch = xind; // epoka rotowania
 
-    string rotated_filename=avrnames[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
+    string rotated_filename=dataTable->fileNamesTab[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
 
     // -- rotowanie wlasciwe --
     vector < double > tmpi;
@@ -6294,108 +3868,108 @@ void body::rotate_slot_plus()
     // -- dajemy warunek, czy checkbox jest zaznaczony --
     if (rotate_all_pols->isChecked())
     {
-        for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+        for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
         {
-            if (ch+i < Ilst[rotated_epoch].size())
+            if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
             {
-                tmpi.push_back(Ilst[rotated_epoch][ch+i]);
-                tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
-                tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
-                tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
+                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
+                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
+                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
             }
             else
             {
-                tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
-                tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
-                tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
-                tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
+                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
+                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
+                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
             }
          }
 
-        for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+        for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
         {
-            Ilst[rotated_epoch][i] = tmpi[i];
-            LHClst[rotated_epoch][i] = tmplhc[i];
-            Vlst[rotated_epoch][i] = tmpv[i];
-            RHClst[rotated_epoch][i] = tmprhc[i];
+            dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
+            dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
+            dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
+            dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
         }
     }
     else
     {
         if (I_pressed==1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
                 }
              }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                Ilst[rotated_epoch][i] = tmpi[i];
+                dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
             }
         }
         else if (v_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                Vlst[rotated_epoch][i] = tmpv[i];
+                dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
             }
         }
         else if (lhc_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                LHClst[rotated_epoch][i] = tmplhc[i];
+                dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
             }
         }
         else if (rhc_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                RHClst[rotated_epoch][i] = tmprhc[i];
+                dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
             }
         }
     }
@@ -6418,8 +3992,8 @@ void body::rotate_slot_minus()
     read_number_of_rotated_channels();
 
     int rotated_epoch = xind; // epoka rotowania
-    int ch = Ilst[rotated_epoch].size() - number_of_rotated_channels;
-    string rotated_filename=avrnames[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
+    int ch = dataTable->spectraTableI[rotated_epoch].size() - number_of_rotated_channels;
+    string rotated_filename=dataTable->fileNamesTab[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
 
     // -- rotowanie wlasciwe --
     vector < double > tmpi;
@@ -6428,138 +4002,138 @@ void body::rotate_slot_minus()
     vector < double > tmpv;
 
     /*
-    for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+    for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
     {
-        if (ch+i < Ilst[rotated_epoch].size())
+        if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
         {
-            tmpi.push_back(Ilst[rotated_epoch][ch+i]);
-            tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
-            tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
-            tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+            tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
+            tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
+            tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
+            tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
         }
         else
         {
-            tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
-            tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
-            tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
-            tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+            tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
+            tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
+            tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
+            tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
         }
         }
 
-    for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+    for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
     {
-        Ilst[rotated_epoch][i] = tmpi[i];
-        LHClst[rotated_epoch][i] = tmplhc[i];
-        Vlst[rotated_epoch][i] = tmpv[i];
-        RHClst[rotated_epoch][i] = tmprhc[i];
+        dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
+        dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
+        dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
+        dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
     }
     */
 
     // -- dajemy warunek, czy checkbox jest zaznaczony --
     if (rotate_all_pols->isChecked())
     {
-        for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+        for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
         {
-            if (ch+i < Ilst[rotated_epoch].size())
+            if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
             {
-                tmpi.push_back(Ilst[rotated_epoch][ch+i]);
-                tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
-                tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
-                tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
+                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
+                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
+                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
             }
             else
             {
-                tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
-                tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
-                tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
-                tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
+                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
+                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
+                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
             }
          }
 
-        for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+        for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
         {
-            Ilst[rotated_epoch][i] = tmpi[i];
-            LHClst[rotated_epoch][i] = tmplhc[i];
-            Vlst[rotated_epoch][i] = tmpv[i];
-            RHClst[rotated_epoch][i] = tmprhc[i];
+            dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
+            dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
+            dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
+            dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
         }
     }
     else
     {
         if (I_pressed==1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmpi.push_back(Ilst[rotated_epoch][ch+i]);
+                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmpi.push_back(Ilst[rotated_epoch][(ch+i)-Ilst[rotated_epoch].size()]);
+                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
                 }
              }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                Ilst[rotated_epoch][i] = tmpi[i];
+                dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
             }
         }
         else if (v_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmpv.push_back(Vlst[rotated_epoch][ch+i]);
+                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmpv.push_back(Vlst[rotated_epoch][(ch+i)-Vlst[rotated_epoch].size()]);
+                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                Vlst[rotated_epoch][i] = tmpv[i];
+                dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
             }
         }
         else if (lhc_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmplhc.push_back(LHClst[rotated_epoch][ch+i]);
+                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmplhc.push_back(LHClst[rotated_epoch][(ch+i)-RHClst[rotated_epoch].size()]);
+                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                LHClst[rotated_epoch][i] = tmplhc[i];
+                dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
             }
         }
         else if (rhc_pressed == 1)
         {
-            for (int i = 0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                if (ch+i < Ilst[rotated_epoch].size())
+                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
                 {
-                    tmprhc.push_back(RHClst[rotated_epoch][ch+i]);
+                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
                 }
                 else
                 {
-                    tmprhc.push_back(RHClst[rotated_epoch][(ch+i)-LHClst[rotated_epoch].size()]);
+                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
                 }
             }
 
-            for (int i=0; i < Ilst[rotated_epoch].size(); i++)
+            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
             {
-                RHClst[rotated_epoch][i] = tmprhc[i];
+                dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
             }
         }
     }
@@ -6629,7 +4203,7 @@ vector < string >  body::save_edited_avr(int epoch)
     ifstream copied_file; // obiekt pliku, używany do robienia backapu
 
     // -- czytamy nazwę pliku, który będzie obrabiany --
-    filename = avrnames[epoch];
+    filename = dataTable->fileNamesTab[epoch];
     // czytamy jego header, który nie będzie konstruowany od nowa
     headere = headerlst[epoch];
     output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed edycji
@@ -6637,18 +4211,18 @@ vector < string >  body::save_edited_avr(int epoch)
     output_filename = output_filename + "noedt.DAT";
 
     // -- zapelniamy tymczasowe tablice --
-    for (unsigned long int ee = 0; ee < Ilst[epoch].size(); ee++)
+    for (unsigned long int ee = 0; ee < dataTable->spectraTableI[epoch].size(); ee++)
     {
-        is.push_back(Ilst[epoch][ee]);
-        v.push_back(Vlst[epoch][ee]);
-        lhc.push_back(LHClst[epoch][ee]);
-        rhc.push_back(RHClst[epoch][ee]);
+        is.push_back(dataTable->spectraTableI[epoch][ee]);
+        v.push_back(dataTable->spectraTableV[epoch][ee]);
+        lhc.push_back(dataTable->spectraTableLHC[epoch][ee]);
+        rhc.push_back(dataTable->spectraTableRHC[epoch][ee]);
     }
 
     // -- kopiujemy do backupowego file --
     // tutaj ify są potrzebne z prostego względu:
     // program wspiera wczytywanie zarówno z podanej listy plików, jak i czyta plku wybierane w selectorze ręcznie
-    // w pierwszym przypadku, w kontenerze "avrnames" będą tylko nazwy plików
+    // w pierwszym przypadku, w kontenerze "dataTable->fileNamesTab" będą tylko nazwy plików
     // w drugim - całkowite absolutne ścieżki
     // dlatego chcemy być konsekwentni i w każdym wypadku podajemy absolutną ścieżkę do plików
     // w przypadku załadowania listy, ścieżka do niej jest przetrzymywana w zmiennej "working directory"
@@ -6709,7 +4283,7 @@ vector < string > body::save_edited_fitsfile(int epoch)
     ifstream copied_file; // obiekt pliku, używany do robienia backapu
 
     // -- czytamy nazwę pliku, który będzie obrabiany --
-    filename = avrnames[epoch];
+    filename = dataTable->fileNamesTab[epoch];
     output_filename = filename; // jest to nazwa pliku, do ktorego skopiowane zostana dane sprzed edycji
     output_filename.erase(output_filename.end()-8, output_filename.end());
     output_filename = output_filename + "noedt.fits";
@@ -6717,18 +4291,18 @@ vector < string > body::save_edited_fitsfile(int epoch)
     // -- zapelniamy tymczasowe tablice --
     // w fitsach przechowujemy tylko LHC i RHC, także tutaj tylko te dwie
     // zapisujemy od tyłu, bo taki jest pomysł RS
-    for (unsigned long int ee = 0; ee < Ilst[epoch].size(); ee++)
+    for (unsigned long int ee = 0; ee < dataTable->spectraTableI[epoch].size(); ee++)
     {
-        lhc[lhc.size() - 1 - ee] = LHClst[epoch][ee];
-        rhc[lhc.size() - 1 - ee] = RHClst[epoch][ee];
-        //lhc.push_back(LHClst[epoch][ee]);
-        //rhc.push_back(RHClst[epoch][ee]);
+        lhc[lhc.size() - 1 - ee] = dataTable->spectraTableLHC[epoch][ee];
+        rhc[lhc.size() - 1 - ee] = dataTable->spectraTableRHC[epoch][ee];
+        //lhc.push_back(dataTable->spectraTableLHC[epoch][ee]);
+        //rhc.push_back(dataTable->spectraTableRHC[epoch][ee]);
     }
 
     // -- kopiujemy do backupowego file --
     // tutaj ify są potrzebne z prostego względu:
     // program wspiera wczytywanie zarówno z podanej listy plików, jak i czyta plku wybierane w selectorze ręcznie
-    // w pierwszym przypadku, w kontenerze "avrnames" będą tylko nazwy plików
+    // w pierwszym przypadku, w kontenerze "dataTable->fileNamesTab" będą tylko nazwy plików
     // w drugim - całkowite absolutne ścieżki
     // dlatego chcemy być konsekwentni i w każdym wypadku podajemy absolutną ścieżkę do plików
     // w przypadku załadowania listy, ścieżka do niej jest przetrzymywana w zmiennej "working directory"
@@ -7112,20 +4686,20 @@ vector < double > body::calibrate_single(int epoch_number)
             double epoch2 = CALTAB_L1_epochs[nextep];
             double coef2 = CALTAB_L1[nextep];
 
-            double our_epoch = mjdlst[epoch_number] - 50000.0;
+            double our_epoch = dataTable->mjdTable[epoch_number] - 50000.0;
 
             // -- interpolacja --
             double slope = (coef2 - coef1) / (epoch2 - epoch1);
             double days_passed = our_epoch - epoch1;
             cal_coef_lhc = coef1+ slope * days_passed;
 
-            //cout <<"[" << mjdlst[epoch_number] << "]: "<<"Found LHC coef: interpolating between " << epoch1 << ", " << coef1 << " and " << epoch2 << ", " << coef2 << ", coef value: " << cal_coef_lhc << endl;
+            //cout <<"[" << dataTable->mjdTable[epoch_number] << "]: "<<"Found LHC coef: interpolating between " << epoch1 << ", " << coef1 << " and " << epoch2 << ", " << coef2 << ", coef value: " << cal_coef_lhc << endl;
         }
     }
     else if (index_of_cal_lhc >=0)
     {
         cal_coef_lhc = CALTAB_L1[index_of_cal_lhc];
-        //cout <<"[" << mjdlst[epoch_number] << "]: " << "Found LHC coef:  " <<  CALTAB_L1[index_of_cal_lhc] << endl;
+        //cout <<"[" << dataTable->mjdTable[epoch_number] << "]: " << "Found LHC coef:  " <<  CALTAB_L1[index_of_cal_lhc] << endl;
     }
 
     int index_of_cal_rhc = find_epoch_in_caltab(epoch_number, "RHC");
@@ -7142,20 +4716,20 @@ vector < double > body::calibrate_single(int epoch_number)
             double epoch2 = CALTAB_R1_epochs[nextep];
             double coef2 = CALTAB_R1[nextep];
 
-            double our_epoch = mjdlst[epoch_number] - 50000.0;
+            double our_epoch = dataTable->mjdTable[epoch_number] - 50000.0;
 
             // -- interpolacja --
             double slope = (coef2 - coef1) / (epoch2 - epoch1);
             double days_passed = our_epoch - epoch1;
             cal_coef_rhc = coef1 + slope * days_passed;
 
-            //cout <<"[" << mjdlst[epoch_number] << "]: " << "Found RHC coef: interpolating between " << epoch1 << ", " << coef1 << " and " << epoch2 << ", " << coef2 << ", coef value: " << cal_coef_lhc << endl;
+            //cout <<"[" << dataTable->mjdTable[epoch_number] << "]: " << "Found RHC coef: interpolating between " << epoch1 << ", " << coef1 << " and " << epoch2 << ", " << coef2 << ", coef value: " << cal_coef_lhc << endl;
         }
     }
     else if (index_of_cal_rhc >=0)
     {
         cal_coef_rhc = CALTAB_R1[index_of_cal_rhc];
-        //cout <<"[" << mjdlst[epoch_number] << "]: " << "Found RHC coef:  " <<  CALTAB_R1[index_of_cal_lhc] << endl;
+        //cout <<"[" << dataTable->mjdTable[epoch_number] << "]: " << "Found RHC coef:  " <<  CALTAB_R1[index_of_cal_lhc] << endl;
     }
 
     vector < double > returning_values;
@@ -7322,7 +4896,7 @@ void body::calibrate_method()
     calcoefs_lhc.clear();
     calcoefs_rhc.clear();
     vector < double > tmp_calibrate;
-    for(int i = 0; i < mjdlst.size(); i++)
+    for(int i = 0; i < dataTable->mjdTable.size(); i++)
     {
        tmp_calibrate = calibrate_single(i);
        calcoefs_lhc.push_back(tmp_calibrate[0]);
@@ -7331,39 +4905,39 @@ void body::calibrate_method()
 
     if (calibration_done == 0)
     {
-        for(int i = 0; i < LHClst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableLHC.size(); i++)
         {
-            for (int k=0; k< LHClst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableLHC[i].size(); k++)
             {
-                LHClst[i][k] = calcoefs_lhc[i] * LHClst[i][k];
-                LHCERRlst[i][k] = calcoefs_lhc[i] * LHCERRlst[i][k];
+                dataTable->spectraTableLHC[i][k] = calcoefs_lhc[i] * dataTable->spectraTableLHC[i][k];
+                dataTable->spectraTableLHCERR[i] = calcoefs_lhc[i] * dataTable->spectraTableLHCERR[i];
             }
         }
 
-        for(int i = 0; i < RHClst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableRHC.size(); i++)
         {
-            for (int k=0; k< RHClst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableRHC[i].size(); k++)
             {
-                RHClst[i][k] = calcoefs_rhc[i] * RHClst[i][k];
-                RHCERRlst[i][k] = calcoefs_rhc[i] * RHCERRlst[i][k];
+                dataTable->spectraTableRHC[i][k] = calcoefs_rhc[i] * dataTable->spectraTableRHC[i][k];
+                dataTable->spectraTableRHCERR[i] = calcoefs_rhc[i] * dataTable->spectraTableRHCERR[i];
             }
         }
 
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
-            for (int k=0; k< Ilst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableI[i].size(); k++)
             {
-                Ilst[i][k] = (RHClst[i][k] + LHClst[i][k]) / 2.0;
-                ERRlst[i][k] = (RHCERRlst[i][k] + LHCERRlst[i][k]) / 2.0;
+                dataTable->spectraTableI[i][k] = (dataTable->spectraTableRHC[i][k] + dataTable->spectraTableLHC[i][k]) / 2.0;
+                dataTable->spectraTableIERR[i] = (dataTable->spectraTableRHCERR[i] + dataTable->spectraTableLHCERR[i]) / 2.0;
             }
         }
 
-        for(int i = 0; i < Vlst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableV.size(); i++)
         {
-            for (int k=0; k< Vlst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableV[i].size(); k++)
             {
-                Vlst[i][k] = (RHClst[i][k] - LHClst[i][k]) / 2.0;
-                VERRlst[i][k] = (RHCERRlst[i][k] - LHCERRlst[i][k]) / 2.0;
+                dataTable->spectraTableV[i][k] = (dataTable->spectraTableRHC[i][k] - dataTable->spectraTableLHC[i][k]) / 2.0;
+                dataTable->spectraTableVERR[i] = (dataTable->spectraTableRHCERR[i] - dataTable->spectraTableLHCERR[i]) / 2.0;
             }
         }
         // - liczymy sredni rms -
@@ -7379,7 +4953,7 @@ void body::calibrate_method()
             set_plot_on_int_vs_time();
             show_points_or_lines();
             selection_point_on_rms_slot_for_graph_visibility();
-            select_on_rms_section(mjdlst[xind]);
+            select_on_rms_section(dataTable->mjdTable[xind]);
             //set_plot_on_tsys_vs_time();
         }
         //calibrate_single(23);
@@ -7389,39 +4963,39 @@ void body::calibrate_method()
     }
     else if (calibration_done == 1)
     {
-        for(int i = 0; i < LHClst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableLHC.size(); i++)
         {
-            for (int k=0; k< LHClst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableLHC[i].size(); k++)
             {
-                LHClst[i][k] =  LHClst[i][k] / calcoefs_lhc[i];
-                LHCERRlst[i][k] = LHCERRlst[i][k] / calcoefs_lhc[i];
+                dataTable->spectraTableLHC[i][k] =  dataTable->spectraTableLHC[i][k] / calcoefs_lhc[i];
+                dataTable->spectraTableLHCERR[i] = dataTable->spectraTableLHCERR[i] / calcoefs_lhc[i];
             }
         }
 
-        for(int i = 0; i < RHClst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableRHC.size(); i++)
         {
-            for (int k=0; k< RHClst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableRHC[i].size(); k++)
             {
-                RHClst[i][k] = RHClst[i][k] / calcoefs_rhc[i];
-                RHCERRlst[i][k] = RHCERRlst[i][k] / calcoefs_rhc[i];
+                dataTable->spectraTableRHC[i][k] = dataTable->spectraTableRHC[i][k] / calcoefs_rhc[i];
+                dataTable->spectraTableRHCERR[i] = dataTable->spectraTableRHCERR[i] / calcoefs_rhc[i];
             }
         }
 
-        for(int i = 0; i < RHClst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableRHC.size(); i++)
         {
-            for (int k=0; k< RHClst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableRHC[i].size(); k++)
             {
-                Ilst[i][k] = (RHClst[i][k] + LHClst[i][k]) / 2.0;
-                ERRlst[i][k] = (RHCERRlst[i][k] + LHCERRlst[i][k]) / 2.0;
+                dataTable->spectraTableI[i][k] = (dataTable->spectraTableRHC[i][k] + dataTable->spectraTableLHC[i][k]) / 2.0;
+                dataTable->spectraTableIERR[i] = (dataTable->spectraTableRHCERR[i] + dataTable->spectraTableLHCERR[i]) / 2.0;
             }
         }
 
-        for(int i = 0; i < Vlst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableV.size(); i++)
         {
-            for (int k=0; k< Vlst[i].size(); k++)
+            for (int k=0; k< dataTable->spectraTableV[i].size(); k++)
             {
-                Vlst[i][k] = (RHClst[i][k] - LHClst[i][k]) / 2.0;
-                VERRlst[i][k] = (RHCERRlst[i][k] - LHCERRlst[i][k]) / 2.0;
+                dataTable->spectraTableV[i][k] = (dataTable->spectraTableRHC[i][k] - dataTable->spectraTableLHC[i][k]) / 2.0;
+                dataTable->spectraTableVERR[i] = (dataTable->spectraTableRHCERR[i] - dataTable->spectraTableLHCERR[i]) / 2.0;
             }
         }
 
@@ -7438,7 +5012,7 @@ void body::calibrate_method()
             set_plot_on_int_vs_time();
             show_points_or_lines();
             selection_point_on_rms_slot_for_graph_visibility();
-            select_on_rms_section(mjdlst[xind]);
+            select_on_rms_section(dataTable->mjdTable[xind]);
             //set_plot_on_tsys_vs_time();
         }
         //calibrate_single(23);
@@ -7457,7 +5031,7 @@ int body::find_epoch_in_caltab(int index_of_epoch, string type_of_caltab)
     }
 
     // zapisujemy jaką rozpatrujemy epoke
-    int epoch = int(mjdlst[index_of_epoch] - 50000.0);
+    int epoch = int(dataTable->mjdTable[index_of_epoch] - 50000.0);
 
     bool found = 0;
     int index = -1;
@@ -7525,7 +5099,7 @@ int body::find_previous_epoch(int index_of_epoch, string type_of_caltab)
     }
 
     // zapisujemy jaką rozpatrujemy epoke
-    int epoch = int(mjdlst[index_of_epoch] - 50000.0);
+    int epoch = int(dataTable->mjdTable[index_of_epoch] - 50000.0);
 
     bool found = 0;
     int index = -1;
@@ -7594,7 +5168,7 @@ int body::find_next_epoch(int index_of_epoch, string type_of_caltab)
     }
 
     // zapisujemy jaką rozpatrujemy epoke
-    int epoch = int(mjdlst[index_of_epoch] - 50000.0);
+    int epoch = int(dataTable->mjdTable[index_of_epoch] - 50000.0);
 
     bool found = 0;
     int index = -1;
@@ -7669,9 +5243,9 @@ void body::update_dynamic_spectrum()
     dynamic_spectrum_pl.layer("pixmap");
     colorMap->data()->setSize(rozmiar_w_x, rozmiar_w_y);
     if (rozmiar_w_x == 1)
-        colorMap->data()->setRange(QCPRange(min_obs_number-0.5, max_obs_number+0.5), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+        colorMap->data()->setRange(QCPRange(min_obs_number-0.5, max_obs_number+0.5), QCPRange(dataTable->velocityTable[0][min_range_vel_index], dataTable->velocityTable[0][max_range_vel_index]-(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1])));
     else
-        colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(VELlst[0][min_range_vel_index], VELlst[0][max_range_vel_index]-(VELlst[0][2]-VELlst[0][1])));
+        colorMap->data()->setRange(QCPRange(min_obs_number, max_obs_number), QCPRange(dataTable->velocityTable[0][min_range_vel_index], dataTable->velocityTable[0][max_range_vel_index]-(dataTable->velocityTable[0][2]-dataTable->velocityTable[0][1])));
 
     if(I_pressed == 1)
     {
@@ -7679,8 +5253,8 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Ilst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
+                if (dataTable->spectraTableI[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                    colorMap->data()->setCell(xIndex,yIndex, dataTable->spectraTableI[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
             }
@@ -7692,8 +5266,8 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, Vlst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
+                if (dataTable->spectraTableV[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                    colorMap->data()->setCell(xIndex,yIndex, dataTable->spectraTableV[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
             }
@@ -7705,8 +5279,8 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, LHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
+                if (dataTable->spectraTableLHC[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                    colorMap->data()->setCell(xIndex,yIndex, dataTable->spectraTableLHC[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
             }
@@ -7718,8 +5292,8 @@ void body::update_dynamic_spectrum()
         {
             for (int yIndex = 0; yIndex < rozmiar_w_y; yIndex++)
             {
-                if (RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
-                    colorMap->data()->setCell(xIndex,yIndex, RHClst[min_obs_number+xIndex][min_range_vel_index+yIndex]);
+                if (dataTable->spectraTableRHC[min_obs_number+xIndex][min_range_vel_index+yIndex] >= 0.0)
+                    colorMap->data()->setCell(xIndex,yIndex, dataTable->spectraTableRHC[min_obs_number+xIndex][min_range_vel_index+yIndex]);
                 else
                     colorMap->data()->setCell(xIndex,yIndex, 0.0);
             }
@@ -7781,8 +5355,8 @@ void body::update_dynamic_spectrum()
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Ilst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableI[xind][min_range_vel_index+i];
     }
     }
 
@@ -7791,8 +5365,8 @@ void body::update_dynamic_spectrum()
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = Vlst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableV[xind][min_range_vel_index+i];
     }
     }
     else if (lhc_pressed == 1)
@@ -7800,8 +5374,8 @@ void body::update_dynamic_spectrum()
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = LHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableLHC[xind][min_range_vel_index+i];
     }
     }
     else if (rhc_pressed == 1)
@@ -7809,8 +5383,8 @@ void body::update_dynamic_spectrum()
     for (int i = 0; i < rozmiar_w_y; i++)
     {
         //cout << "i: " << i << "max: " << max_range_vel_index << endl;
-        velocity[i] = VELlst[xind][min_range_vel_index+i];
-        flux[i] = RHClst[xind][min_range_vel_index+i];
+        velocity[i] = dataTable->velocityTable[xind][min_range_vel_index+i];
+        flux[i] = dataTable->spectraTableRHC[xind][min_range_vel_index+i];
     }
     }
 
@@ -7838,8 +5412,8 @@ void body::update_dynamic_spectrum()
         vel_line_added = 1;
     }
     QVector < double > x_vline(2), y_vline(2);
-    x_vline[0] = VELlst[xind][yind];
-    x_vline[1] = VELlst[xind][yind];
+    x_vline[0] = dataTable->velocityTable[xind][yind];
+    x_vline[1] = dataTable->velocityTable[xind][yind];
     y_vline[0] = *min_element(flux.begin(), flux.end()) - 0.05 * (*max_element(flux.begin(), flux.end()));
     y_vline[1] = *max_element(flux.begin(), flux.end())  + 0.05 * (*max_element(flux.begin(), flux.end()));
     single_dynamic_spectrum.graph(1)->setData(x_vline, y_vline);
@@ -7854,9 +5428,9 @@ void body::update_dynamic_spectrum()
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Ilst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableI[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableIERR[min_obs_number + i];
     }
     }
 
@@ -7864,9 +5438,9 @@ void body::update_dynamic_spectrum()
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = Vlst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableV[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableVERR[min_obs_number + i];
     }
     }
 
@@ -7874,9 +5448,9 @@ void body::update_dynamic_spectrum()
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = LHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableLHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableLHCERR[min_obs_number + i];
     }
     }
 
@@ -7884,9 +5458,9 @@ void body::update_dynamic_spectrum()
     {
     for (int i = 0; i < rozmiar_w_x; i++)
     {
-        epoch[i] = mjdlst[min_obs_number + i];
-        lcs_flux[i] = RHClst[min_obs_number + i][yind];
-        error_lcs[i] = ERRlst[min_obs_number + i][yind];
+        epoch[i] = dataTable->mjdTable[min_obs_number + i];
+        lcs_flux[i] = dataTable->spectraTableRHC[min_obs_number + i][yind];
+        error_lcs[i] = dataTable->spectraTableRHCERR[min_obs_number + i];
     }
     }
     //cout << epoch[0] << endl;
@@ -7931,8 +5505,8 @@ void body::update_dynamic_spectrum()
         lcs_line_added = 1;
     }
     QVector < double > lcsx_vline(2), lcsy_vline(2);
-    lcsx_vline[0] = mjdlst[xind];
-    lcsx_vline[1] = mjdlst[xind];
+    lcsx_vline[0] = dataTable->mjdTable[xind];
+    lcsx_vline[1] = dataTable->mjdTable[xind];
     if(rozmiar_w_x == 1)
     {
         lcsy_vline[0] = lcs_dynamic_spectrum.yAxis->range().lower;
@@ -7948,94 +5522,7 @@ void body::update_dynamic_spectrum()
     pen3.setColor(QColor(182,26,26));
     lcs_dynamic_spectrum.graph(1)->setPen(pen3);
 
-    // -- setujemy tekst do displayowania informacji --
-    string text_mjdlabel = "";
-    text_mjdlabel.append(string("MJD = "));
-    text_mjdlabel.append(to_string(int(mjdlst[xind])));
-
-
-    text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(CHANlst[xind][yind]));
-
-    text_mjdlabel.append(string("\nVel: "));
-
-    // Create an output string stream
-    std::ostringstream streamObjvel;
-
-    // Set Fixed -Point Notation
-    streamObjvel << std::fixed;
-
-    streamObjvel << std::setprecision(3);
-
-    streamObjvel << VELlst[xind][yind];
-    std::string strObjvel = streamObjvel.str();
-    text_mjdlabel.append(strObjvel);
-
-    mjd_label.setText(QString::fromStdString(text_mjdlabel));
-    QFont f( "Arial", 11, QFont::Bold);
-    mjd_label.setFont(f);
-    string cocochanel_txt = "";
-
-
-    cocochanel_txt.append(string("Date: "));
-    cocochanel_txt.append(to_string(int(ylst[xind])));
-    cocochanel_txt.append(string(" "));
-
-
-    if (int(mlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(mlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(mlst[xind])));
-
-    cocochanel_txt.append(string(" "));
-
-    if (int(dlst[xind]) < 10)
-        cocochanel_txt.append("0" + to_string(int(dlst[xind])));
-    else
-        cocochanel_txt.append(to_string(int(dlst[xind])));
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Value: "));
-
-    // Create an output string stream
-    std::ostringstream streamObj3;
-
-    // Set Fixed -Point Notation
-    streamObj3 << std::fixed;
-
-    streamObj3 << std::setprecision(3);
-
-    if (I_pressed==1)
-    {
-        streamObj3 << Ilst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (v_pressed==1)
-    {
-        streamObj3 << Vlst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (lhc_pressed==1)
-    {
-        streamObj3 << LHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-    else if (rhc_pressed==1)
-    {
-        streamObj3 << RHClst[xind][yind];
-        std::string strObj3 = streamObj3.str();
-        cocochanel_txt.append(strObj3);
-    }
-
-    cocochanel_txt.append(string("\n"));
-    cocochanel_txt.append(string("Number: "));
-    cocochanel_txt.append(to_string(xind+1));
-
-    cocochanel.setFont(f);
-    cocochanel.setText(QString::fromStdString(cocochanel_txt));
+    set_dynamic_spectrum_labels_for_clicked(xind, yind);
     set_down_IVLHCRHCbuttons();
 
     // reskalujemy kolor bar
@@ -8053,16 +5540,16 @@ void body::update_dynamic_spectrum()
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_spec(1), y_dot_spec(1);
     // predkosc radialna
-    x_dot_spec[0] = VELlst[xind][yind]; // kliknięta prędkość radialna
+    x_dot_spec[0] = dataTable->velocityTable[xind][yind]; // kliknięta prędkość radialna
     // gestosć strumienia
     if (I_pressed == 1)
-        y_dot_spec[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableI[xind][yind]; // kliknięta gęstość strumienia
     else if (lhc_pressed == 1)
-        y_dot_spec[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableLHC[xind][yind]; // kliknięta gęstość strumienia
     else if (rhc_pressed == 1)
-        y_dot_spec[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableRHC[xind][yind]; // kliknięta gęstość strumienia
     else if (v_pressed == 1)
-        y_dot_spec[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_spec[0] = dataTable->spectraTableV[xind][yind]; // kliknięta gęstość strumienia
 
 
     single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
@@ -8085,16 +5572,16 @@ void body::update_dynamic_spectrum()
     // -- ustawiamy sobie kropkę na single spectrum --
     QVector < double > x_dot_lcs(1), y_dot_lcs(1);
     // predkosc radialna
-    x_dot_lcs[0] = mjdlst[xind]; // kliknięta prędkość radialna
+    x_dot_lcs[0] = dataTable->mjdTable[xind]; // kliknięta prędkość radialna
     // gestosć strumienia
     if (I_pressed == 1)
-        y_dot_lcs[0] = Ilst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableI[xind][yind]; // kliknięta gęstość strumienia
     else if (lhc_pressed == 1)
-        y_dot_lcs[0] = LHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableLHC[xind][yind]; // kliknięta gęstość strumienia
     else if (rhc_pressed == 1)
-        y_dot_lcs[0] = RHClst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableRHC[xind][yind]; // kliknięta gęstość strumienia
     else if (v_pressed == 1)
-        y_dot_lcs[0] = Vlst[xind][yind]; // kliknięta gęstość strumienia
+        y_dot_lcs[0] = dataTable->spectraTableV[xind][yind]; // kliknięta gęstość strumienia
     // -- stylistyka --
     lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
 
@@ -8260,16 +5747,16 @@ void body::export_file_for_dynamic_spectrum()
     }
 
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > Ilst[0].size()-1)
-        max = Ilst[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size()-1)
+        max = dataTable->spectraTableI[0].size()-1;
 
     // początkowa epoka mniejsza, niż 0:
     if (min_epoch < 0)
         min_epoch = 0;
 
     // końcowa, większa niż całość:
-    if (max_epoch > mjdlst.size() - 1)
-        max_epoch = mjdlst.size()-1;
+    if (max_epoch > dataTable->mjdTable.size() - 1)
+        max_epoch = dataTable->mjdTable.size()-1;
 
     // -- otwieramy plik do zapisu --
     // nazwa pliku
@@ -8290,7 +5777,7 @@ void body::export_file_for_dynamic_spectrum()
         {
             for (int e = min; e <= max;e++)
             {
-                fle_for_wd << fixed << setprecision(11) << i+1 << " " << pytime_format[i] << " " << mjdlst[i] << " " << yrlst[i] << " " << CHANlst[i][e] << " " << VELlst[i][e] << " " << Ilst[i][e] << " " << ERRlst[i][e] << " " << Vlst[i][e] << " " << VERRlst[i][e] << " " << LHClst[i][e] << " " << LHCERRlst[i][e] << " " << RHClst[i][e] << " " << RHCERRlst[i][e] << "\n";
+                fle_for_wd << fixed << setprecision(11) << i+1 << " " << pytime_format[i] << " " << dataTable->mjdTable[i] << " " << yrlst[i] << " " << dataTable->channelTable[i][e] << " " << dataTable->velocityTable[i][e] << " " << dataTable->spectraTableI[i][e] << " " << dataTable->spectraTableIERR[i] << " " << dataTable->spectraTableV[i][e] << " " << dataTable->spectraTableVERR[i] << " " << dataTable->spectraTableLHC[i][e] << " " << dataTable->spectraTableLHCERR[i] << " " << dataTable->spectraTableRHC[i][e] << " " << dataTable->spectraTableRHCERR[i] << "\n";
             }
             fle_for_wd << "\n";
         }
@@ -8306,7 +5793,7 @@ void body::export_file_for_dynamic_spectrum()
         {
             for (int e = min; e <= max;e++)
             {
-                fle_for_wd << fixed << setprecision(11) << i+1 << " " << mjdlst[i] << " " << yrlst[i] << " " << CHANlst[i][e] << " " << VELlst[i][e] << " " << Ilst[i][e] << " " << ERRlst[i][e] << " " << Vlst[i][e] << " " << VERRlst[i][e] << " " << LHClst[i][e] << " " << LHCERRlst[i][e] << " " << RHClst[i][e] << " " << RHCERRlst[i][e] << "\n";
+                fle_for_wd << fixed << setprecision(11) << i+1 << " " << dataTable->mjdTable[i] << " " << yrlst[i] << " " << dataTable->channelTable[i][e] << " " << dataTable->velocityTable[i][e] << " " << dataTable->spectraTableI[i][e] << " " << dataTable->spectraTableIERR[i] << " " << dataTable->spectraTableV[i][e] << " " << dataTable->spectraTableVERR[i] << " " << dataTable->spectraTableLHC[i][e] << " " << dataTable->spectraTableLHCERR[i] << " " << dataTable->spectraTableRHC[i][e] << " " << dataTable->spectraTableRHCERR[i] << "\n";
             }
             fle_for_wd << "\n";
         }
@@ -8352,7 +5839,7 @@ void body::open_rms_section_slot()
         set_plot_on_tsys_vs_time();
         show_points_or_lines();
         selection_point_on_rms_slot_for_graph_visibility();
-        select_on_rms_section(mjdlst[0]);
+        select_on_rms_section(dataTable->mjdTable[0]);
         return;
     }
 
@@ -8402,7 +5889,7 @@ void body::open_rms_section_slot()
     kill_rms_section->setVisible(true);
 
     // -- selectujemy na początek --
-    select_on_rms_section(mjdlst[xind]);
+    select_on_rms_section(dataTable->mjdTable[xind]);
 }
 
 void body::close_rms_section_slot()
@@ -8449,16 +5936,16 @@ void body::set_plot_on_rms_vs_time()
     rms_vs_time.setMouseTracking(true);
     rms_vs_time.clearGraphs();
     // wektor z danymi
-    QVector < double > xI(Ilst.size()), yI(Ilst.size()), yV(Ilst.size()), yLHC(Ilst.size()), yRHC(Ilst.size());
+    QVector < double > xI(dataTable->spectraTableI.size()), yI(dataTable->spectraTableI.size()), yV(dataTable->spectraTableI.size()), yLHC(dataTable->spectraTableI.size()), yRHC(dataTable->spectraTableI.size());
 
     // zapelniamy wektory
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
-        xI[i] = mjdlst[i];
-        yI[i] = ERRlst[i][0];
-        yV[i] = VERRlst[i][0];
-        yLHC[i] = LHCERRlst[i][0];
-        yRHC[i] = RHCERRlst[i][0];
+        xI[i] = dataTable->mjdTable[i];
+        yI[i] = dataTable->spectraTableIERR[i];
+        yV[i] = dataTable->spectraTableVERR[i];
+        yLHC[i] = dataTable->spectraTableLHCERR[i];
+        yRHC[i] = dataTable->spectraTableRHCERR[i];
     }
     // -- graphy --
     // -- dodajemy grafike (I) --
@@ -8611,12 +6098,12 @@ void body::set_plot_on_tsys_vs_time()
 
     tsys_vs_time.clearGraphs();
     // wektor z danymi
-    QVector < double > xI(Ilst.size()), yI(Ilst.size());
+    QVector < double > xI(dataTable->spectraTableI.size()), yI(dataTable->spectraTableI.size());
 
     // zapelniamy wektory
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
-        xI[i] = mjdlst[i];
+        xI[i] = dataTable->mjdTable[i];
         yI[i] = tsyslst[i];
     }
     // -- graphy --
@@ -8730,14 +6217,14 @@ void body::set_plot_on_int_vs_time()
         return;
     }
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > Ilst[0].size()-1)
-        max = Ilst[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size()-1)
+        max = dataTable->spectraTableI[0].size()-1;
 
     chan4int_start = min;
     chan4int_end = max;
 
     // -- integrujemy --
-    for(unsigned int i = 0; i < Ilst.size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
         integrate_single(min, max, i);
         integrated_fluxlst_I.push_back(integrated_flux_I);
@@ -8757,7 +6244,7 @@ void body::set_plot_on_int_vs_time()
     QVector < double > xI(nobs), yI(nobs),yV(nobs),yLHC(nobs),yRHC(nobs),yI_er(nobs), yV_er(nobs), yLHC_er(nobs), yRHC_er(nobs);
     for(int i = 0; i < integrated_fluxlst_I.size(); i++)
     {
-        xI[i] = mjdlst[i];
+        xI[i] = dataTable->mjdTable[i];
         yI[i] = integrated_fluxlst_I[i];
         yV[i] = integrated_fluxlst_V[i];
         yLHC[i] = integrated_fluxlst_LHC[i];
@@ -9137,11 +6624,11 @@ void body::exp_sint_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
         //cout << "Zaznaczono pytime" << endl;
     }
@@ -9150,11 +6637,11 @@ void body::exp_sint_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# MJD year I err V err LHC err RHC err" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "   " << integrated_fluxlst_I_er[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_V_er[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_LHC_er[i] << "   " << "   " << integrated_fluxlst_RHC[i] << "   " << integrated_fluxlst_RHC_er[i] << "   " << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
     }
 
@@ -9175,11 +6662,11 @@ void body::exp_rms_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year RMS_I RMS_V RMS_LHC RMS_RHC" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << ERRlst[i][0] << "   " << VERRlst[i][0] << "  " << LHCERRlst[i][0] << "   " << RHCERRlst[i][0] << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << dataTable->spectraTableIERR[i] << "   " << dataTable->spectraTableVERR[i] << "  " << dataTable->spectraTableLHCERR[i] << "   " << dataTable->spectraTableRHCERR[i] << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
         //cout << "Zaznaczono pytime" << endl;
     }
@@ -9188,11 +6675,11 @@ void body::exp_rms_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# MJD year RMS_I RMS_V RMS_LHC RMS_RHC" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << ERRlst[i][0] << "   " << VERRlst[i][0] << "  " << LHCERRlst[i][0] << "   " << RHCERRlst[i][0] << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << dataTable->spectraTableIERR[i] << "   " << dataTable->spectraTableVERR[i] << "  " << dataTable->spectraTableLHCERR[i] << "   " << dataTable->spectraTableRHCERR[i] << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
     }
     integ.close();
@@ -9220,11 +6707,11 @@ void body::exp_tsys_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year Tsys (K)" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
         //cout << "Zaznaczono pytime" << endl;
     }
@@ -9233,11 +6720,11 @@ void body::exp_tsys_vs_time()
         // wpisujemy naglowek do pliku
         integ << "# MJD year Tsys (K)" << endl;
         // petla zapisujaca
-        for(int i = 0; i < Ilst.size(); i++)
+        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << "   " << mjdlst[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
-            //integ << fixed << setprecision(11) << mjdlst[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
+            integ << fixed << setprecision(11) << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
     }
     integ.close();
@@ -9541,14 +7028,14 @@ void body::selection_point_on_rms_slot_for_graph_visibility()
 
 void body::select_on_rms_section(double x)
 {
-    for(int i=0; i < mjdlst.size(); i++)
+    for(int i=0; i < dataTable->mjdTable.size(); i++)
     {
 
         if (i > 0)
         {
-            if (mjdlst[i] >= x)
+            if (dataTable->mjdTable[i] >= x)
             {
-                if (abs(mjdlst[i] - x) > abs(mjdlst[i-1] - x))
+                if (abs(dataTable->mjdTable[i] - x) > abs(dataTable->mjdTable[i-1] - x))
                     xind = i-1;
                 else
                     xind = i;
@@ -9556,19 +7043,19 @@ void body::select_on_rms_section(double x)
             }
         }
     }
-    if(x <= mjdlst[0])
+    if(x <= dataTable->mjdTable[0])
     {
         xind = 0;
     }
-    else if (x > mjdlst[mjdlst.size()-1])
+    else if (x > dataTable->mjdTable[dataTable->mjdTable.size()-1])
     {
-        xind = mjdlst.size()-1;
+        xind = dataTable->mjdTable.size()-1;
     }
 
     // dodajemy markery zaznaczenia:
     // int_vs_time
     QVector < double > Xp(1), Yp(1), YpV(1), YpLHC(1), YpRHC(1);
-    Xp[0] = mjdlst[xind];
+    Xp[0] = dataTable->mjdTable[xind];
     Yp[0] = integrated_fluxlst_I[xind];
     YpV[0] = integrated_fluxlst_V[xind];
     YpLHC[0] = integrated_fluxlst_LHC[xind];
@@ -9580,17 +7067,17 @@ void body::select_on_rms_section(double x)
     int_vs_time.replot();
     //tsys_vs_time
     QVector < double > Ytsys(1), Xtsys(1);
-    Xtsys[0] = mjdlst[xind];
+    Xtsys[0] = dataTable->mjdTable[xind];
     Ytsys[0] = tsyslst[xind];
     tsys_vs_time.graph(1)->setData(Xtsys,Ytsys);
     tsys_vs_time.replot();
     //rms_vs_time
     QVector < double > Xrms_sl(1), Yrms_sl(1), Yrms_slV(1), Yrms_slLHC(1), Yrms_slRHC(1);
-    Xrms_sl[0] = mjdlst[xind];
-    Yrms_sl[0] = ERRlst[xind][0];
-    Yrms_slV[0] = VERRlst[xind][0];
-    Yrms_slLHC[0] = LHCERRlst[xind][0];
-    Yrms_slRHC[0] = RHCERRlst[xind][0];
+    Xrms_sl[0] = dataTable->mjdTable[xind];
+    Yrms_sl[0] = dataTable->spectraTableIERR[xind];
+    Yrms_slV[0] = dataTable->spectraTableVERR[xind];
+    Yrms_slLHC[0] = dataTable->spectraTableLHCERR[xind];
+    Yrms_slRHC[0] = dataTable->spectraTableRHCERR[xind];
     rms_vs_time.graph(4)->setData(Xrms_sl,Yrms_sl);
     rms_vs_time.graph(5)->setData(Xrms_sl,Yrms_slV);
     rms_vs_time.graph(6)->setData(Xrms_sl,Yrms_slLHC);
@@ -9647,14 +7134,14 @@ void body::open_popup_window()
 
  // -- wykres --
  spectrum_on_popup_window.clearGraphs();
- QVector < double > I_pop(Ilst[xind].size()), V_pop(Ilst[xind].size()), LHC_pop((Ilst[xind].size())), RHC_pop(Ilst[xind].size()), VEL_pop(Ilst[xind].size());
- for (int i = 0; i < Ilst[xind].size(); i++)
+ QVector < double > I_pop(dataTable->spectraTableI[xind].size()), V_pop(dataTable->spectraTableI[xind].size()), LHC_pop((dataTable->spectraTableI[xind].size())), RHC_pop(dataTable->spectraTableI[xind].size()), VEL_pop(dataTable->spectraTableI[xind].size());
+ for (int i = 0; i < dataTable->spectraTableI[xind].size(); i++)
  {
-     I_pop[i] = Ilst[xind][i];
-     V_pop[i] = Vlst[xind][i];
-     LHC_pop[i] = LHClst[xind][i];
-     RHC_pop[i] = RHClst[xind][i];
-     VEL_pop[i] = VELlst[xind][i];
+     I_pop[i] = dataTable->spectraTableI[xind][i];
+     V_pop[i] = dataTable->spectraTableV[xind][i];
+     LHC_pop[i] = dataTable->spectraTableLHC[xind][i];
+     RHC_pop[i] = dataTable->spectraTableRHC[xind][i];
+     VEL_pop[i] = dataTable->velocityTable[xind][i];
  }
  // -- dodajemy grafike (I) --
  spectrum_on_popup_window.addGraph();
@@ -9793,8 +7280,8 @@ void body::close_popup_window_slot()
 void body::set_label_on_popup_window()
 {
     string label_to_popup_window;
-    label_to_popup_window = "Filename: " + avrnames[xind] + "\n";
-    label_to_popup_window += "MJD: " + to_string(mjdlst[xind]) + "\n";
+    label_to_popup_window = "Filename: " + dataTable->fileNamesTab[xind] + "\n";
+    label_to_popup_window += "MJD: " + to_string(dataTable->mjdTable[xind]) + "\n";
 
     string yearstr, monthstr, daystr;
 
@@ -9815,10 +7302,10 @@ void body::set_label_on_popup_window()
     label_to_popup_window += "Date (YYYY MM DD): " + yearstr + " " + monthstr + " " + daystr + "\n\n";
 
     label_to_popup_window += "Tsys: " + to_string(tsyslst[xind]) +"\n\n";
-    label_to_popup_window += "RMS (I): " + to_string(ERRlst[xind][0]) +"\n";
-    label_to_popup_window += "RMS (V): " + to_string(VERRlst[xind][0]) +"\n";
-    label_to_popup_window += "RMS (LHC): " + to_string(LHCERRlst[xind][0]) +"\n";
-    label_to_popup_window += "RMS (RHC): " + to_string(RHCERRlst[xind][0]) +"\n\n";
+    label_to_popup_window += "RMS (I): " + to_string(dataTable->spectraTableIERR[xind]) +"\n";
+    label_to_popup_window += "RMS (V): " + to_string(dataTable->spectraTableVERR[xind]) +"\n";
+    label_to_popup_window += "RMS (LHC): " + to_string(dataTable->spectraTableLHCERR[xind]) +"\n";
+    label_to_popup_window += "RMS (RHC): " + to_string(dataTable->spectraTableRHCERR[xind]) +"\n\n";
 
     label_to_popup_window += "Sint (I): " + to_string(integrated_fluxlst_I[xind]) +"\n";
     label_to_popup_window += "Sint (V): " + to_string(integrated_fluxlst_V[xind]) +"\n";
@@ -9894,9 +7381,9 @@ void body::calculate_mean_rms()
     // - I -
     double ilosc = 0.0;
     double suma = 0.0;
-    for(int i = 0; i < ERRlst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableIERR.size(); i++)
     {
-        suma = suma + ERRlst[i][0];
+        suma = suma + dataTable->spectraTableIERR[i];
         ilosc = ilosc + 1.0;
     }
     suma = suma / ilosc;
@@ -9905,9 +7392,9 @@ void body::calculate_mean_rms()
     // - V -
     suma = 0.0;
     ilosc = 0.0;
-    for(int i = 0; i < VERRlst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableVERR.size(); i++)
     {
-        suma = suma + VERRlst[i][0];
+        suma = suma + dataTable->spectraTableVERR[i];
         ilosc = ilosc + 1.0;
     }
     suma = suma / ilosc;
@@ -9916,9 +7403,9 @@ void body::calculate_mean_rms()
     // - LHC -
     suma = 0.0;
     ilosc = 0.0;
-    for(int i = 0; i < LHCERRlst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableLHCERR.size(); i++)
     {
-        suma = suma + LHCERRlst[i][0];
+        suma = suma + dataTable->spectraTableLHCERR[i];
         ilosc = ilosc + 1.0;
     }
     suma = suma / ilosc;
@@ -9927,9 +7414,9 @@ void body::calculate_mean_rms()
     // - RHC -
     suma = 0.0;
     ilosc = 0.0;
-    for(int i = 0; i < RHCERRlst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableRHCERR.size(); i++)
     {
-        suma = suma + RHCERRlst[i][0];
+        suma = suma + dataTable->spectraTableRHCERR[i];
         ilosc = ilosc + 1.0;
     }
     suma = suma / ilosc;
@@ -10762,128 +8249,6 @@ void body::close_gauss_widget()
     gauss_section_opened = 0;
 }
 
-/*
-void body::fitted_parameters_creator(unsigned long int amount)
-{
-    fitted_params_gb->resize(250, 250*amount);
-    // -- na samym początku - trzeba zniszczyć kontenery --
-    fitted_amp_labels.clear();
-    fitted_vel_labels.clear();
-    fitted_fwhm_labels.clear();
-
-    fitted_amp_pm.clear();
-    fitted_vel_pm.clear();
-    fitted_fwhm_pm.clear();
-
-    fitted_amp_texted.clear();
-    fitted_vel_texted.clear();
-    fitted_fwhm_texted.clear();
-    fitted_amp_texted_err.clear();
-    fitted_vel_texted_err.clear();
-    fitted_fwhm_texted_err.clear();
-
-    fitted_amp_hbox.clear();
-    fitted_vel_hbox.clear();
-    fitted_fwhm_hbox.clear();
-    fitted_one_record.clear();
-
-    fitted_one_widget.clear();
-    // ---------------------------------------------------
-
-    // -- czyścimy też vboxa --
-    QLayoutItem * child;
-    while((child = fitted_params->takeAt(0)) != 0 )
-    {
-        delete child;
-    }
-
-    // -- zapełniamy teraz kontenery nowymi wartościami --
-    for (unsigned long int i = 0; i < amount; i++)
-    {
-        // deklarujemy odpowiednie zabawki
-        QLabel * amp_label = new QLabel();
-        amp_label->setText((string("Sv ") + to_string(i+1)).c_str());
-        fitted_amp_labels.push_back(amp_label);
-
-        QLabel * vel_label = new QLabel();
-        vel_label->setText((string("Vel ") + to_string(i+1)).c_str());
-        fitted_amp_labels.push_back(vel_label);
-
-        QLabel * fwhm_label = new QLabel();
-        fwhm_label->setText((string("FWHM ") + to_string(i+1)).c_str());
-        fitted_fwhm_labels.push_back(vel_label);
-
-        QLabel * amp_pm = new QLabel();
-        amp_pm->setText("+/-");
-        fitted_amp_pm.push_back(amp_pm);
-
-        QLabel * fwhm_pm = new QLabel();
-        fwhm_pm->setText("+/-");
-        fitted_fwhm_pm.push_back(fwhm_pm);
-
-        QLabel * vel_pm = new QLabel();
-        vel_pm->setText("+/-");
-        fitted_vel_pm.push_back(vel_pm);
-
-        QTextEdit * amp_texted = new QTextEdit();
-        amp_texted->setMaximumSize(100,30);
-        fitted_amp_texted.push_back(amp_texted);
-
-        QTextEdit * vel_texted = new QTextEdit();
-        vel_texted->setMaximumSize(100,30);
-        fitted_vel_texted.push_back(vel_texted);
-
-        QTextEdit * fwhm_texted = new QTextEdit();
-        fwhm_texted->setMaximumSize(100,30);
-        fitted_fwhm_texted.push_back(fwhm_texted);
-
-        QTextEdit * amp_texted_err = new QTextEdit();
-        amp_texted_err->setMaximumSize(100,30);
-        fitted_amp_texted_err.push_back(amp_texted_err);
-
-        QTextEdit * vel_texted_err = new QTextEdit();
-        vel_texted_err->setMaximumSize(100,30);
-        fitted_vel_texted_err.push_back(vel_texted_err);
-
-        QTextEdit * fwhm_texted_err = new QTextEdit();
-        fwhm_texted_err->setMaximumSize(100,30);
-        fitted_fwhm_texted_err.push_back(fwhm_texted_err);
-
-        QHBoxLayout * amp_hbox = new QHBoxLayout();
-        amp_hbox->addWidget(amp_label);
-        amp_hbox->addWidget(amp_texted);
-        amp_hbox->addWidget(amp_pm);
-        amp_hbox->addWidget(amp_texted_err);
-
-        QHBoxLayout * vel_hbox = new QHBoxLayout();
-        vel_hbox->addWidget(vel_label);
-        vel_hbox->addWidget(vel_texted);
-        vel_hbox->addWidget(vel_pm);
-        vel_hbox->addWidget(vel_texted_err);
-
-        QHBoxLayout * fwhm_hbox = new QHBoxLayout();
-        fwhm_hbox->addWidget(fwhm_label);
-        fwhm_hbox->addWidget(fwhm_texted);
-        fwhm_hbox->addWidget(fwhm_pm);
-        fwhm_hbox->addWidget(fwhm_texted_err);
-
-        QVBoxLayout * vboxee = new QVBoxLayout();
-        vboxee->addItem(amp_hbox);
-        vboxee->addItem(vel_hbox);
-        vboxee->addItem(fwhm_hbox);
-
-        QWidget * ewina = new QWidget();
-        ewina->setLayout(vboxee);
-        fitted_one_widget.push_back(ewina);
-        ewina->setMinimumSize(250,250);
-        // -- dodajemy do widgetu --
-        fitted_params->addWidget(ewina);
-    }
-
-
-}
-*/
-
 void body::previous_gauss_spec()
 {
     // -- na wejściu zmieniamy wartość markera --
@@ -10892,7 +8257,7 @@ void body::previous_gauss_spec()
     {
         return;
     }
-    else if (actual_obs_index_gauss == Ilst.size()-1)
+    else if (actual_obs_index_gauss == dataTable->spectraTableI.size()-1)
     {
         actual_obs_index_gauss = actual_obs_index_gauss-1;
     }
@@ -10902,12 +8267,12 @@ void body::previous_gauss_spec()
     }
 
     // wektor z danymi
-    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    QVector < double > x(dataTable->spectraTableI[actual_obs_index_gauss].size()), y(dataTable->spectraTableI[actual_obs_index_gauss].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[actual_obs_index_gauss].size(); i++)
     {
-        x[i] = VELlst[actual_obs_index_gauss][i];
-        y[i] = Ilst[actual_obs_index_gauss][i];
+        x[i] = dataTable->velocityTable[actual_obs_index_gauss][i];
+        y[i] = dataTable->spectraTableI[actual_obs_index_gauss][i];
     }
     // dodajemy grafikę do naszego kochanego wykresu
     spectrum_w_gauss->graph(2)->setData(x,y);
@@ -10918,7 +8283,7 @@ void body::previous_gauss_spec()
 
     // -- ustawiamy labele --
     string mjd_gauss;
-    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    mjd_gauss = "MJD: " + to_string(int(dataTable->mjdTable[actual_obs_index_gauss]));
     actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
 
     string obsn;
@@ -10936,7 +8301,7 @@ void body::next_gauss_spec()
     {
         actual_obs_index_gauss = actual_obs_index_gauss+1;
     }
-    else if (actual_obs_index_gauss == Ilst.size()-1)
+    else if (actual_obs_index_gauss == dataTable->spectraTableI.size()-1)
     {
         return;
     }
@@ -10946,12 +8311,12 @@ void body::next_gauss_spec()
     }
 
     // wektor z danymi
-    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    QVector < double > x(dataTable->spectraTableI[actual_obs_index_gauss].size()), y(dataTable->spectraTableI[actual_obs_index_gauss].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[actual_obs_index_gauss].size(); i++)
     {
-        x[i] = VELlst[actual_obs_index_gauss][i];
-        y[i] = Ilst[actual_obs_index_gauss][i];
+        x[i] = dataTable->velocityTable[actual_obs_index_gauss][i];
+        y[i] = dataTable->spectraTableI[actual_obs_index_gauss][i];
     }
     // dodajemy grafikę do naszego kochanego wykresu
     spectrum_w_gauss->graph(2)->setData(x,y);
@@ -10962,7 +8327,7 @@ void body::next_gauss_spec()
 
     // -- ustawiamy labele --
     string mjd_gauss;
-    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    mjd_gauss = "MJD: " + to_string(int(dataTable->mjdTable[actual_obs_index_gauss]));
     actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
 
     string obsn;
@@ -10974,12 +8339,12 @@ void body::next_gauss_spec()
 void body::actual_gauss_spec()
 {
     // wektor z danymi
-    QVector < double > x(Ilst[actual_obs_index_gauss].size()), y(Ilst[actual_obs_index_gauss].size());
+    QVector < double > x(dataTable->spectraTableI[actual_obs_index_gauss].size()), y(dataTable->spectraTableI[actual_obs_index_gauss].size());
     // zapelniamy wektor
-    for(unsigned int i = 0; i < Ilst[actual_obs_index_gauss].size(); i++)
+    for(unsigned int i = 0; i < dataTable->spectraTableI[actual_obs_index_gauss].size(); i++)
     {
-        x[i] = VELlst[actual_obs_index_gauss][i];
-        y[i] = Ilst[actual_obs_index_gauss][i];
+        x[i] = dataTable->velocityTable[actual_obs_index_gauss][i];
+        y[i] = dataTable->spectraTableI[actual_obs_index_gauss][i];
     }
     // dodajemy grafikę do naszego kochanego wykresu
     spectrum_w_gauss->graph(2)->setData(x,y);
@@ -10990,7 +8355,7 @@ void body::actual_gauss_spec()
 
     // -- ustawiamy labele --
     string mjd_gauss;
-    mjd_gauss = "MJD: " + to_string(int(mjdlst[actual_obs_index_gauss]));
+    mjd_gauss = "MJD: " + to_string(int(dataTable->mjdTable[actual_obs_index_gauss]));
     actual_mjd_gauss->setText(QString::fromStdString(mjd_gauss));
 
     string obsn;
@@ -11309,28 +8674,28 @@ void body::make_new_I_and_V_for_epoch_on_dynspec()
     int epoch_number = xind;
 
     // -- tworzymy tymczasowe kontenery --
-    vector < double > tmprec_LHCERR(LHCERRlst[epoch_number].size()); // deklarujemy dokładny rozmiar, by szybciej działało
-    vector < double > tmprec_RHCERR(RHCERRlst[epoch_number].size());
-    vector < double > tmprec_LHC(LHClst[epoch_number].size());
-    vector < double > tmprec_RHC(RHClst[epoch_number].size());
+    vector < double > tmprec_LHCERR(dataTable->spectraTableLHC[epoch_number].size()); // deklarujemy dokładny rozmiar, by szybciej działało
+    vector < double > tmprec_RHCERR(dataTable->spectraTableRHC[epoch_number].size());
+    vector < double > tmprec_LHC(dataTable->spectraTableLHC[epoch_number].size());
+    vector < double > tmprec_RHC(dataTable->spectraTableRHC[epoch_number].size());
 
     // -- pętla nr. 1 - zgrywanie informacji dot. LHC i RHC --
-    for (unsigned long int i = 0; i < LHClst[epoch_number].size(); i++)
+    for (unsigned long int i = 0; i < dataTable->spectraTableLHC[epoch_number].size(); i++)
     {
-        tmprec_LHC[i] = LHClst[epoch_number][i];
-        tmprec_RHC[i] = RHClst[epoch_number][i];
-        tmprec_LHCERR[i] = LHCERRlst[epoch_number][i];
-        tmprec_RHCERR[i] = RHCERRlst[epoch_number][i];
+        tmprec_LHC[i] = dataTable->spectraTableLHC[epoch_number][i];
+        tmprec_RHC[i] = dataTable->spectraTableRHC[epoch_number][i];
+        tmprec_LHCERR[i] = dataTable->spectraTableLHCERR[epoch_number];
+        tmprec_RHCERR[i] = dataTable->spectraTableRHCERR[epoch_number];
     }
 
     // -- pętla nr. 2 - zapisywanie infromacji na nowych tablicach --
-    for (unsigned long int i = 0; i < LHClst[epoch_number].size(); i++)
+    for (unsigned long int i = 0; i < dataTable->spectraTableLHC[epoch_number].size(); i++)
     {
-        Ilst[epoch_number][i] = (tmprec_LHC[i] + tmprec_RHC[i]) / 2.0;
-        ERRlst[epoch_number][i] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
+        dataTable->spectraTableI[epoch_number][i] = (tmprec_LHC[i] + tmprec_RHC[i]) / 2.0;
+        dataTable->spectraTableIERR[epoch_number] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
 
-        Vlst[epoch_number][i] = (tmprec_RHC[i] - tmprec_LHC[i]) / 2.0;
-        VERRlst[epoch_number][i] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
+        dataTable->spectraTableV[epoch_number][i] = (tmprec_RHC[i] - tmprec_LHC[i]) / 2.0;
+        dataTable->spectraTableVERR[epoch_number] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
 
     }
 
@@ -11341,21 +8706,21 @@ void body::make_new_I_and_V_for_epoch_on_dynspec()
     // -- aktualizujemy widmo dynamiczne --
     update_dynamic_spectrum();
     /*
-    for(int i = 0; i < RHClst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableRHC.size(); i++)
     {
-        for (int k=0; k< RHClst[i].size(); k++)
+        for (int k=0; k< dataTable->spectraTableRHC[i].size(); k++)
         {
-            Ilst[i][k] = (RHClst[i][k] + LHClst[i][k]) / 2.0;
-            ERRlst[i][k] = (RHCERRlst[i][k] + LHCERRlst[i][k]) / 2.0;
+            dataTable->spectraTableI[i][k] = (dataTable->spectraTableRHC[i][k] + dataTable->spectraTableLHC[i][k]) / 2.0;
+            dataTable->spectraTableIERR[i][k] = (RHCdataTable->spectraTableIERR[i][k] + LHCdataTable->spectraTableIERR[i][k]) / 2.0;
         }
     }
 
-    for(int i = 0; i < Vlst.size(); i++)
+    for(int i = 0; i < dataTable->spectraTableV.size(); i++)
     {
-        for (int k=0; k< Vlst[i].size(); k++)
+        for (int k=0; k< dataTable->spectraTableV[i].size(); k++)
         {
-            Vlst[i][k] = (RHClst[i][k] - LHClst[i][k]) / 2.0;
-            VERRlst[i][k] = (RHCERRlst[i][k] - LHCERRlst[i][k]) / 2.0;
+            dataTable->spectraTableV[i][k] = (dataTable->spectraTableRHC[i][k] - dataTable->spectraTableLHC[i][k]) / 2.0;
+            VdataTable->spectraTableIERR[i][k] = (RHCdataTable->spectraTableIERR[i][k] - LHCdataTable->spectraTableIERR[i][k]) / 2.0;
         }
     }
     */

@@ -570,7 +570,7 @@ public:
     bool dot_single_added = 0;
     bool dot_lcs_added = 0;
     bool lcs_line_added = 0;
-    bool loaded_data = 0;
+    bool loaded_data = 1;
     bool chan4rms_loaded = 0;
     bool chan4int_loaded = 0;
     bool layout_buttons_loaded_dynspec = 0;
@@ -900,6 +900,9 @@ public:
 
     bool check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path);
     //void read_chan4int();
+private:
+    void set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_cl);
+
 
 };
 
