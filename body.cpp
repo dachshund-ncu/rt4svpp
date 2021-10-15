@@ -1395,79 +1395,6 @@ void body::load_time_series()
 
 }
 
-
-// -- liczy calke z pojedynczego widma --
-void body::integrate_single(int min, int max, unsigned int marker)
-{
-    double sumI = 0.0;
-    double sumV = 0.0;
-    double sumLHC = 0.0;
-    double sumRHC = 0.0; // suma calki
-
-    double sumIer = 0.0;
-    double sumVer = 0.0;
-    double sumLHCer = 0.0;
-    double sumRHCer = 0.0;
-
-    double h = abs( abs(dataTable->velocityTable[marker][1]) - abs(dataTable->velocityTable[marker][1]) )  ; // krok
-    for(int i = min-1; i < max; i++)
-    {
-      if(i == 0 || i == max-1)
-      {
-        sumI = sumI + dataTable->spectraTableI[marker][i] / 2.0;
-        sumV = sumV + dataTable->spectraTableV[marker][i] / 2.0;
-        sumLHC = sumLHC + dataTable->spectraTableLHC[marker][i] / 2.0;
-        sumRHC = sumRHC + dataTable->spectraTableRHC[marker][i] / 2.0;
-      }
-      else
-      {
-        sumI = sumI + dataTable->spectraTableI[marker][i];
-        sumV = sumV + dataTable->spectraTableV[marker][i];
-        sumLHC = sumLHC + dataTable->spectraTableLHC[marker][i];
-        sumRHC = sumRHC + dataTable->spectraTableRHC[marker][i];
-      }
-    }
-    /*
-    for(int i = min-1; i < max; i++)
-    {
-      if(i == 0 || i == max-1)
-      {
-        sumIer = sumIer + dataTable->spectraTableIERR[marker][i] / 2.0;
-        sumVer = sumVer + VdataTable->spectraTableIERR[marker][i] / 2.0;
-        sumLHCer = sumLHCer + LHCdataTable->spectraTableIERR[marker][i] / 2.0;
-        sumRHCer = sumRHCer + RHCdataTable->spectraTableIERR[marker][i] / 2.0;
-      }
-      else
-      {
-          sumIer = sumIer + dataTable->spectraTableIERR[marker][i];
-          sumVer = sumVer + VdataTable->spectraTableIERR[marker][i];
-          sumLHCer = sumLHCer + LHCdataTable->spectraTableIERR[marker][i];
-          sumRHCer = sumRHCer + RHCdataTable->spectraTableIERR[marker][i];
-      }
-    }
-    */
-    sumI = sumI * h;
-    sumV = sumV * h;
-    sumLHC = sumLHC * h;
-    sumRHC = sumRHC * h;
-
-    //sumIer = sumIer * h;
-    //sumVer = sumVer * h;
-    //sumLHCer = sumLHCer * h;
-    //sumRHCer = sumRHCer * h;
-
-    integrated_flux_I = sumI;
-    integrated_flux_V = sumV;
-    integrated_flux_LHC = sumLHC;
-    integrated_flux_RHC = sumRHC;
-
-    integrated_flux_I_er = dataTable->spectraTableIERR[marker] * 5.0 * h;
-    integrated_flux_V_er = dataTable->spectraTableVERR[marker] * 5.0 * h;
-    integrated_flux_LHC_er = dataTable->spectraTableLHCERR[marker] * 5.0 * h;
-    integrated_flux_RHC_er = dataTable->spectraTableRHCERR[marker] * 5.0 * h;
-
-}
-
 // -- liczy calke z wszystkich widm --
 void body::integrate_time_series()
 {
@@ -1780,7 +1707,7 @@ void body::set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_c
 
 
     text_mjdlabel.append(string("\nChannel: "));
-    text_mjdlabel.append(to_string(dataTable->channelTable[x_index_cl][y_index_cl]));
+    text_mjdlabel.append(to_string((int) dataTable->channelTable[x_index_cl][y_index_cl]));
 
     text_mjdlabel.append(string("\nVel: "));
 
@@ -2427,56 +2354,6 @@ bool body::read_chan4int()
 
 }
 
-// -- liczy srednia po predkosci - dla jednej epoki --
-vector < double > body::average_over_velocity(int min_chan, int max_chan, vector < double > stokes_parameter, vector < double > error)
-{
-    double suma = 0.0;
-    //int licznik = 0;
-    int chan_count = max_chan - min_chan + 1;
-    if(chan_count < 0)
-        chan_count = 1;
-
-    // petla liczaca srednia
-    for (unsigned long int i = 0; i < chan_count; i++)
-    {
-        suma = suma + stokes_parameter[min_chan + i];
-    }
-    suma = suma / chan_count;
-
-    // petla liczaca sredni blad
-    double sumaer = 0.0;
-    for (unsigned long int i = 0; i < chan_count; i++)
-    {
-        sumaer = sumaer + error[min_chan + i];
-    }
-    sumaer = sumaer / chan_count;
-
-    double standard_deriv = 0.0;
-    // petla liczaca odchylenie standardowe
-    for (int i = 0; i < chan_count; i++)
-    {
-        standard_deriv = standard_deriv + pow(stokes_parameter[min_chan + i] - suma,2.0);
-    }
-
-    // dzielimy przez n-1
-    if (chan_count == 1)
-    {
-        standard_deriv = 0.0;
-    }
-    else
-    {
-        standard_deriv = standard_deriv / ((chan_count * chan_count)-1.0);
-        standard_deriv = sqrt(standard_deriv);
-    }
-    double final_error = sumaer;//sqrt(standard_deriv*standard_deriv + sumaer*sumaer / 3.0);
-
-    vector < double > return_value (2);
-    //cout << suma << endl;
-    return_value[0] = suma;
-    return_value[1] = final_error;
-    return return_value;
-}
-
 // -- liczy srednia po predkosci - dla wszystkich epok --
 void body::calculate_aver_over_velocity()
 {
@@ -2505,8 +2382,8 @@ void body::calculate_aver_over_velocity()
     // -- konwertujemy tera wartosci z text edit na inty--
     try
     {
-        min = stoi(mins.toStdString())-1;
-        max = stoi(maxs.toStdString())-1;
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
     }
     catch(...)
     {
@@ -2523,82 +2400,21 @@ void body::calculate_aver_over_velocity()
     }
 
     // początkowy channel mniejszy od 0
-    if (min < 0)
+    if (min < 1)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
         return;
     }
 
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size()-1)
-        max = dataTable->spectraTableI[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size())
+        max = dataTable->spectraTableI[0].size();
 
-    chan4int_start = min;
-    chan4int_end = max;
-
-    // -- integrujemy --
-    vector < double > wynik (2);
-    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
-    {
-        // I
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableI[i], dataTable->spectraTableIERR);
-        averaged_over_velocity_I.push_back(wynik[0]);
-        averaged_over_velocity_I_err.push_back(wynik[1]);
-
-        // V
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableV[i], dataTable->spectraTableVERR);
-        averaged_over_velocity_V.push_back(wynik[0]);
-        averaged_over_velocity_V_err.push_back(wynik[1]);
-
-        // LHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableLHC[i], dataTable->spectraTableLHCERR);
-        averaged_over_velocity_LHC.push_back(wynik[0]);
-        averaged_over_velocity_LHC_err.push_back(wynik[1]);
-
-        // RHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableRHC[i], dataTable->spectraTableRHCERR);
-        averaged_over_velocity_RHC.push_back(wynik[0]);
-        averaged_over_velocity_RHC_err.push_back(wynik[1]);
-    }
-    //cout << "----> Averaged over channels " << min << " -> " << max << endl;
-    // -- zapisujemy do pliku --
-    // liczymy srednia predkosc radialna
-    double velaver = (dataTable->velocityTable[0][max] + dataTable->velocityTable[0][min]) / 2.0;
-    ofstream integ;
-    string filename = working_directory + "/" + srcname + "_averaged_over_velocity_chan_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    integ.open(filename.c_str());
-
-    if(include_pytime->isChecked())
-    {
-        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
-        integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
-        }
-    }
-    else
-    {
-        integ << "# MJD year I err V err LHC err RHC err" << endl;
-        integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
-        }
-    }
-
-    integ.close();
-    averaged_over_velocity_I.clear();
-    averaged_over_velocity_V.clear();
-    averaged_over_velocity_LHC.clear();
-    averaged_over_velocity_RHC.clear();
-    averaged_over_velocity_I_err.clear();
-    averaged_over_velocity_V_err.clear();
-    averaged_over_velocity_LHC_err.clear();
-    averaged_over_velocity_RHC_err.clear();
+    // liczymy aver over velocity
+    dataTable->averageOverVelocity4Pols(min, max, include_pytime->isChecked());
 
     string message = "";
-    message = "Averaged over channels " + to_string(min+1) + " -> " + to_string(max+1) + "\n" + "Saved to " + filename;
+    message = "Averaged over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
     close_window_for_aver_over_velocity();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
@@ -3531,81 +3347,14 @@ bool body::read_flagged_files()
 // -- eksportuje krzywą blasku z zaznaczenia na widmie dynamicznym --
 void body::make_lcs_slot()
 {
-    chan4int_start = yind;
-    chan4int_end = yind;
     int min, max;
-    min = chan4int_start;
-    max = chan4int_end;
-    // -- integrujemy --
-    vector < double > wynik (2);
-    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
-    {
-        // I
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableI[i], dataTable->spectraTableIERR);
-        averaged_over_velocity_I.push_back(wynik[0]);
-        averaged_over_velocity_I_err.push_back(wynik[1]);
+    min = yind + 1;
+    max = yind + 1;
 
-        // V
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableV[i], dataTable->spectraTableVERR);
-        averaged_over_velocity_V.push_back(wynik[0]);
-        averaged_over_velocity_V_err.push_back(wynik[1]);
-
-        // LHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableLHC[i], dataTable->spectraTableLHCERR);
-        averaged_over_velocity_LHC.push_back(wynik[0]);
-        averaged_over_velocity_LHC_err.push_back(wynik[1]);
-
-        // RHC
-        wynik = average_over_velocity(chan4int_start, chan4int_end, dataTable->spectraTableRHC[i], dataTable->spectraTableRHCERR);
-        averaged_over_velocity_RHC.push_back(wynik[0]);
-        averaged_over_velocity_RHC_err.push_back(wynik[1]);
-    }
-    //cout << "----> Averaged over channels " << min << " -> " << max << endl;
-    // -- zapisujemy do pliku --
-    // liczymy srednia predkosc radialna
-    double velaver = (dataTable->velocityTable[0][chan4int_start] + dataTable->velocityTable[0][chan4int_end]) / 2.0;
-    ofstream integ;
-    string filename = working_directory + "/" + srcname + "_lc_chan_" + to_string(min+1) + ".DAT";
-    integ.open(filename.c_str());
-
-    /*
-    integ << "# MJD year I err V err LHC err RHC err" << endl;
-    integ << "# VEL: " << velaver << endl;
-    for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-    {
-        integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
-    }
-    */
-    if(include_pytime->isChecked())
-    {
-        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
-        integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " <<  dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
-        }
-    }
-    else
-    {
-        integ << "# MJD year I err V err LHC err RHC err" << endl;
-        integ << "# VEL: " << velaver << endl;
-        for(int i = 0; i < dataTable->spectraTableI.size(); i++)
-        {
-            integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " <<  yrlst[i] << "   " << averaged_over_velocity_I[i] << "   " <<  averaged_over_velocity_I_err[i] << "   " << averaged_over_velocity_V[i] << "   " << averaged_over_velocity_V_err[i] << "   " << averaged_over_velocity_LHC[i] << "   " << averaged_over_velocity_LHC_err[i] << "   " << averaged_over_velocity_RHC[i] << "   " << averaged_over_velocity_RHC_err[i] <<  endl;
-        }
-    }
-    integ.close();
-    averaged_over_velocity_I.clear();
-    averaged_over_velocity_V.clear();
-    averaged_over_velocity_LHC.clear();
-    averaged_over_velocity_RHC.clear();
-    averaged_over_velocity_I_err.clear();
-    averaged_over_velocity_V_err.clear();
-    averaged_over_velocity_LHC_err.clear();
-    averaged_over_velocity_RHC_err.clear();
+    dataTable->averageOverVelocity4Pols(min, max, include_pytime->isChecked());
 
     string message = "";
-    message = "Created lc over channel " + to_string(min+1) + "\n" + "Saved to " + filename;
+    message = "Created lc over channel " + to_string(min) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
     //close_window_for_aver_over_velocity();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
@@ -6065,18 +5814,15 @@ void body::set_plot_on_int_vs_time()
     chan4int_end = max;
 
     // -- integrujemy --
-    for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
-    {
-        integrate_single(min, max, i);
-        integrated_fluxlst_I.push_back(integrated_flux_I);
-        integrated_fluxlst_V.push_back(integrated_flux_V);
-        integrated_fluxlst_LHC.push_back(integrated_flux_LHC);
-        integrated_fluxlst_RHC.push_back(integrated_flux_RHC);
-        integrated_fluxlst_I_er.push_back(integrated_flux_I_er);
-        integrated_fluxlst_V_er.push_back(integrated_flux_V_er);
-        integrated_fluxlst_LHC_er.push_back(integrated_flux_LHC_er);
-        integrated_fluxlst_RHC_er.push_back(integrated_flux_RHC_er);
-    }
+    integrated_fluxlst_I = dataTable->integratePol(min+1, max+1, dataTable->velocityTable, dataTable->spectraTableI);
+    integrated_fluxlst_V = dataTable->integratePol(min+1, max+1, dataTable->velocityTable, dataTable->spectraTableV);
+    integrated_fluxlst_LHC = dataTable->integratePol(min+1, max+1, dataTable->velocityTable, dataTable->spectraTableLHC);
+    integrated_fluxlst_RHC = dataTable->integratePol(min+1, max+1, dataTable->velocityTable, dataTable->spectraTableRHC);
+
+    integrated_fluxlst_I_er = dataTable->integratePolErr(dataTable->velocityTable, dataTable->spectraTableIERR);
+    integrated_fluxlst_V_er = dataTable->integratePolErr(dataTable->velocityTable, dataTable->spectraTableVERR);
+    integrated_fluxlst_LHC_er = dataTable->integratePolErr(dataTable->velocityTable, dataTable->spectraTableLHCERR);
+    integrated_fluxlst_RHC_er = dataTable->integratePolErr(dataTable->velocityTable, dataTable->spectraTableRHCERR);
 
     // -- clearujemy grafiki --
     int_vs_time.clearGraphs();

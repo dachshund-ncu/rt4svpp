@@ -8,7 +8,9 @@ SOURCES += \
     body.cpp \
     data/spectral_container.cpp \
     libs/qcustomplot.cpp \
-    main.cpp
+    main.cpp \
+    data/averovervelocity.cpp \
+    data/integrate.cpp
 
 HEADERS += \
     body.h \

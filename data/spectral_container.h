@@ -75,9 +75,15 @@ public:
     // to samo, tylko w argumencie przyjmuję listę plików QT
     // domyślnie, ta metoda będzie wywoływana gdy wybierze się pliki za pomocną graficznego wybieraka
     void loadDataFromList(QStringList qtListaPlikow);
-    // liczy całkę z wszystkich polaryzacji i zapisuje do pliku
+    // -- liczy całkę z wszystkich polaryzacji i zapisuje do pliku --
     void integrate4Pols(int min_channel, int max_channel, bool isotimeInclude);
+    // pomocnicze metody publiczne
+    std::vector < double > integratePol(int min_channel, int max_channel, std::vector < std::vector < double > > & veltab, std::vector < std::vector < double > > &poltab );
+    std::vector < double > integratePolErr(std::vector < std::vector < double > > & veltab, std::vector < double > & errtab );
     std::string getIntegrationFileName(int min_channel, int max_channel);
+    // -- średnia po prędkości --
+    void averageOverVelocity4Pols(int min_channel, int max_channel, bool isotimeInclude);
+    std::string getAverOverVelFileName(int min_channel, int max_channel);
 
 
 private:
@@ -98,11 +104,15 @@ private:
     std::string construct_isotime(double year, double month, double day, double hour, double min, double sec);
     void print_loaded_comm(int obsnum, std::string isotime, double obs_error);
     // -- całkowanie widma --
-    std::vector < double > integratePol(int min_channel, int max_channel, std::vector < std::vector < double > > & veltab, std::vector < std::vector < double > > &poltab );
-    std::vector < double > integratePolErr(std::vector < std::vector < double > > & veltab, std::vector < double > & errtab );
     double integrateSingleEpoch(int min_channel, int max_channel, std::vector < double > veltab, std::vector < double > poltab);
     double integrateSingleEpochErr(std::vector < double > veltab, double epochRms);
     void saveIntegrationToFile(int min_channel, int max_channel, std::vector < std::vector < double > > & integrationResults, std::vector < std::vector < double > > & integrationErrors, bool isotimeInclude);
+    // ----------------------
+    // -- aver over velocity --
+    std::vector < double > averagePolOverVelocity(int min_channel, int max_channel, std::vector < std::vector < double > > & fluxtab);
+    double averageEpochOverVelocity(int min_channel, int max_channel, std::vector < double > fluxtab);
+    void saveAveragingToFile(int min_channel, int max_channel, std::vector < std::vector < double > > & averagingResults, std::vector < std::vector < double > > & errors, bool isotimeInclude);
+    double getCentralVelocityOfAveraging(int min_channel, int max_channel);
     // ----------------------
 };
 
