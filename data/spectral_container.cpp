@@ -48,6 +48,9 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
     // zapisujemy dodatkowo katalog do zapisywania
     saveDirectory = working_directory;
 
+    // ustawiamy flagę loaded
+    loadedData = true;
+
 }
 
 // - metoda czytająca listę plików -
@@ -65,6 +68,9 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     // dlatego ekstrahujemy z jej pierwszego elementu
     QFileInfo info(qtListaPlikow[0]);
     saveDirectory = info.absolutePath().toStdString();
+
+    // ustawiamy flagę loaded
+    loadedData = true;
 
 }
 

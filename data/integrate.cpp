@@ -80,16 +80,22 @@ void spectral_container::saveIntegrationToFile(int min_channel, int max_channel,
     std::ofstream integ;
     integ.open(getIntegrationFileName(min_channel, max_channel).c_str());
 
+    int columnw = 14;
     // piszemy nagłówek pliku
     integ << "# ----------------------------------------------" << std::endl;
     integ << "# integrated from channel " << min_channel << " to " << max_channel << std::endl;
-    integ << "# columns" << std::endl;
+    integ << "# velocity range: " << velocityTable[0][min_channel-1] << " to " << velocityTable[0][max_channel-1] << " km/s" << std::endl;
+    integ << "# columns:" << std::endl;
+    integ << "# " << std::left;
     if(isotimeInclude)
-        integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << std::endl;
-    else
-        integ << "# MJD year I err V err LHC err RHC err" << std::endl;
-    integ << "# ----------------------------------------------" << std::endl;
+        integ << std::setw(columnw+14) << "time_in_isoformat ";
 
+    integ << std::setw(columnw) << "MJD  " << std::setw(columnw+3) << "year ";
+    integ << std::setw(columnw) << "I " << std::setw(columnw) << "+/- ";
+    integ << std::setw(columnw) << "V " << std::setw(columnw) << "+/- ";
+    integ << std::setw(columnw) << "LHC " << std::setw(columnw) << "+/- ";
+    integ << std::setw(columnw) << "RHC " << std::setw(columnw) << "+/- " << std::endl;
+    integ << "# ----------------------------------------------" << std::endl;
 
     // pętla, zapisująca dane
     for (int i = 0; i < (int) integrationResults[0].size(); i++)
@@ -97,12 +103,12 @@ void spectral_container::saveIntegrationToFile(int min_channel, int max_channel,
         // czas
         if (isotimeInclude)
         {
-            integ << std::fixed << std::setprecision(11) << isotimeTable[i] << "   ";
+            integ << std::right << std::fixed << std::setprecision(7) << isotimeTable[i] << " ";
         }
-        integ << std::fixed << std::setprecision(11) << mjdTable[i] << "   " << decyrTable[i] << "   ";
+        integ << std::right << std::fixed << std::setprecision(7) << std::setw(columnw+1) << mjdTable[i] << " " << std::setw(columnw-1) << decyrTable[i] << " ";
         // dane (pętla po I,V,RHC,LHC)
         for (int polind = 0; polind < 4; polind++)
-            integ << integrationResults[polind][i] << "   " << integrationErrors[polind][i] << "   "; // I
+            integ << std::setw(columnw-1) << integrationResults[polind][i] << " " << std::setw(columnw-1) << integrationErrors[polind][i] << " "; // I
         integ << std::endl;
     }
 

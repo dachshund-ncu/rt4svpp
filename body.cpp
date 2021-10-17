@@ -2456,11 +2456,8 @@ vector < double > body::average_over_time(int min_epoch, int max_epoch, vector <
 // -- liczy srednia po czasie - dla wszystkich epok --
 void body::calculate_aver_over_time()
 {
-    if (loaded_data == 0)
+    if (dataTable->loadedData == false)
     {
-        //cout << endl;
-        //cout << "----> Please load data first!" << endl;
-        //cout << endl;
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
@@ -2480,8 +2477,8 @@ void body::calculate_aver_over_time()
     // -- konwertujemy tera wartosci z text edit na inty--
     try
     {
-        min = stoi(mins.toStdString())-1;
-        max = stoi(maxs.toStdString())-1;
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
     }
     catch(...)
     {
@@ -2499,80 +2496,18 @@ void body::calculate_aver_over_time()
         QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
     }
 
-    if (max > dataTable->mjdTable.size()-1)
-        max = dataTable->mjdTable.size()-1;
+    if (max > dataTable->mjdTable.size())
+        max = dataTable->mjdTable.size();
 
-    for(int channel = 0; channel < dataTable->channelTable[0].size(); channel++)
-    {
-        // tworzymy bloki time series
-        vector < double > I_timeseries, I_timeseries_err;
-        vector < double > V_timeseries, V_timeseries_err;
-        vector < double > LHC_timeseries, LHC_timeseries_err;
-        vector < double > RHC_timeseries, RHC_timeseries_err;
-        vector < double > wynik(2);
-        // generujemy light_curves
-        for (int i = 0; i < dataTable->mjdTable.size(); i++)
-        {
-            // I
-            I_timeseries.push_back(dataTable->spectraTableI[i][channel]);
-            I_timeseries_err.push_back(dataTable->spectraTableIERR[i]);
+    // wykonujemy właściwej transformacji
+    dataTable->averOverTime4Pols(min, max);
 
-            // V
-            V_timeseries.push_back(dataTable->spectraTableV[i][channel]);
-            V_timeseries_err.push_back(dataTable->spectraTableVERR[i]);
-
-            // LHC
-            LHC_timeseries.push_back(dataTable->spectraTableLHC[i][channel]);
-            LHC_timeseries_err.push_back(dataTable->spectraTableLHCERR[i]);
-
-            // RHC
-            RHC_timeseries.push_back(dataTable->spectraTableRHC[i][channel]);
-            RHC_timeseries_err.push_back(dataTable->spectraTableRHCERR[i]);
-        }
-
-        // liczymy average
-        wynik = average_over_time(min, max, I_timeseries, I_timeseries_err);
-        averaged_over_time_I.push_back(wynik[0]);
-        averaged_over_time_I_err.push_back(wynik[1]);
-        wynik = average_over_time(min, max, V_timeseries, V_timeseries_err);
-        averaged_over_time_V.push_back(wynik[0]);
-        averaged_over_time_V_err.push_back(wynik[1]);
-        wynik = average_over_time(min, max, LHC_timeseries, LHC_timeseries_err);
-        averaged_over_time_LHC.push_back(wynik[0]);
-        averaged_over_time_LHC_err.push_back(wynik[1]);
-        wynik = average_over_time(min, max, RHC_timeseries, RHC_timeseries_err);
-        averaged_over_time_RHC.push_back(wynik[0]);
-        averaged_over_time_RHC_err.push_back(wynik[1]);
-
-    }
-
-    // -- zapisujemy do pliku --
-
-    ofstream integ;
-    string filename = working_directory + "/" + srcname + "_averaged_over_time_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    integ.open(filename.c_str());
-    integ << "# channel velocity I err V err LHC err RHC err" << endl;
-    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
-    {
-        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << averaged_over_time_I[i] << "   " <<  averaged_over_time_I_err[i] << "   " << averaged_over_time_V[i] << "   " << averaged_over_time_V_err[i] << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
-    }
-    integ.close();
-    averaged_over_time_I.clear();
-    averaged_over_time_V.clear();
-    averaged_over_time_LHC.clear();
-    averaged_over_time_RHC.clear();
-    averaged_over_time_I_err.clear();
-    averaged_over_time_V_err.clear();
-    averaged_over_time_LHC_err.clear();
-    averaged_over_time_RHC_err.clear();
-
+    // wiadomość dla usera
     string message;
-    message = "Averaged over epochs: " + to_string(min + 1) + " " + " -> " + to_string(max + 1) + "\n";
-    message = message + "Saved to " + filename;
+    message = "Averaged over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
+    message = message + "Saved to " + dataTable->getAverOverTimeFileName(min, max);
     close_window_for_aver_over_time();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
-
-
 }
 
 // -- liczy VI, FI i chi2red dla jednego kanału --

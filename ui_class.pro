@@ -10,7 +10,8 @@ SOURCES += \
     libs/qcustomplot.cpp \
     main.cpp \
     data/averovervelocity.cpp \
-    data/integrate.cpp
+    data/integrate.cpp \
+    data/averovertime.cpp
 
 HEADERS += \
     body.h \

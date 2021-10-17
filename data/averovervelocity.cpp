@@ -65,31 +65,36 @@ void spectral_container::saveAveragingToFile(int min_channel, int max_channel, s
     std::ofstream averVel;
     averVel.open(getAverOverVelFileName(min_channel, max_channel).c_str());
 
+    int columnw = 14;
     // piszemy nagłówek pliku
     averVel << "# ----------------------------------------------" << std::endl;
     averVel << "# averaged over velocity from channel " << min_channel << " to " << max_channel << std::endl;
     averVel << "# velocity range: " << velocityTable[0][min_channel-1] << " to " << velocityTable[0][max_channel-1] << " km/s" << std::endl;
     averVel << "# central velocity: " << getCentralVelocityOfAveraging(min_channel, max_channel) << " km/s" << std::endl;
     averVel << "# columns:" << std::endl;
+    averVel << "# " << std::left;
     if(isotimeInclude)
-        averVel << "# time_in_isoformat MJD year I +/- V +/- LHC +/- RHC +/-" << std::endl;
-    else
-        averVel << "# MJD year I +/- V +/- LHC +/- RHC +/-" << std::endl;
+        averVel << std::setw(columnw+14) << "time_in_isoformat ";
 
-
+    averVel << std::setw(columnw) << "MJD  " << std::setw(columnw+3) << "year ";
+    averVel << std::setw(columnw) << "I " << std::setw(columnw) << "+/- ";
+    averVel << std::setw(columnw) << "V " << std::setw(columnw) << "+/- ";
+    averVel << std::setw(columnw) << "LHC " << std::setw(columnw) << "+/- ";
+    averVel << std::setw(columnw) << "RHC " << std::setw(columnw) << "+/- " << std::endl;
     averVel << "# ----------------------------------------------" << std::endl;
+
     // pętla, zapisująca dane
     for (int i = 0; i < (int) averagingResults[0].size(); i++)
     {
         // czas
         if (isotimeInclude)
         {
-            averVel << std::fixed << std::setprecision(11) << isotimeTable[i] << "   ";
+            averVel << std::right << std::fixed << std::setprecision(7) << isotimeTable[i] << " ";
         }
-        averVel << std::fixed << std::setprecision(11) << mjdTable[i] << "   " << decyrTable[i] << "   ";
+        averVel << std::right << std::fixed << std::setprecision(7) << std::setw(columnw+1) << mjdTable[i] << " " << std::setw(columnw-1) << decyrTable[i] << " ";
         // dane (pętla po I,V,RHC,LHC)
         for (int polind = 0; polind < 4; polind++)
-            averVel << averagingResults[polind][i] << "   " << errors[polind][i] << "   ";
+            averVel << std::setw(columnw-1) << averagingResults[polind][i] << " " << std::setw(columnw-1) << errors[polind][i] << " ";
         averVel << std::endl;
     }
 

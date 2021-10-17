@@ -65,6 +65,7 @@ public:
     // pojedyncze stałe
     std::string nameOfSource; // nazwa źródła
     std::string saveDirectory; // nazwa katalogu, w którym będą zapistwane pliki
+    bool loadedData = false;
 
     // - metody -
     // metoda inicjująca
@@ -84,6 +85,9 @@ public:
     // -- średnia po prędkości --
     void averageOverVelocity4Pols(int min_channel, int max_channel, bool isotimeInclude);
     std::string getAverOverVelFileName(int min_channel, int max_channel);
+    // -- średnia po czasie --
+    void averOverTime4Pols(int begin_epoch, int end_epoch);
+    std::string getAverOverTimeFileName(int begin_epoch, int end_epoch);
 
 
 private:
@@ -114,6 +118,11 @@ private:
     void saveAveragingToFile(int min_channel, int max_channel, std::vector < std::vector < double > > & averagingResults, std::vector < std::vector < double > > & errors, bool isotimeInclude);
     double getCentralVelocityOfAveraging(int min_channel, int max_channel);
     // ----------------------
+    // -- aver over time --
+    std::vector < double > averOverTime1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & fluxes);
+    double averagedOverChannel(int channelNumber, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & fluxes);
+    double averOverTime1PolErr(int begin_epoch, int end_epoch, std::vector < double > & errors);
+    void saveAverOverTime(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & results, std::vector < double > & errors);
 };
 
 #endif // SPECTRAL_CONTAINER_H
