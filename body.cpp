@@ -5245,10 +5245,10 @@ void body::export_file_for_dynamic_spectrum()
     // -- konwertujemy tera wartosci z text edit na inty--
     try
     {
-        min = stoi(mins.toStdString())-1;
-        max = stoi(maxs.toStdString())-1;
-        min_epoch = stoi(min_epoch_str.toStdString())-1;
-        max_epoch = stoi(max_epoch_str.toStdString())-1;
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
+        min_epoch = stoi(min_epoch_str.toStdString());
+        max_epoch = stoi(max_epoch_str.toStdString());
     }
     catch(...)
     {
@@ -5272,63 +5272,22 @@ void body::export_file_for_dynamic_spectrum()
     }
 
     // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size()-1)
-        max = dataTable->spectraTableI[0].size()-1;
+    if (max > dataTable->spectraTableI[0].size())
+        max = dataTable->spectraTableI[0].size();
 
     // początkowa epoka mniejsza, niż 0:
-    if (min_epoch < 0)
-        min_epoch = 0;
+    if (min_epoch < 1)
+        min_epoch = 1;
 
     // końcowa, większa niż całość:
-    if (max_epoch > dataTable->mjdTable.size() - 1)
-        max_epoch = dataTable->mjdTable.size()-1;
+    if (max_epoch > dataTable->mjdTable.size())
+        max_epoch = dataTable->mjdTable.size();
 
-    // -- otwieramy plik do zapisu --
-    // nazwa pliku
-    string filename = working_directory + "/" + srcname + "_dynamic_spectrum_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    // obiekt pliku
-    ofstream fle_for_wd;
-    // otwieramy
-    fle_for_wd.open(filename.c_str());
+    dataTable->saveDynamicSpectrumToFile(min_epoch, max_epoch, min, max, include_pytime->isChecked());
 
-    if(include_pytime->isChecked())
-    {
-        // zapisujemy do pliku
-        fle_for_wd << "# " << filename << endl;
-        fle_for_wd << "# i time_in_isoformat MJD year channel velocity I e V e LHC e RHC e" << endl;
-
-        // podwójna pętla zapisu
-        for(int i = min_epoch; i < max_epoch + 1; i++) // po epokach
-        {
-            for (int e = min; e <= max;e++)
-            {
-                fle_for_wd << fixed << setprecision(11) << i+1 << " " << pytime_format[i] << " " << dataTable->mjdTable[i] << " " << yrlst[i] << " " << dataTable->channelTable[i][e] << " " << dataTable->velocityTable[i][e] << " " << dataTable->spectraTableI[i][e] << " " << dataTable->spectraTableIERR[i] << " " << dataTable->spectraTableV[i][e] << " " << dataTable->spectraTableVERR[i] << " " << dataTable->spectraTableLHC[i][e] << " " << dataTable->spectraTableLHCERR[i] << " " << dataTable->spectraTableRHC[i][e] << " " << dataTable->spectraTableRHCERR[i] << "\n";
-            }
-            fle_for_wd << "\n";
-        }
-    }
-    else
-    {
-        // zapisujemy do pliku
-        fle_for_wd << "# " << filename << endl;
-        fle_for_wd << "# i MJD year channel velocity I e V e LHC e RHC e" << endl;
-
-        // podwójna pętla zapisu
-        for(int i = min_epoch; i < max_epoch + 1; i++) // po epokach
-        {
-            for (int e = min; e <= max;e++)
-            {
-                fle_for_wd << fixed << setprecision(11) << i+1 << " " << dataTable->mjdTable[i] << " " << yrlst[i] << " " << dataTable->channelTable[i][e] << " " << dataTable->velocityTable[i][e] << " " << dataTable->spectraTableI[i][e] << " " << dataTable->spectraTableIERR[i] << " " << dataTable->spectraTableV[i][e] << " " << dataTable->spectraTableVERR[i] << " " << dataTable->spectraTableLHC[i][e] << " " << dataTable->spectraTableLHCERR[i] << " " << dataTable->spectraTableRHC[i][e] << " " << dataTable->spectraTableRHCERR[i] << "\n";
-            }
-            fle_for_wd << "\n";
-        }
-    }
-
-    // zamykamy plik
-    fle_for_wd.close();
     // wiadomość końcowa
     string message = "";
-    message = "Dynamic spectrum over channels " + to_string(min+1) + " -> " + to_string(max+1) + "\n" + "Saved to " + filename;
+    message = "Dynamic spectrum over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getDynSpecFileName(min_epoch, max_epoch);
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
     // -- zamykamy sekcje dynspec --

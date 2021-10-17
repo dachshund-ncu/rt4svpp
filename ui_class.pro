@@ -11,7 +11,8 @@ SOURCES += \
     main.cpp \
     data/averovervelocity.cpp \
     data/integrate.cpp \
-    data/averovertime.cpp
+    data/averovertime.cpp \
+    data/wd.cpp
 
 HEADERS += \
     body.h \

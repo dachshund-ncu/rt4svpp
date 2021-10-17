@@ -88,6 +88,9 @@ public:
     // -- średnia po czasie --
     void averOverTime4Pols(int begin_epoch, int end_epoch);
     std::string getAverOverTimeFileName(int begin_epoch, int end_epoch);
+    // -- export widma dynamicznego --
+    void saveDynamicSpectrumToFile(int min_epoch, int max_epoch, int min_channel, int max_channel, bool isotimeInclude);
+    std::string getDynSpecFileName(int min_epoch, int max_epoch);
 
 
 private:
