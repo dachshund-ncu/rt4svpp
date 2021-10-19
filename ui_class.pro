@@ -12,7 +12,8 @@ SOURCES += \
     data/averovervelocity.cpp \
     data/integrate.cpp \
     data/averovertime.cpp \
-    data/wd.cpp
+    data/wd.cpp \
+    data/spectralindex.cpp
 
 HEADERS += \
     body.h \

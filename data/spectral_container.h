@@ -91,7 +91,9 @@ public:
     // -- export widma dynamicznego --
     void saveDynamicSpectrumToFile(int min_epoch, int max_epoch, int min_channel, int max_channel, bool isotimeInclude);
     std::string getDynSpecFileName(int min_epoch, int max_epoch);
-
+    // -- spectral index --
+    void spectralIndex4Pol(int begin_epoch, int end_epoch, double relativeError = 0.0);
+    std::string getVIFileName(int begin_epoch, int end_epoch);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -126,6 +128,12 @@ private:
     double averagedOverChannel(int channelNumber, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & fluxes);
     double averOverTime1PolErr(int begin_epoch, int end_epoch, std::vector < double > & errors);
     void saveAverOverTime(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & results, std::vector < double > & errors);
+    // ----------------------
+    // -- spectral index --
+    std::vector < double > viSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    double viSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    std::vector < double > calculateMinAndMax(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    void saveVItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &VIContainer);
 };
 
 #endif // SPECTRAL_CONTAINER_H

@@ -2683,8 +2683,8 @@ void body::calculate_spectral_index()
     // -- konwertujemy tera wartosci z text edit na inty--
     try
     {
-        min = stoi(mins.toStdString())-1;
-        max = stoi(maxs.toStdString())-1;
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
     }
     catch(...)
     {
@@ -2702,128 +2702,16 @@ void body::calculate_spectral_index()
         QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
     }
 
-    if (max > dataTable->mjdTable.size()-1)
-        max = dataTable->mjdTable.size()-1;
+    if (max > dataTable->mjdTable.size())
+        max = dataTable->mjdTable.size();
 
+    dataTable->spectralIndex4Pol(min, max, 0.0);
 
-    for(int channel = 0; channel < dataTable->channelTable[0].size(); channel++)
-    {
-        // tworzymy bloki time series
-        vector < double > I_timeseries, I_timeseries_err;
-        vector < double > V_timeseries, V_timeseries_err;
-        vector < double > LHC_timeseries, LHC_timeseries_err;
-        vector < double > RHC_timeseries, RHC_timeseries_err;
-        vector < double > wynik(3);
-        // generujemy light_curves
-        for (int i = 0; i < dataTable->mjdTable.size(); i++)
-        {
-            // I
-            I_timeseries.push_back(dataTable->spectraTableI[i][channel]);
-            I_timeseries_err.push_back(dataTable->spectraTableIERR[i]);
-
-            // V
-            V_timeseries.push_back(dataTable->spectraTableV[i][channel]);
-            V_timeseries_err.push_back(dataTable->spectraTableVERR[i]);
-
-            // LHC
-            LHC_timeseries.push_back(dataTable->spectraTableLHC[i][channel]);
-            LHC_timeseries_err.push_back(dataTable->spectraTableLHCERR[i]);
-
-            // RHC
-            RHC_timeseries.push_back(dataTable->spectraTableRHC[i][channel]);
-            RHC_timeseries_err.push_back(dataTable->spectraTableRHCERR[i]);
-        }
-        // liczymy average
-        // I
-        wynik = spectral_index_from_lcs(min, max, I_timeseries, I_timeseries_err);
-        VI_I.push_back(wynik[0]);
-        FI_I.push_back(wynik[1]);
-        chi2_I.push_back(wynik[2]);
-        // V
-        wynik = spectral_index_from_lcs(min, max, V_timeseries, V_timeseries_err);
-        VI_V.push_back(wynik[0]);
-        FI_V.push_back(wynik[1]);
-        chi2_V.push_back(wynik[2]);
-        // LHC
-        wynik = spectral_index_from_lcs(min, max, LHC_timeseries, LHC_timeseries_err);
-        VI_LHC.push_back(wynik[0]);
-        FI_LHC.push_back(wynik[1]);
-        chi2_LHC.push_back(wynik[2]);
-        // RHC
-        wynik = spectral_index_from_lcs(min, max, RHC_timeseries, RHC_timeseries_err);
-        VI_RHC.push_back(wynik[0]);
-        FI_RHC.push_back(wynik[1]);
-        chi2_RHC.push_back(wynik[2]);
-
-    }
-
-    // -- zapisujemy do pliku --
-
-    ofstream integ;
-    string filename = working_directory + "/" + srcname + "_VI_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    integ.open(filename.c_str());
-    integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
-    {
-        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << VI_I[i] << "   " <<  VI_V[i] << "   " << VI_LHC[i] << "   " << VI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
-    }
-    integ.close();
-
-    string filenamefi = working_directory + "/" + srcname + "_FI_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    integ.open(filenamefi.c_str());
-    integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
-    {
-        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << FI_I[i] << "   " <<  FI_V[i] << "   " << FI_LHC[i] << "   " << FI_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
-    }
-    integ.close();
-
-    string filenamechi2 = working_directory + "/" + srcname + "_chi2_spind_epoch_" + to_string(min+1) + "_to_" + to_string(max+1) + ".DAT";
-    integ.open(filenamechi2.c_str());
-    integ << "# channel velocity I V LHC RHC " << endl;
-    for(int i = 0; i < dataTable->channelTable[0].size(); i++)
-    {
-        integ << fixed << setprecision(11) << dataTable->channelTable[0][i] << "   " <<  dataTable->velocityTable[0][i] << "   " << chi2_I[i] << "   " <<  chi2_V[i] << "   " << chi2_LHC[i] << "   " << chi2_RHC[i] << endl;// << "   " << averaged_over_time_LHC[i] << "   " << averaged_over_time_LHC_err[i] << "   " << averaged_over_time_RHC[i] << "   " << averaged_over_time_RHC_err[i] <<  endl;
-    }
-    integ.close();
-
-    averaged_over_time_I.clear();
-    averaged_over_time_V.clear();
-    averaged_over_time_LHC.clear();
-    averaged_over_time_RHC.clear();
-    averaged_over_time_I_err.clear();
-    averaged_over_time_V_err.clear();
-    averaged_over_time_LHC_err.clear();
-    averaged_over_time_RHC_err.clear();
-
-    // -- czyscimy tablice ch2 etc --
-    chi2_I.clear();
-    chi2_V.clear();
-    chi2_LHC.clear();
-    chi2_RHC.clear();
-    VI_I.clear();
-    VI_V.clear();
-    VI_LHC.clear();
-    VI_RHC.clear();
-    FI_I.clear();
-    FI_V.clear();
-    FI_LHC.clear();
-    FI_RHC.clear();
-
-
-    /*
-    cout << endl;
-    cout << "----> Spectral-indexed over epochs: " << min + 1 << " -> " << max + 1 << endl;
-    cout << "----> VI Saved to " << filename << endl;
-    cout << "----> FI Saved to " << filenamefi << endl;
-    cout << "----> chi2 Saved to " << filenamechi2 << endl;
-    cout << endl;
-    */
     string message;
-    message = "Spectral-indexed over epochs: " + to_string(min + 1) + " " + " -> " + to_string(max + 1) + "\n";
-    message = message + "VI Saved to " + filename + "\n";
-    message = message + "FI Saved to " + filenamefi + "\n";
-    message = message + "chi2 Saved to " + filenamechi2 + "\n";
+    message = "Spectral-indexed over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
+    message = message + "VI Saved to " + dataTable->getVIFileName(min, max) + "\n";
+    //message = message + "FI Saved to " + filenamefi + "\n";
+    //message = message + "chi2 Saved to " + filenamechi2 + "\n";
     close_window_for_spind();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
