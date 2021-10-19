@@ -2710,7 +2710,7 @@ void body::calculate_spectral_index()
     string message;
     message = "Spectral-indexed over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
     message = message + "VI Saved to " + dataTable->getVIFileName(min, max) + "\n";
-    //message = message + "FI Saved to " + filenamefi + "\n";
+    message = message + "FI Saved to " + dataTable->getFIFileName(min, max) + "\n";
     //message = message + "chi2 Saved to " + filenamechi2 + "\n";
     close_window_for_spind();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));

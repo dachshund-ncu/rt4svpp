@@ -94,6 +94,7 @@ public:
     // -- spectral index --
     void spectralIndex4Pol(int begin_epoch, int end_epoch, double relativeError = 0.0);
     std::string getVIFileName(int begin_epoch, int end_epoch);
+    std::string getFIFileName(int begin_epoch, int end_epoch);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -130,10 +131,18 @@ private:
     void saveAverOverTime(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & results, std::vector < double > & errors);
     // ----------------------
     // -- spectral index --
+    // vi
     std::vector < double > viSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     double viSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
-    std::vector < double > calculateMinAndMax(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     void saveVItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &VIContainer);
+    // fi
+    std::vector < double > fiSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    double fiSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    void saveFItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &FIContainer);
+    // chi2
+    std::vector < double > calculateMinAndMax(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+
+
 };
 
 #endif // SPECTRAL_CONTAINER_H

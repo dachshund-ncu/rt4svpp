@@ -10,12 +10,12 @@ void spectral_container::spectralIndex4Pol(int begin_epoch, int end_epoch, doubl
     VIContainer.push_back(viSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableV, spectraTableVERR, relativeError));
     VIContainer.push_back(viSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableLHC, spectraTableLHCERR, relativeError));
     VIContainer.push_back(viSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableRHC, spectraTableRHCERR, relativeError));
-    /*
+
     FIContainer.push_back(fiSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableI, spectraTableIERR, relativeError));
     FIContainer.push_back(fiSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableV, spectraTableIERR, relativeError));
     FIContainer.push_back(fiSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableLHC, spectraTableIERR, relativeError));
     FIContainer.push_back(fiSpectralIndex1Pol(begin_epoch, end_epoch, spectraTableRHC, spectraTableIERR, relativeError));
-
+    /*
     CHI2REDContainer.push_back(chi2SpectralIndex1Pol(begin_epoch, end_epoch, spectraTableI, spectraTableIERR, relativeError));
     CHI2REDContainer.push_back(chi2SpectralIndex1Pol(begin_epoch, end_epoch, spectraTableV, spectraTableIERR, relativeError));
     CHI2REDContainer.push_back(chi2SpectralIndex1Pol(begin_epoch, end_epoch, spectraTableLHC, spectraTableIERR, relativeError));
@@ -23,7 +23,19 @@ void spectral_container::spectralIndex4Pol(int begin_epoch, int end_epoch, doubl
     */
 
     saveVItoFile(begin_epoch, end_epoch, relativeError, VIContainer);
+    saveFItoFile(begin_epoch, end_epoch, relativeError, VIContainer);
 
+
+}
+
+std::vector < double > spectral_container::fiSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError)
+{
+    std::vector < double > spectrumOfFI( (int) poltab[begin_epoch-1].size());
+    for(unsigned long int i = 0; i < poltab[begin_epoch-1].size(); i++)
+    {
+        spectrumOfFI[i] = fiSpectralIndex1channel(i+1, begin_epoch, end_epoch, poltab, errors, relativeError);
+    }
+    return spectrumOfFI;
 }
 
 std::vector < double > spectral_container::viSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError)
@@ -37,6 +49,41 @@ std::vector < double > spectral_container::viSpectralIndex1Pol(int begin_epoch, 
 
 }
 
+double spectral_container::fiSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector<std::vector<double> > &poltab, std::vector<double> &errors, double relativeError)
+{
+    // TZW. STANDARDOWE UMIEJĘTNOŚCI MAGICZNE
+    double sum1 = 0.0;
+    double sum2 = 0.0;
+    double sum3 = 0.0;
+    double sum_to_mean = 0.0;
+    double counter_to_mean = 0.0;
+
+    // właściwa pętla licząca
+    for(int i = begin_epoch-1; i < end_epoch; i++)
+    {
+        double flux = poltab[i][channel-1];
+        double err = errors[i] + relativeError * flux;
+        double weight = 1.0 / err;
+        sum1 = sum1 + flux*flux * weight;
+        sum2 = sum2 + flux * weight;
+        sum3 = sum3 + weight;
+        sum_to_mean = sum_to_mean + flux;
+        counter_to_mean = counter_to_mean + 1.0;
+
+    }
+    sum_to_mean = sum_to_mean / counter_to_mean;
+    // obliczamy FI
+    double FI;
+    if ( (begin_epoch - end_epoch) == 0.0 || counter_to_mean == 1.0 || sum1 == 0.0 || sum2 == 0.0)
+        FI = 0.0;
+    else
+        FI = sqrt(abs((((sum1 - sum2)/(counter_to_mean-1.0)) - 1.0) * counter_to_mean / sum3)) * 1.0 / sum_to_mean;
+
+    if(FI < 0.0)
+        FI = 0.0;
+
+    return FI;
+}
 
 double spectral_container::viSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError)
 {
@@ -54,7 +101,6 @@ double spectral_container::viSpectralIndex1channel(int channel, int begin_epoch,
         VI = ((maxFlux - maxFluxError) - (minFlux + minFluxError)) / ((maxFlux - maxFluxError) + (minFlux + minFluxError));
 
     return VI;
-
 
 
 }
@@ -119,6 +165,13 @@ std::vector < double > spectral_container::calculateMinAndMax(int channel, int b
     return returned_container;
 }
 
+std::string spectral_container::getFIFileName(int begin_epoch, int end_epoch)
+{
+    std::string viFileName;
+    viFileName = saveDirectory + "/" + nameOfSource + "_FI_spectrum_from_epoch_" + std::to_string(begin_epoch) + "_to_" + std::to_string(end_epoch) + ".dat";
+    return viFileName;
+}
+
 std::string spectral_container::getVIFileName(int begin_epoch, int end_epoch)
 {
     std::string viFileName;
@@ -159,4 +212,39 @@ void spectral_container::saveVItoFile(int begin_epoch, int end_epoch, double rel
     }
     // zamykamy plik
     viFle.close();
+}
+
+void spectral_container::saveFItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector<std::vector<double> > &FIContainer)
+{
+    // otwieramy plik do zapistwania
+    std::ofstream fiFle;
+    fiFle.open(getFIFileName(begin_epoch, end_epoch).c_str());
+    int columnw = 13;
+    // piszemy nagłówek pliku
+    fiFle << "# ----------------------------------------------" << std::endl;
+    fiFle << "# FI from epoch " << begin_epoch << " to " << end_epoch << std::endl;
+    fiFle << "# time range (MJD): " << mjdTable[begin_epoch-1] << " to " << mjdTable[end_epoch-1] << std::endl;
+    fiFle << "# time range (ISO): " << isotimeTable[begin_epoch-1] << " to " << isotimeTable[end_epoch-1] << std::endl;
+    if (relativeError != 0.0)
+        fiFle << "# Applied relative calibration error of " << relativeError << std::endl;
+    fiFle << "# columns:" << std::endl;
+    fiFle << "# " << std::left << std::setw(columnw) << "channel "<< std::setw(columnw) << "V_lsr (km/s)  ";
+    fiFle << std::setw(columnw) << "I "<< std::setw(columnw) << "V ";
+    fiFle << std::setw(columnw) << "LHC ";
+    fiFle << std::setw(columnw) << "RHC " << std::endl;
+    fiFle << "# ----------------------------------------------" << std::endl;
+
+    // pętla, zapisująca dane
+    for (int i = 0; i < FIContainer[0].size(); i++)
+    {
+        fiFle << std::right << std::fixed << std::setprecision(7) << std::setw(12) << channelTable[begin_epoch-1][i] << " " << std::setw(12) << velocityTable[begin_epoch-1][i] << " ";
+        // dane (pętla po I,V,RHC,LHC)
+        for (int polind = 0; polind < 4; polind++)
+        {
+            fiFle << std::setw(12) << FIContainer[polind][i] << " ";
+        }
+        fiFle << std::endl;
+    }
+    // zamykamy plik
+    fiFle.close();
 }
