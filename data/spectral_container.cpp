@@ -945,12 +945,12 @@ std::string spectral_container::construct_isotime(double year, double month, dou
         minutestr = std::to_string((int)min);
     // second
     if (std::to_string((int)sec).length() == 1)
-        secondstr = string("0") + std::to_string(sec);
+        secondstr = string("0") + std::to_string((int)sec);
     else
-        secondstr = std::to_string(sec);
+        secondstr = std::to_string((int)sec);
 
     // zapisujemy do time...
-    time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr.replace(2,1,string("."));
+    time_in_isoformat = yearstr + string("-") + monthstr + string("-") + daystr + string("T") + hourstr + string(":") + minutestr + string(":") + secondstr;
 
     return time_in_isoformat;
 }

@@ -95,6 +95,7 @@ public:
     void spectralIndex4Pol(int begin_epoch, int end_epoch, double relativeError = 0.0);
     std::string getVIFileName(int begin_epoch, int end_epoch);
     std::string getFIFileName(int begin_epoch, int end_epoch);
+    std::string getChi2RedFileName(int begin_epoch, int end_epoch);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -135,14 +136,17 @@ private:
     std::vector < double > viSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     double viSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     void saveVItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &VIContainer);
+    std::vector < double > calculateMinAndMax(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     // fi
     std::vector < double > fiSpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     double fiSpectralIndex1channel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
     void saveFItoFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &FIContainer);
     // chi2
-    std::vector < double > calculateMinAndMax(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
-
-
+    std::vector < double > chi2SpectralIndex1Pol(int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    double chi2redFromSingleChannel (int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab, std::vector < double > & errors, double relativeError);
+    void saveChi2RedToFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &Chi2RedContainer);
+    // mean
+    double meanOfChannel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab);
 };
 
 #endif // SPECTRAL_CONTAINER_H
