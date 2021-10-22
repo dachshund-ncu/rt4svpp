@@ -13,7 +13,8 @@ SOURCES += \
     data/integrate.cpp \
     data/averovertime.cpp \
     data/wd.cpp \
-    data/spectralindex.cpp
+    data/spectralindex.cpp \
+    data/rotation.cpp
 
 HEADERS += \
     body.h \

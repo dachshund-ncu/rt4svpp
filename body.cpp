@@ -3273,126 +3273,15 @@ void body::rotate_slot_plus()
 
     string rotated_filename=dataTable->fileNamesTab[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
 
-    // -- rotowanie wlasciwe --
-    vector < double > tmpi;
-    vector < double > tmplhc;
-    vector < double > tmprhc;
-    vector < double > tmpv;
-
-    // -- dajemy warunek, czy checkbox jest zaznaczony --
-    if (rotate_all_pols->isChecked())
-    {
-        for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-        {
-            if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-            {
-                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
-                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
-                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
-                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
-            }
-            else
-            {
-                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
-                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
-                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
-                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
-            }
-         }
-
-        for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-        {
-            dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
-            dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
-            dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
-            dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
-        }
-    }
+    if(rotate_all_pols->isChecked())
+        dataTable->rotate(rotated_epoch + 1, ch, true, 1,1,1,1);
     else
-    {
-        if (I_pressed==1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
-                }
-             }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
-            }
-        }
-        else if (v_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
-            }
-        }
-        else if (lhc_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
-            }
-        }
-        else if (rhc_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
-            }
-        }
-    }
+        dataTable->rotate(rotated_epoch + 1, ch, true, I_pressed, v_pressed, lhc_pressed, rhc_pressed);
 
     // aktualizujemy widmo dynamiczne
     update_dynamic_spectrum();
     // -- dodajemy do listy rotowanych --
     append_to_rotated_lst(rotated_epoch);
-
     // -- ustawiamy wartosc "made rotation" na 1
     made_rotation = 1;
 
@@ -3404,159 +3293,22 @@ void body::rotate_slot_minus()
 {
     // czytamy z pola tekstowego, ile kanałów mamy przerotować
     read_number_of_rotated_channels();
-
+    // assignujemy to do zmiennej
+    int ch = number_of_rotated_channels; // liczba kanalow
     int rotated_epoch = xind; // epoka rotowania
-    int ch = dataTable->spectraTableI[rotated_epoch].size() - number_of_rotated_channels;
+
     string rotated_filename=dataTable->fileNamesTab[rotated_epoch]; // nazwa pliku, ktorego obserwacje rotujemy
 
-    // -- rotowanie wlasciwe --
-    vector < double > tmpi;
-    vector < double > tmplhc;
-    vector < double > tmprhc;
-    vector < double > tmpv;
-
-    /*
-    for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-    {
-        if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-        {
-            tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
-            tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
-            tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
-            tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
-        }
-        else
-        {
-            tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
-            tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
-            tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
-            tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
-        }
-        }
-
-    for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-    {
-        dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
-        dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
-        dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
-        dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
-    }
-    */
-
-    // -- dajemy warunek, czy checkbox jest zaznaczony --
-    if (rotate_all_pols->isChecked())
-    {
-        for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-        {
-            if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-            {
-                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
-                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
-                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
-                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
-            }
-            else
-            {
-                tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
-                tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
-                tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
-                tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
-            }
-         }
-
-        for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-        {
-            dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
-            dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
-            dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
-            dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
-        }
-    }
+    if(rotate_all_pols->isChecked())
+        dataTable->rotate(rotated_epoch + 1, ch, false, 1,1,1,1);
     else
-    {
-        if (I_pressed==1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmpi.push_back(dataTable->spectraTableI[rotated_epoch][(ch+i)-dataTable->spectraTableI[rotated_epoch].size()]);
-                }
-             }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableI[rotated_epoch][i] = tmpi[i];
-            }
-        }
-        else if (v_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmpv.push_back(dataTable->spectraTableV[rotated_epoch][(ch+i)-dataTable->spectraTableV[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableV[rotated_epoch][i] = tmpv[i];
-            }
-        }
-        else if (lhc_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmplhc.push_back(dataTable->spectraTableLHC[rotated_epoch][(ch+i)-dataTable->spectraTableRHC[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableLHC[rotated_epoch][i] = tmplhc[i];
-            }
-        }
-        else if (rhc_pressed == 1)
-        {
-            for (int i = 0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                if (ch+i < dataTable->spectraTableI[rotated_epoch].size())
-                {
-                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][ch+i]);
-                }
-                else
-                {
-                    tmprhc.push_back(dataTable->spectraTableRHC[rotated_epoch][(ch+i)-dataTable->spectraTableLHC[rotated_epoch].size()]);
-                }
-            }
-
-            for (int i=0; i < dataTable->spectraTableI[rotated_epoch].size(); i++)
-            {
-                dataTable->spectraTableRHC[rotated_epoch][i] = tmprhc[i];
-            }
-        }
-    }
+        dataTable->rotate(rotated_epoch + 1, ch, false, I_pressed, v_pressed, lhc_pressed, rhc_pressed);
 
     // aktualizujemy widmo dynamiczne
     update_dynamic_spectrum();
     // -- dodajemy do listy rotowanych --
     append_to_rotated_lst(rotated_epoch);
-    // -- ustalamy "made rotation" na 1
+    // -- ustawiamy wartosc "made rotation" na 1
     made_rotation = 1;
 
 }
@@ -8040,59 +7792,7 @@ void body::show_crosshair_gauss()
 // -- slot sprawia, że tworzone jest nowe I w wybranyej na widmie dynamicznym epoce --
 void body::make_new_I_and_V_for_epoch_on_dynspec()
 {
-    // -- czytamy numer epoki --
-    int epoch_number = xind;
-
-    // -- tworzymy tymczasowe kontenery --
-    vector < double > tmprec_LHCERR(dataTable->spectraTableLHC[epoch_number].size()); // deklarujemy dokładny rozmiar, by szybciej działało
-    vector < double > tmprec_RHCERR(dataTable->spectraTableRHC[epoch_number].size());
-    vector < double > tmprec_LHC(dataTable->spectraTableLHC[epoch_number].size());
-    vector < double > tmprec_RHC(dataTable->spectraTableRHC[epoch_number].size());
-
-    // -- pętla nr. 1 - zgrywanie informacji dot. LHC i RHC --
-    for (unsigned long int i = 0; i < dataTable->spectraTableLHC[epoch_number].size(); i++)
-    {
-        tmprec_LHC[i] = dataTable->spectraTableLHC[epoch_number][i];
-        tmprec_RHC[i] = dataTable->spectraTableRHC[epoch_number][i];
-        tmprec_LHCERR[i] = dataTable->spectraTableLHCERR[epoch_number];
-        tmprec_RHCERR[i] = dataTable->spectraTableRHCERR[epoch_number];
-    }
-
-    // -- pętla nr. 2 - zapisywanie infromacji na nowych tablicach --
-    for (unsigned long int i = 0; i < dataTable->spectraTableLHC[epoch_number].size(); i++)
-    {
-        dataTable->spectraTableI[epoch_number][i] = (tmprec_LHC[i] + tmprec_RHC[i]) / 2.0;
-        dataTable->spectraTableIERR[epoch_number] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
-
-        dataTable->spectraTableV[epoch_number][i] = (tmprec_RHC[i] - tmprec_LHC[i]) / 2.0;
-        dataTable->spectraTableVERR[epoch_number] = (tmprec_LHCERR[i] + tmprec_RHCERR[i]) / 2.0;
-
-    }
-
-    // -- dodajemy do listy edutowanych --
-    append_to_rotated_lst(epoch_number);
-    // -- ustalamy "made rotation" na 1
-    made_rotation = 1;
+    dataTable->recalculateIfromPols();
     // -- aktualizujemy widmo dynamiczne --
     update_dynamic_spectrum();
-    /*
-    for(int i = 0; i < dataTable->spectraTableRHC.size(); i++)
-    {
-        for (int k=0; k< dataTable->spectraTableRHC[i].size(); k++)
-        {
-            dataTable->spectraTableI[i][k] = (dataTable->spectraTableRHC[i][k] + dataTable->spectraTableLHC[i][k]) / 2.0;
-            dataTable->spectraTableIERR[i][k] = (RHCdataTable->spectraTableIERR[i][k] + LHCdataTable->spectraTableIERR[i][k]) / 2.0;
-        }
-    }
-
-    for(int i = 0; i < dataTable->spectraTableV.size(); i++)
-    {
-        for (int k=0; k< dataTable->spectraTableV[i].size(); k++)
-        {
-            dataTable->spectraTableV[i][k] = (dataTable->spectraTableRHC[i][k] - dataTable->spectraTableLHC[i][k]) / 2.0;
-            VdataTable->spectraTableIERR[i][k] = (RHCdataTable->spectraTableIERR[i][k] - LHCdataTable->spectraTableIERR[i][k]) / 2.0;
-        }
-    }
-    */
-
 }

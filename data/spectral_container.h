@@ -62,6 +62,8 @@ public:
     std::vector < std::string > fileTypeTab; // 1D kontener z nazwą typu pliku (FITS lub AVR)
     // nazwy plików
     std::vector < std::string > fileNamesTab; // nazwy plików [ścieżki absolutne]
+    // lista epok zmodyfikowanych
+    std::vector < int > listOfModified;
     // pojedyncze stałe
     std::string nameOfSource; // nazwa źródła
     std::string saveDirectory; // nazwa katalogu, w którym będą zapistwane pliki
@@ -96,6 +98,9 @@ public:
     std::string getVIFileName(int begin_epoch, int end_epoch);
     std::string getFIFileName(int begin_epoch, int end_epoch);
     std::string getChi2RedFileName(int begin_epoch, int end_epoch);
+    // -- rotacja widm --
+    void rotate(int epoch, int nChans=1, bool direction = true, bool Irot=true, bool Vrot=true, bool LHCrot=true, bool RHCrot=true);
+    void recalculateIfromPols(bool modified = true);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -147,6 +152,13 @@ private:
     void saveChi2RedToFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &Chi2RedContainer);
     // mean
     double meanOfChannel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab);
+    // ----------------------
+    // -- rotate --
+    void rotate1Pol(std::vector < std::vector  < double > > & poltab, int epoch, int nChans);
+    void addToListOfModified(int epoch);
+    bool checkIfOnTheList(int epoch, std::vector < int > & list);
+
+
 };
 
 #endif // SPECTRAL_CONTAINER_H
