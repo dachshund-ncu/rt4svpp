@@ -59,6 +59,8 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     // -- na początek - czyścimy kontenery --
     clearAllTables();
 
+    // -- komunikat w terminalu --
+    std::cout << "---> Loading files from QT list:" << std::endl;
     // -- i czytamy pliki zgodnie z listą --
     for(int i = 0; i < qtListaPlikow.size(); i++)
     {
@@ -256,7 +258,8 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     vlsrTable.push_back(vlsr);
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsystmp);
-
+    fileTypesTab.push_back(false);
+    AVRHeaders.push_back(getHeaderFromAVRFile(linesInFile));
     // srcname
     nameOfSource = srcname;
 
@@ -501,6 +504,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     freqsAndVels = doppler_track(overall_velocity, restfreq, freq_rang, nchans);
     std::vector < double > vels = freqsAndVels[1];
     std::vector < double > freqs = freqsAndVels[0];
+    std::vector < double > chans = freqsAndVels[2];
 
     // -- odwracamy tablice, by VEL było od najmniejszej --
     std::vector < double > lhc_rev((int) nchans), rhc_rev((int) nchans);
@@ -547,6 +551,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     spectraTableLHC.push_back(lhc);
     spectraTableRHC.push_back(rhc);
     velocityTable.push_back(vels);
+    channelTable.push_back(chans);
     // 1-D
     spectraTableIERR.push_back(rmsI);
     spectraTableVERR.push_back(rmsV);
@@ -564,7 +569,8 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     vlsrTable.push_back(vlsr);
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsys);
-
+    fileTypesTab.push_back(true);
+    AVRHeaders.push_back("");
     // nazwa źródła
     nameOfSource = sourcename;
 
@@ -605,7 +611,11 @@ void spectral_container::clearAllTables()
     bandWidthTable.clear();
     vlsrTable.clear();
 
-    fileTypeTab.clear();
+    fileTypesTab.clear();
+    fileNamesTab.clear();
+
+    AVRHeaders.clear();
+
 }
 
 // - sprawdza, czy wybrano psa -
@@ -959,4 +969,14 @@ void spectral_container::print_loaded_comm(int obsnum, std::string isotime, doub
 {
     // printuje komunikat o załadowanym pliku
     std::cout << "[" << obsnum << "]   " << isotime << "   rms: " << obs_error << std::endl;
+}
+
+std::string spectral_container::getHeaderFromAVRFile(std::vector<std::string> linesInFile)
+{
+    std::string tmpHeader = "";
+    for(int i = 0; i < 14; i++)
+    {
+        tmpHeader = tmpHeader + linesInFile[i] + "\n";
+    }
+    return tmpHeader;
 }

@@ -1376,14 +1376,19 @@ void body::load_time_series()
 
     }
 
-    // -- wczytujemy: jeśli nasza lista plików to AVR, wczyta się w try, jeśli to plik z listą - w catch --
     dataTable->loadDataFromList(fileName1);
+    //cout << fileName1.size() << endl;
     loaded_data = 1;
 
     if (single_spectrum_opened == 1)
     {
         kill_single_spectrum();
         display_single_spectrum();
+    }
+
+    if (dynamic_spectrum_opened == 1)
+    {
+        update_dynamic_spectrum();
     }
 
     if (geometry_window_set == 0)
@@ -1705,10 +1710,8 @@ void body::set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_c
     text_mjdlabel.append(string("MJD = "));
     text_mjdlabel.append(to_string(int(dataTable->mjdTable[x_index_cl])));
 
-
     text_mjdlabel.append(string("\nChannel: "));
     text_mjdlabel.append(to_string((int) dataTable->channelTable[x_index_cl][y_index_cl]));
-
     text_mjdlabel.append(string("\nVel: "));
 
     // Create an output string stream
@@ -1732,7 +1735,6 @@ void body::set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_c
     // ---------------
     // Prawy
     string cocochanel_txt = "";
-
     cocochanel_txt.append(string("Date: "));
     cocochanel_txt.append(to_string(int(dataTable->datetimeTable[x_index_cl][0])));
     cocochanel_txt.append(string(" "));
@@ -1785,7 +1787,6 @@ void body::set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_c
         std::string strObj3 = streamObj3.str();
         cocochanel_txt.append(strObj3);
     }
-
     cocochanel_txt.append(string("\n"));
     cocochanel_txt.append(string("Number: "));
     cocochanel_txt.append(to_string(x_index_cl+1));
@@ -2111,7 +2112,6 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     //first_item_position
     //inf_vel_line->anchor()
-
     // -- tworzymy krzywa blasku, ktora wyswietli sie w krzywej blasku --
     QVector < double > epoch(rozmiar_w_x), lcs_flux(rozmiar_w_x), error_lcs(rozmiar_w_x);
     if(I_pressed==1)
@@ -2219,7 +2219,6 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     set_down_IVLHCRHCbuttons();
     set_dynamic_spectrum_labels_for_clicked(xind, yind);
-
 
     // ----- dodatkowa rzecz ! ---------------
     // -- dodajemy odpowiednią kropkę na krzywej blasku --
@@ -3533,6 +3532,15 @@ void body::save_rotated_spectras()
         return;
     }
 
+    vector < int > lstw = dataTable->listOfModified;
+    dataTable->saveModifiedEpochs();
+
+    string message = "Saved edited spectra for epochs: ";
+    for(unsigned long int i = 0; i < lstw.size(); i++)
+    {
+        message = message + " " + to_string(lstw[i]);
+    }
+    /*
     // -- zmienne --
     int epoch; // epoka, będzie przechowywała w pętli informację, którą obserwację będziemy zapisywać. Jest to czysto pomocnicza zmienna
     string cpy_message = ""; // przechowuje informację, jaki tekst będzie na naszej wiadomości o wykonaniu backupa
@@ -3581,6 +3589,7 @@ void body::save_rotated_spectras()
     // -- wyświetlamy odpowiednie komunikaty --
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(cpy_message));
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    */
 
 }
 

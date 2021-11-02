@@ -42,6 +42,8 @@ public:
     std::vector < std::vector < double > > velocityTable; // 2d kontener z prędkościami radialnymi
     std::vector < std::vector < double > > channelTable; // 2d kontener z kanałami
     // - pozostałe kontenery z danymi -
+    // nagłówki plików avr
+    std::vector < std::string > AVRHeaders; // nagłówki plików AVR (1-D), dla plików fits to będzie wypełnione pustymi stringami
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
     std::vector < double >  jdTable; // 1D kontener z epokami (jd)
@@ -59,7 +61,6 @@ public:
     std::vector < double > vlsrTable; // 1D kontener z prędkościami centralnymi [Km/s]
     std::vector < std::string > isotimeTable; // 1D kontener z czasem w formacie ISO
     // czy plik to fits czy AVR
-    std::vector < std::string > fileTypeTab; // 1D kontener z nazwą typu pliku (FITS lub AVR)
     // nazwy plików
     std::vector < std::string > fileNamesTab; // nazwy plików [ścieżki absolutne]
     // lista epok zmodyfikowanych
@@ -68,6 +69,8 @@ public:
     std::string nameOfSource; // nazwa źródła
     std::string saveDirectory; // nazwa katalogu, w którym będą zapistwane pliki
     bool loadedData = false;
+    // czy czytamy fits czy avr
+    std::vector < bool > fileTypesTab;
 
     // - metody -
     // metoda inicjująca
@@ -101,6 +104,7 @@ public:
     // -- rotacja widm --
     void rotate(int epoch, int nChans=1, bool direction = true, bool Irot=true, bool Vrot=true, bool LHCrot=true, bool RHCrot=true);
     void recalculateIfromPols(bool modified = true);
+    void saveModifiedEpochs();
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -118,6 +122,7 @@ private:
     std::vector < double > loadPOLfromAVR(std::vector < std::string > linesInFile, int line_begin); // wczytuje I z pliku AVR, podanego w argumencie jako kontener stringów
     std::vector < std::vector < double > > doppler_track (double vlsr, double restfreq, double freq_rang, double nchans);
     std::string construct_isotime(double year, double month, double day, double hour, double min, double sec);
+    std::string getHeaderFromAVRFile(std::vector < std::string > linesInFile);
     void print_loaded_comm(int obsnum, std::string isotime, double obs_error);
     // -- całkowanie widma --
     double integrateSingleEpoch(int min_channel, int max_channel, std::vector < double > veltab, std::vector < double > poltab);
@@ -158,6 +163,10 @@ private:
     void addToListOfModified(int epoch);
     bool checkIfOnTheList(int epoch, std::vector < int > & list);
 
+    void makeBackupOfFile(int epoch, bool fits);
+
+    void saveActualTablesToFits(int epoch);
+    void saveActualTablesToAVR(int epoch);
 
 };
 
