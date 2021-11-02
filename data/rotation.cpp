@@ -241,7 +241,7 @@ void spectral_container::saveActualTablesToAVR(int epoch)
 
 void spectral_container::saveActualTablesToFits(int epoch)
 {
-    CCfits::FITS::setVerboseMode(true);
+    CCfits::FITS::setVerboseMode(false);
     // -- poczatkowe stale --
     std::string filename = fileNamesTab[epoch];
     // zapisujemy tablice odwrotnie
@@ -254,7 +254,7 @@ void spectral_container::saveActualTablesToFits(int epoch)
     }
 
     // -- otwieramy plik fits --
-    CCfits::FITS fitsFile(filename.c_str());
+    CCfits::FITS fitsFile(filename.c_str(), CCfits::Write);
     /*
     // -- otwieramy tymczasowy plik fits --
     CCfits::FITS fitsFileNew("jamnikowyFitsTymczasowy.fits", fitsFile);

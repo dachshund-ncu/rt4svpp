@@ -1388,7 +1388,7 @@ void body::load_time_series()
 
     if (dynamic_spectrum_opened == 1)
     {
-        update_dynamic_spectrum();
+        display_dynamic_spectrum();
     }
 
     if (geometry_window_set == 0)
