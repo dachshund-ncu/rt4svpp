@@ -22,6 +22,15 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
         return;
     }
 
+    // -- pasek postępu (albo nierządu) --
+    QProgressDialog postep;
+    postep.setLabelText("Loading files, please wait");
+    postep.setMinimum(0);
+    postep.setMaximum(lengthOfTheListFile(filesList));
+    postep.setVisible(true);
+    int licznik = 0;
+    // -----------------------------------
+
     // -- zdobywamy info o ścieżce całkowitej --
     QFileInfo infotmp (QString::fromStdString(listWithFilenames));
     std::string working_directory = infotmp.absolutePath().toStdString();
@@ -29,6 +38,7 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
 
     // bufor
     std::string bufor;
+
     // pętla
     while (filesList.good())
     {
@@ -42,6 +52,10 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
             // w argumencie podajemy ABSOLUTNĄ ścieżkę
             loadSingleSpectrumFromFile(working_directory + "/" + bufor);
         }
+
+        // do paska nierządu
+        licznik += 1;
+        postep.setValue(licznik);
     }
     filesList.close();
 
@@ -59,12 +73,22 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     // -- na początek - czyścimy kontenery --
     clearAllTables();
 
+    // -- pasek postępu (albo nierządu) --
+    QProgressDialog postep;
+    postep.setLabelText("Loading files, please wait");
+    postep.setMinimum(0);
+    postep.setMaximum(qtListaPlikow.size());
+    postep.setVisible(true);
+    // -----------------------------------
+
     // -- komunikat w terminalu --
     std::cout << "---> Loading files from QT list:" << std::endl;
     // -- i czytamy pliki zgodnie z listą --
     for(int i = 0; i < qtListaPlikow.size(); i++)
     {
         loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
+        postep.setValue(i);
+        QCoreApplication::processEvents();
     }
     // w liście zawsze będą absolutne ścieżki do plików
     // dlatego ekstrahujemy z jej pierwszego elementu
@@ -979,4 +1003,17 @@ std::string spectral_container::getHeaderFromAVRFile(std::vector<std::string> li
         tmpHeader = tmpHeader + linesInFile[i] + "\n";
     }
     return tmpHeader;
+}
+
+int spectral_container::lengthOfTheListFile(std::ifstream &lstfile)
+{
+    std::string bufor;
+    int licznik = 0;
+    while(lstfile.good())
+    {
+        std::getline(lstfile, bufor);
+        licznik += 1;
+    }
+    lstfile.seekg(0);
+    return licznik;
 }

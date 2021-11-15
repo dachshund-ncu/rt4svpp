@@ -105,11 +105,16 @@ public:
     void rotate(int epoch, int nChans=1, bool direction = true, bool Irot=true, bool Vrot=true, bool LHCrot=true, bool RHCrot=true);
     void recalculateIfromPols(bool modified = true);
     void saveModifiedEpochs();
+    // -- zapisywanie widm do gnuplota --
+    void saveSpectrum(int epoch);
+    void saveAllSpectra();
+    std::string getFileNameForAsciiSave(int epoch);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS
+    int lengthOfTheListFile(std::ifstream & lstfile);
     void bubbleSortEpochs();    // sortowanie bąbelkowe epokami
     void clearAllTables(); // czyści wszystkie kontenery (ale nie zwalnia pamięci)
     bool isPies(std::string fileName);    // sprawdza czy fits czy avr

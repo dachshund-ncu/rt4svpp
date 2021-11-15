@@ -2801,78 +2801,18 @@ void body::save_plots_from_single_spectrum()
     // -- petla, zapisujaca do plikow --
     for (int i = 0; i < count; i++)
     {
-        int epoch = numbers_of_epochs_on_single_spec[i];
-        string filename;
-        string avrname = dataTable->fileNamesTab[epoch];
-        avrname.erase(avrname.end()-7, avrname.end());
-
-        filename = avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
-
-        ofstream plik;
-        plik.open(filename);
-        plik << "# chan vel I er V er LHC er RHC er" << endl;
-        plik << fixed << setprecision(11) << "# freq: " << dataTable->restFreqsTable[epoch] << "   epoch: " << dataTable->mjdTable[epoch] << endl;
-        for (int ee = 0; ee < dataTable->channelTable[epoch].size(); ee++)
-        {
-            plik << fixed << setprecision(11) << dataTable->channelTable[epoch][ee] << "   " <<  dataTable->velocityTable[epoch][ee] << "   " << dataTable->spectraTableI[epoch][ee] << "   " << dataTable->spectraTableIERR[epoch] << "   " << dataTable->spectraTableV[epoch][ee] <<  "   " << dataTable->spectraTableVERR[epoch] <<  "   " << dataTable->spectraTableLHC[epoch][ee] <<  "   " << dataTable->spectraTableLHCERR[epoch] <<  "   " << dataTable->spectraTableRHC[epoch][ee] <<  "   " << dataTable->spectraTableRHCERR[epoch] << endl;
-        }
-        plik.close();
-        //cout << "----> Saved to " << filename << endl;
-        message = message + filename + "\n";
+        int epoch = numbers_of_epochs_on_single_spec[i]+1;
+        dataTable->saveSpectrum(epoch);
+        message += dataTable->getFileNameForAsciiSave(epoch) + "\n";
     }
     QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
 }
 
 void body::save_all_to_gnuplot_slot()
 {
-    // -- ilość źródeł --
-    unsigned long int count_for_gnuplot = dataTable->spectraTableI.size();
-
-    // -- pasek postepu --
-    QProgressDialog postep;//(&window);
-    postep.setLabelText("Saving files... please wait");
-    postep.setMinimum(0);
-    postep.setMaximum(count_for_gnuplot);
-    postep.setVisible(true);
-
-    // -- zapisujemy --
-    for (unsigned long int i = 0; i < count_for_gnuplot; i++)
-    {
-        // -- epoka ekstrahowana do innej zmiennej --
-        unsigned long int epoch = i;
-        // -- tworzymy zmienną do przechowywania pliku --
-        string filename;
-        string avrname = dataTable->fileNamesTab[epoch];
-        avrname.erase(avrname.end()-7, avrname.end());
-        if (loaded_from_listfile == 1)
-            filename = working_directory + "/" + avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
-        else
-            filename = avrname + to_string(int(dataTable->mjdTable[epoch])) + "_" + to_string(epoch+1) + "_spectrum.dat";
-        ofstream plik;
-        plik.open(filename);
-        plik << "# chan vel I er V er LHC er RHC er" << endl;
-        plik << fixed << setprecision(11) << "# freq: " << freqlst[epoch] << "   epoch: " << dataTable->mjdTable[epoch] << endl;
-        for (unsigned long int ee = 0; ee < dataTable->channelTable[epoch].size(); ee++)
-        {
-            plik << fixed << setprecision(11) << dataTable->channelTable[epoch][ee] << "   " <<  dataTable->velocityTable[epoch][ee] << "   " << dataTable->spectraTableI[epoch][ee] << "   " << dataTable->spectraTableIERR[epoch] << "   " << dataTable->spectraTableV[epoch][ee] <<  "   " << dataTable->spectraTableVERR[epoch] <<  "   " << dataTable->spectraTableLHC[epoch][ee] <<  "   " << dataTable->spectraTableLHCERR[epoch] <<  "   " << dataTable->spectraTableRHC[epoch][ee] <<  "   " << dataTable->spectraTableRHCERR[epoch] << endl;
-        }
-        plik.close();
-
-        // -- zwiększamy postęp paska postępu --
-        postep.setValue(postep.value()+1);
-        // -- coś tam robi, ale z tym też na wndowsie działa także... --
-        QCoreApplication::processEvents();
-
-
-    }
-
-    // -- piszemy odpowiednie powiadomienie --
-    string message;
-    // - do zamiany intów na takie majtki -
-    stringstream ss;
-    ss << count_for_gnuplot;
+    dataTable->saveAllSpectra();
     // - zapisujemy wiadomość -
-    message = "Saved all " +  ss.str() + " spectra to " + working_directory;
+    std::string message = "Saved all spectra to directory: " + dataTable->saveDirectory;
     // - wyświetlamy -
     QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
 }

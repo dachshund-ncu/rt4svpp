@@ -14,7 +14,8 @@ SOURCES += \
     data/averovertime.cpp \
     data/wd.cpp \
     data/spectralindex.cpp \
-    data/rotation.cpp
+    data/rotation.cpp \
+    data/savespectrumtoascii.cpp
 
 HEADERS += \
     body.h \
