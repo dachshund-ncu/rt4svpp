@@ -15,12 +15,14 @@ SOURCES += \
     data/wd.cpp \
     data/spectralindex.cpp \
     data/rotation.cpp \
-    data/savespectrumtoascii.cpp
+    data/savespectrumtoascii.cpp \
+    UI/vbox_main.cpp
 
 HEADERS += \
     body.h \
     data/spectral_container.h \
     libs/qcustomplot.h \
+    UI/vbox_main.h
 
 RESOURCES += \
     resources.qrc

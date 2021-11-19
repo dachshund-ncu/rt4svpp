@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <CCfits/CCfits>
 #include "data/spectral_container.h"
-
+#include "UI/vbox_main.h"
 using namespace std;
 
 class body : public QObject
@@ -26,6 +26,9 @@ class body : public QObject
 
 public:
     body(const char * nazwa);
+
+    // ------------------------------
+    vbox_mainw * left_hand_list = new vbox_mainw;
 
     // -- do przechowywania danych --
     spectral_container * dataTable = new spectral_container;
