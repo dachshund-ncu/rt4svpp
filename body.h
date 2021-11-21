@@ -28,7 +28,7 @@ public:
     body(const char * nazwa);
 
     // ------------------------------
-    vbox_mainw * left_hand_list = new vbox_mainw;
+    vbox_mainw * left_hand_list = new vbox_mainw(this);
 
     // -- do przechowywania danych --
     spectral_container * dataTable = new spectral_container;
@@ -39,7 +39,6 @@ public:
     // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
     // - WIDGET -
     QWidget * gauss_fitting_widget = new QWidget(&window);
-
 
     // - customploty -
     QCustomPlot * spectrum_w_gauss = new QCustomPlot(gauss_fitting_widget);
@@ -54,13 +53,13 @@ public:
     // - buttony -
     QPushButton * fit_gauss = new QPushButton(gauss_fitting_widget);
     QPushButton * kill_gauss = new QPushButton(&window);
-    QPushButton * open_gauss = new QPushButton(&window);
     QPushButton * prev_epoch = new QPushButton(gauss_fitting_widget);
     QPushButton * next_epoch = new QPushButton(gauss_fitting_widget);
     QPushButton * set_clicker_gauss = new QPushButton(gauss_fitting_widget);
     QPushButton * change_bounds = new QPushButton(gauss_fitting_widget);
     QPushButton * set_range_to_fit_limits = new QPushButton(gauss_fitting_widget);
     QPushButton * set_range_to_data = new QPushButton(gauss_fitting_widget);
+
 
     // - groupboxy -
     QGroupBox * fitted_params_gb = new QGroupBox("Fitted parameters");
@@ -188,28 +187,22 @@ public:
     // ---------------------------------------------------------------------
 
     // -- group boxy --
-    //QVBoxLayout loaders_layout;
-    //QGroupBox loaders;
-    QPushButton * load_data = new QPushButton(&window); // przyciski
-    QPushButton * reload = new QPushButton(&window);
-    QPushButton * dynamic_spectrum = new QPushButton(&window);
-    QPushButton * kill_dynspec = new QPushButton(&window);
-
     // -- glowne widgety --
+
     QWidget * dynamic_spectrum_widget = new QWidget(&window);
+
+    QPushButton * kill_dynspec = new QPushButton(dynamic_spectrum_widget);
+
+
     QWidget * single_spectrum_widget = new QWidget(&window);
     QWidget * rms_section_widget = new QWidget(&window);
 
     QCustomPlot * colorbar_widget = new QCustomPlot();
     QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
 
-    // - opcjonalne mniej ważne checkboxy -
-    QCheckBox * dark_mode_switch = new QCheckBox ("Darth Mode", &window);
     // - integrate -
     // widget
     QWidget * integrate_widget = new QWidget(&window);
-    // button do glownego vboxa
-    QPushButton * integrate_button = new QPushButton(&window);
     // butonny do widgetu
     QPushButton * make_int2 = new QPushButton(integrate_widget);
     QPushButton * cancel_int = new QPushButton(integrate_widget);
@@ -229,7 +222,6 @@ public:
     // widget
     QWidget * aver_over_vel_widget = new QWidget(&window);
     // button do glownego vboxa
-    QPushButton * aver_over_velocity = new QPushButton(&window);
     // buttony do widgetu
     QPushButton * make_aver_over_vel = new QPushButton(aver_over_vel_widget);
     QPushButton * cancel_aver_over_vel = new QPushButton(aver_over_vel_widget);
@@ -250,7 +242,6 @@ public:
     // widget
     QWidget * aver_over_time_widget = new QWidget(&window);
     // button do glownego vboxa
-    QPushButton * aver_over_time = new QPushButton(&window);
     // buttony do widgetu
     QPushButton * make_aver_over_time = new QPushButton(aver_over_time_widget);
     QPushButton * cancel_aver_over_time = new QPushButton(aver_over_time_widget);
@@ -269,7 +260,6 @@ public:
     // - spectral index -
     QWidget * aver_over_spi_widget = new QWidget(&window);
     // button do glownego vboxa
-    QPushButton * spectral_index = new QPushButton(&window);
     // buttony do widgetu
     QPushButton * make_aver_over_spi = new QPushButton(aver_over_spi_widget);
     QPushButton * cancel_aver_over_spi = new QPushButton(aver_over_spi_widget);
@@ -288,7 +278,6 @@ public:
     // - ex_dynsp -
     QWidget * ex_dynsp_widget = new QWidget(&window);
     // button do glownego vboxa
-    QPushButton * WD = new QPushButton(&window);
     // buttony do widgetu
     QPushButton * make_ex_dynsp = new QPushButton(ex_dynsp_widget);
     QPushButton * cancel_ex_dynsp = new QPushButton(ex_dynsp_widget);
@@ -314,7 +303,6 @@ public:
     // - widget -
     QWidget * calibrate_widget = new QWidget(&window);
     // - button do glownego vboxa -
-    QPushButton * calibrate = new QPushButton(&window);
     // buttony do widgetu
     QPushButton * load_caltab_l1 = new QPushButton(calibrate_widget);
     QPushButton * load_caltab_r1 = new QPushButton(calibrate_widget);
@@ -360,15 +348,7 @@ public:
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
-    // -- labele do listy przyciskow --
-    QLabel * load_data_section_label = new QLabel(&window);
-    QLabel * wiev_data_section_label = new QLabel(&window);
-    QLabel * export_data_section_label = new QLabel(&window);
-    QLabel * others_section_label = new QLabel(&window);
 
-
-    QPushButton * quit = new QPushButton(&window);
-    QPushButton * single_spectrum = new QPushButton(&window);
     QPushButton * kill_singspec = new QPushButton(&window);
 
     // -----------
@@ -405,9 +385,6 @@ public:
 
     QStringList AVRNAMES_from_load;
 
-    // -- do sprawdzania, czy user chce eksportować czas również w formacie pytime --
-    QCheckBox * include_pytime = new QCheckBox ("Include time in isoformat", &window);
-
     
     // -- do robienia pliku z widmem dynamicznym --
     //QPushButton * WD_start = new QPushButton(&window);
@@ -416,7 +393,6 @@ public:
 
     // -- do robienia sekcji rms vs czas --
     // - buttony -
-    QPushButton * open_rms_section = new QPushButton(&window);
     QPushButton * kill_rms_section = new QPushButton(&window);
     QPushButton * recalculate_integration = new QPushButton(rms_section_widget);
     QPushButton * export_rms_vs_tme = new QPushButton(rms_section_widget);
@@ -544,7 +520,6 @@ public:
     QLabel value;
     //QWidget for_vboxmain;
     //QVBoxLayout * vbox_main = new QVBoxLayout(&for_vboxmain);
-    QVBoxLayout vbox_main;
     QVBoxLayout * on_dyn_spec_buttons = new QVBoxLayout();
 
 
@@ -792,7 +767,6 @@ public:
 
     // --  stale narzedzia --
     vector < string > pytime_format;
-    vector < double > tsyslst;
     vector < double > jdlst;
     vector < double > mjdlst;
     vector < double > yrlst;
@@ -882,6 +856,7 @@ public:
     void save_new_cols_in_fits_file(string fitsfilename, vector < double > lhc, vector < double > rhc);
 
     bool check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path);
+    //void connectToSlotsVboxMain();
     //void read_chan4int();
 private:
     void set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_cl);

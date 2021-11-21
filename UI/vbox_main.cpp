@@ -1,13 +1,13 @@
 #include "vbox_main.h"
+#include <iostream>
 
-vbox_mainw::vbox_mainw(QWidget *parent, const char * name)
+vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 {
     makeProperSizeForButtons();
     makeProperLabelsForButtons();
     setupLabels();
-
+    connectToSlots(parent);
     addEverythingToWidget();
-    this->setGeometry(this->x(), this->y(), 300, 720);
     this->setVisible(true);
 }
 
@@ -81,6 +81,9 @@ void vbox_mainw::setupLabels()
     VisualSectionLabel->setFont(f);
     ExportAndAnalysisLabel->setFont(f);
     OthersLabel->setFont(f);
+
+    // checkbox
+    DarthMode->setChecked(true);
 }
 
 void vbox_mainw::addEverythingToWidget()
@@ -109,8 +112,38 @@ void vbox_mainw::addEverythingToWidget()
     VboxGrid->addWidget(OthersLabel,           12,0, 1, 2);
     VboxGrid->addWidget(Calibrate,             13,0, 1, 1);
     VboxGrid->addWidget(Quit,                  13,1, 1, 1);
-
-
-
-
 }
+
+void vbox_mainw::appendWidget(QWidget *widget)
+{
+    // liczymy rowy i kolumny
+    int row_count = this->VboxGrid->rowCount();
+
+    this->VboxGrid->addWidget(widget, row_count + 1, 0, 1, 2);
+}
+
+void vbox_mainw::deleteWidgetFromList(QWidget *widget)
+{
+    this->VboxGrid->removeWidget(widget);
+}
+
+
+void vbox_mainw::connectToSlots(QObject *parent)
+{
+    QObject::connect(Quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
+    QObject::connect(LoadAVRFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
+    QObject::connect(LoadFITSFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
+    QObject::connect(Integrate, SIGNAL(clicked()), parent, SLOT(calculate_integrate_for_time_series_with_buttons()));
+    QObject::connect(SingleSpectrum, SIGNAL(clicked()), parent, SLOT(display_single_spectrum()));
+    QObject::connect(DynamicSpectrum, SIGNAL(clicked()), parent, SLOT(display_dynamic_spectrum()));
+    QObject::connect(AverOverVelocity, SIGNAL(clicked()), parent, SLOT(calculate_aver_over_velocity_for_time_series_with_buttons()));
+    QObject::connect(AverOverTime, SIGNAL(clicked()), parent, SLOT(calculate_aver_over_time_for_time_series_with_buttons()));
+    QObject::connect(SpectralIndex, SIGNAL(clicked()), parent, SLOT(calculate_spectral_index_for_time_series_with_buttons()));
+    QObject::connect(Reload, SIGNAL(clicked()), parent, SLOT(reload_slot()));
+    QObject::connect(Calibrate, SIGNAL(clicked()), parent, SLOT(open_cal_layout()));
+    QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(open_dynspectum_layout()));
+    QObject::connect(RMSSection, SIGNAL(clicked()), parent, SLOT(open_rms_section_slot()));
+    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(set_dark_mode()));
+    QObject::connect(GaussFitting, SIGNAL(clicked()), parent, SLOT(open_gauss_widget()));
+}
+

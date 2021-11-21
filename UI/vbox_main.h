@@ -16,7 +16,7 @@ class vbox_mainw : public QWidget
 {
 public:
     // konstruktor
-    vbox_mainw(QWidget *parent = 0, const char * name = 0);
+    vbox_mainw(QObject *parent = 0, const char * name = 0);
 
     // dzieci - buttony
     // -- load --
@@ -51,12 +51,16 @@ public:
     QLabel * ExportAndAnalysisLabel = new QLabel(this);
     QLabel * OthersLabel = new QLabel(this);
 
+
+public:
+    void appendWidget(QWidget * widget);
+    void deleteWidgetFromList(QWidget * widget);
 private:
     void makeProperSizeForButtons();
     void makeProperLabelsForButtons();
     void setupLabels();
     void addEverythingToWidget();
-    void connectToSlots();
+    void connectToSlots(QObject * parent);
 };
 
 #endif // VBOX_MAIN_H

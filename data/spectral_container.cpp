@@ -3,7 +3,7 @@
 // - metoda inicjująca klasę -
 spectral_container::spectral_container()
 {
-    //std::cout << "Utworzono kontener spektralny!" << std::endl;
+
 }
 
 

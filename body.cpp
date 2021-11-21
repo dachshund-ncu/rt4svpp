@@ -23,7 +23,6 @@ using namespace CCfits;
 // -- konstruktor klasy programu --
 body::body(const char * nazwa)
 {
-
     srand(QDateTime::currentDateTime().toTime_t());
     Q_INIT_RESOURCE(resources);
 
@@ -45,15 +44,8 @@ body::body(const char * nazwa)
     set_log_scale->setVisible(false);
 
     // -- sizepolicy --
-    load_data->setMaximumSize(10000,10000);
-    dynamic_spectrum->setMaximumSize(10000,10000);
-    kill_dynspec->setMaximumSize(10000,10000);
     kill_singspec->setMaximumSize(10000,10000);
-    integrate_button->setMaximumSize(10000,10000);
-    quit->setMaximumSize(10000,10000);
-    aver_over_velocity->setMaximumSize(10000,10000);
-    aver_over_time->setMaximumSize(10000,10000);
-    spectral_index->setMaximumSize(10000,10000);
+
     y_down_border->setMaximumSize(10000,30);
     y_up_border->setMaximumSize(10000,30);
     x_left_border->setMaximumSize(10000,30);
@@ -62,44 +54,34 @@ body::body(const char * nazwa)
     Vbut->setMaximumSize(10000,30);
     LHCbut->setMaximumSize(10000,30);
     RHCbut->setMaximumSize(10000,30);
-    single_spectrum->setMaximumSize(10000,10000);
-    spectral_index->setMaximumSize(10000,10000);
+
+
     list_of_observations->setMaximumSize(10000,10000);
     save_plots_on_single_spectrum->setMaximumSize(10000,10000);
     display_plot_on_single_spectrum->setMaximumSize(10000,10000);
     set_default_range_button->setMaximumSize(10000,10000);
     erase_last_graph->setMaximumSize(10000,10000);
+
     flag->setMaximumSize(10000,10000);
     rotate->setMaximumSize(10000,10000);
     make_lcs_button->setMaximumSize(10000,10000);
-    reload->setMaximumSize(10000,10000);
     rotate_minus->setMaximumSize(10000,10000);
     save_rotation->setMaximumSize(10000,10000);
     number_of_rotated_channels_texted->setMaximumSize(60,30);
-    calibrate->setMaximumSize(10000,10000);
+
     load_caltab_l1->setMaximumSize(10000,10000);
     load_caltab_r1->setMaximumSize(10000,10000);
+
     start_calibration->setMaximumSize(10000,10000);
     caltab_l1_path->setMaximumSize(10000,10000);
     caltab_r1_path->setMaximumSize(10000,10000);
-    WD->setMaximumSize(10000,10000);
-    open_rms_section->setMaximumSize(10000,10000);
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
-    open_gauss->setMaximumSize(10000,10000);
     kill_gauss->setMaximumSize(10000,10000);
     recreate_I_button->setMaximumSize(10000,10000);
 
 
-    load_data->setMinimumSize(0,0);
-    dynamic_spectrum->setMinimumSize(0,0);
-    kill_dynspec->setMinimumSize(0,0);
-    integrate_button->setMinimumSize(0,0);
-    quit->setMinimumSize(0,0);
-    aver_over_velocity->setMinimumSize(0,0);
-    aver_over_time->setMinimumSize(0,0);
-    spectral_index->setMinimumSize(0,0);
     y_down_border->setMinimumSize(0,0);
     y_up_border->setMinimumSize(0,0);
     x_left_border->setMinimumSize(0,0);
@@ -108,8 +90,7 @@ body::body(const char * nazwa)
     Vbut->setMinimumSize(0,0);
     LHCbut->setMinimumSize(0,0);
     RHCbut->setMinimumSize(0,0);
-    single_spectrum->setMinimumSize(0,0);
-    spectral_index->setMinimumSize(0,0);
+
     kill_singspec->setMinimumSize(0,0);
     save_plots_on_single_spectrum->setMinimumSize(0,0);
     display_plot_on_single_spectrum->setMinimumSize(0,0);
@@ -118,95 +99,35 @@ body::body(const char * nazwa)
     flag->setMinimumSize(0,0);
     rotate->setMinimumSize(0,0);
     make_lcs_button->setMinimumSize(0,0);
-    reload->setMinimumSize(0,0);
+
     rotate_minus->setMinimumSize(0,0);
     save_rotation->setMinimumSize(0,0);
     number_of_rotated_channels_texted->setMinimumSize(0,0);
-    calibrate->setMinimumSize(0,0);
+
     load_caltab_l1->setMinimumSize(0,0);
     load_caltab_r1->setMinimumSize(0,0);
     start_calibration->setMinimumSize(0,0);
-    WD->setMinimumSize(0,0);
-    open_rms_section->setMinimumSize(0,0);
+
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
     save_all_spectra_to_gnuplot->setMinimumSize(0,0);
-    open_gauss->setMinimumSize(0,0);
     kill_gauss->setMinimumSize(0,0);
     recreate_I_button->setMinimumSize(0,0);
 
-    // - font (do labelow) -
-    QFont f( "Arial", 10, QFont::Bold);
-
-    // -- ustalamy teksty naszych labelow --
-    load_data_section_label->setText("Loading");
-    load_data_section_label->setFont(f);
-    wiev_data_section_label->setText("Visualisation");
-    wiev_data_section_label->setFont(f);
-    export_data_section_label->setText("Export & analysis");
-    export_data_section_label->setFont(f);
-    others_section_label->setText("Others");
-    others_section_label->setFont(f);
-
-    //loaders.setTitle("loaders");
-    //loaders.setVisible(true);
-    //loaders_layout.addWidget(&reload);
-    //loaders_layout.addWidget(&load_data);
-    //loaders_layout.addStretch(1);
-    //loaders.setLayout(&loaders_layout);
-    // -- dodajemy do głównego paska przycisków --
-    //vbox_main.addWidget(butters);
-
-    vbox_main.addWidget(load_data_section_label);
-    //vbox_main.addWidget(&loaders);
-    vbox_main.addWidget(reload);
-    vbox_main.addWidget(load_data);
-
-    vbox_main.addWidget(wiev_data_section_label);
-    vbox_main.addWidget(dark_mode_switch);
-    vbox_main.addWidget(dynamic_spectrum);
-    vbox_main.addWidget(single_spectrum);
-    vbox_main.addWidget(open_rms_section);
-    vbox_main.addWidget(open_gauss);
-
-    vbox_main.addWidget(export_data_section_label);
-    vbox_main.addWidget(include_pytime);
-    vbox_main.addWidget(integrate_button);
-    vbox_main.addWidget(aver_over_velocity);
-    vbox_main.addWidget(aver_over_time);
-    vbox_main.addWidget(spectral_index);
-    vbox_main.addWidget(WD);
-
-    vbox_main.addWidget(others_section_label);
-    vbox_main.addWidget(calibrate);
-    vbox_main.addWidget(quit);
-
-    grid->addLayout(&vbox_main, 0,0,9,1);
+    grid->addWidget(left_hand_list, 0,0,9,1);
     grid->setColumnStretch(0,1);
 
 
     // -- dodajemy napis do przycisku --
-    dynamic_spectrum->setText("Dynamic spectrum");
-    single_spectrum->setText("Single spectrum");
-    load_data->setText("Load AVR files");
-    integrate_button->setText("Integrate");
-    quit->setText("Quit");
-    aver_over_time->setText("Aver over time");
-    aver_over_velocity->setText("Aver over velocity");
-    spectral_index->setText("Spectral index");
     make_lcs_button->setText("Make lc");
     rotate->setText("Rotate +");
     rotate_minus->setText("Rotate -");
     save_rotation->setText("Save");
     flag->setText("Flag");
-    reload->setText("Reload");
-    calibrate->setText("Calibrate");
+
     load_caltab_l1->setText("Load LHC caltab");
     load_caltab_r1->setText("Load RHC caltab");
     start_calibration->setText("START");
-    WD->setText("Export file for dynamic spectrum");
-    open_rms_section->setText("RMS, Tsys, Sint vs time");
-    open_gauss->setText("Gaus fitting");
 
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
@@ -215,24 +136,7 @@ body::body(const char * nazwa)
 
     // -- connectujemy przycisk do slotu --
     //QObject::connect(&quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection); // wylaczanie &QApplication::closeAllWindows
-    QObject::connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
-    QObject::connect(load_data, SIGNAL(clicked()), this, SLOT(load_time_series()));
-    //QObject::connect(&integrate_button, SIGNAL(clicked()), this, SLOT(integrate_time_series()));
-    QObject::connect(integrate_button, SIGNAL(clicked()), this, SLOT(calculate_integrate_for_time_series_with_buttons()));
-    QObject::connect(single_spectrum, SIGNAL(clicked()), this, SLOT(display_single_spectrum()));
-    QObject::connect(dynamic_spectrum, SIGNAL(clicked()), this, SLOT(display_dynamic_spectrum()));
-    //QObject::connect(&aver_over_velocity, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity()));
-    QObject::connect(aver_over_velocity, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity_for_time_series_with_buttons()));
-    QObject::connect(aver_over_time, SIGNAL(clicked()), this, SLOT(calculate_aver_over_time_for_time_series_with_buttons()));
-    //QObject::connect(&aver_over_time, SIGNAL(clicked()), this, SLOT(calculate_aver_over_time()));
-    //QObject::connect(&spectral_index, SIGNAL(clicked()), this, SLOT(calculate_spectral_index()));
-    QObject::connect(spectral_index, SIGNAL(clicked()), this, SLOT(calculate_spectral_index_for_time_series_with_buttons()));
-    QObject::connect(reload, SIGNAL(clicked()), this, SLOT(reload_slot()));
-    QObject::connect(calibrate, SIGNAL(clicked()), this, SLOT(open_cal_layout()));
-    QObject::connect(WD, SIGNAL(clicked()), this, SLOT(open_dynspectum_layout()));
-    QObject::connect(open_rms_section, SIGNAL(clicked()), this, SLOT(open_rms_section_slot()));
-    QObject::connect(dark_mode_switch, SIGNAL(clicked()), this, SLOT(set_dark_mode()));
-    QObject::connect(open_gauss, SIGNAL(clicked()), this, SLOT(open_gauss_widget()));
+
     QObject::connect(kill_gauss, SIGNAL(clicked()), this, SLOT(close_gauss_widget()));
 
     // -- setujemy widgety roznych sekcji --
@@ -272,13 +176,16 @@ body::body(const char * nazwa)
     }
     */
     // -- domyślnie ustawiamy dark mode --
-    dark_mode_switch->setChecked(1);
     set_dark_mode();
 
     // -- pokazujemy okno --
     window.show();
 
 }
+
+// --- connectujemy ---
+// łączymy buttony z innymi metodami
+
 
 // -------------------------------------------------------------------------------
 // -- funkcje, ustawiajace widgety (wywolywane na poczatku programu i tylko wtedy)
@@ -1227,7 +1134,7 @@ void body::display_single_spectrum()
     grid->addWidget(single_spectrum_widget, 0,1,9,5);
 
     // -- dodajemy kill singspec do vboxa --
-    vbox_main.addWidget(kill_singspec);
+    left_hand_list->appendWidget(kill_dynspec);
 
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
@@ -1326,7 +1233,8 @@ void body::kill_single_spectrum()
     // - odpinamy od grida -
     grid->removeWidget(single_spectrum_widget);
     // - odpinamy od vboxa -
-    vbox_main.removeWidget(kill_singspec);
+    left_hand_list->deleteWidgetFromList(kill_dynspec);
+
     // - znikamy -
     single_spectrum_widget->setVisible(false);
     kill_singspec->setVisible(false);
@@ -1446,7 +1354,7 @@ void body::integrate_time_series()
         max = dataTable->spectraTableI[0].size();
 
     // --- całka właściwa ---
-    dataTable->integrate4Pols(min, max, include_pytime->isChecked());
+    dataTable->integrate4Pols(min, max, left_hand_list->IsotimeInclude->isChecked());
 
     // --- wiadomość końcowa ---
     string message = "";
@@ -1553,7 +1461,8 @@ void body::display_dynamic_spectrum()
     grid->addWidget(dynamic_spectrum_widget, 0,1,9,5);
 
     // -- dodajemy do vbox maina przycisk killujacy dynspec --
-    vbox_main.addWidget(kill_dynspec);
+    //vbox_main.addWidget(kill_dynspec);
+    left_hand_list->appendWidget(kill_dynspec);
 
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
@@ -1616,7 +1525,8 @@ void body::kill_dynamic_spectrum()
     grid->removeWidget(dynamic_spectrum_widget);
 
     // -- odpinamy przycisk od vboxa --
-    vbox_main.removeWidget(kill_dynspec);
+    left_hand_list->deleteWidgetFromList(kill_dynspec);
+
     kill_dynspec->setVisible(false);
 
     // -- ustalamy boola --
@@ -2156,7 +2066,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    if(!dark_mode_switch->isChecked())
+    if(!left_hand_list->DarthMode->isChecked())
         errorBars->setPen(QPen(QColor(180,180,180)));
     else
         errorBars->setPen(QPen(QColor(105,105,105)));
@@ -2244,7 +2154,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
 
 
     single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
-    if(dark_mode_switch->isChecked())
+    if(left_hand_list->DarthMode->isChecked())
         single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
     else
         single_dynamic_spectrum.graph(2)->setPen(pen2);
@@ -2274,7 +2184,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
         y_dot_lcs[0] = dataTable->spectraTableV[xind][yind]; // kliknięta gęstość strumienia
     // -- stylistyka --
     lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
-    if(dark_mode_switch->isChecked())
+    if(left_hand_list->DarthMode->isChecked())
         lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
     else
         lcs_dynamic_spectrum.graph(2)->setPen(pen2);
@@ -2282,7 +2192,7 @@ void body::press_map_met(unsigned long int x, unsigned long int y)
     lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
 
     // -- dark i light mode --
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
     {
         single_dynamic_spectrum.graph(0)->setPen(graph_dark);
         lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
@@ -2410,7 +2320,7 @@ void body::calculate_aver_over_velocity()
         max = dataTable->spectraTableI[0].size();
 
     // liczymy aver over velocity
-    dataTable->averageOverVelocity4Pols(min, max, include_pytime->isChecked());
+    dataTable->averageOverVelocity4Pols(min, max, left_hand_list->IsotimeInclude->isChecked());
 
     string message = "";
     message = "Averaged over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
@@ -2891,7 +2801,7 @@ void body::calculate_integrate_for_time_series_with_buttons()
     integrate_window_opened = 1;
 
     // - dodajemy widget do glownego vboxa -
-    vbox_main.addWidget(integrate_widget);
+    left_hand_list->appendWidget(integrate_widget);
 
     // - pokazujemy widget -
     integrate_widget->setVisible(true);
@@ -2904,7 +2814,7 @@ void body::close_window_for_integrate()
     // -- znikamy widget --
     integrate_widget->setVisible(false);
     // -- odpinamy od vboxa --
-    vbox_main.removeWidget(integrate_widget);
+    left_hand_list->deleteWidgetFromList(integrate_widget);
     // -- ustawiamy boola na 0 --
     integrate_window_opened = 0;
 }
@@ -2931,7 +2841,7 @@ void body::calculate_spectral_index_for_time_series_with_buttons()
     ending_channel_spi->setText(QString::fromStdString(to_string(dataTable->spectraTableI.size())));
 
     // - przypinamy do vboxa -
-    vbox_main.addWidget(aver_over_spi_widget);
+    left_hand_list->appendWidget(aver_over_spi_widget);
 
     // - pokazujemy -
     aver_over_spi_widget->setVisible(true);
@@ -2947,7 +2857,7 @@ void body::close_window_for_spind()
     aver_over_spi_widget->setVisible(false);
 
     // - odpinamy od vboxa -
-    vbox_main.removeWidget(aver_over_spi_widget);
+    left_hand_list->deleteWidgetFromList(aver_over_spi_widget);
 
     // - usrtawiamy boola -
     spind_window_opened = 0;
@@ -2990,7 +2900,7 @@ void body::calculate_aver_over_velocity_for_time_series_with_buttons()
     aver_over_velocity_window_opened = 1;
 
     // - przypinamy do vboxa -
-    vbox_main.addWidget(aver_over_vel_widget);
+    left_hand_list->appendWidget(aver_over_vel_widget);
 
     // - pokazujemy -
     aver_over_vel_widget->setVisible(true);
@@ -3002,7 +2912,7 @@ void body::close_window_for_aver_over_velocity()
     // - znikamy widget -
     aver_over_vel_widget->setVisible(false);
     // - odpinamy od vboxa -
-    vbox_main.removeWidget(aver_over_vel_widget);
+    left_hand_list->deleteWidgetFromList(aver_over_vel_widget);
     // - ustalamy boola -
     aver_over_velocity_window_opened = 0;
 }
@@ -3032,7 +2942,7 @@ void body::calculate_aver_over_time_for_time_series_with_buttons()
     aver_over_time_window_opened = 1;
 
     // - przypinamy do vboxa -
-    vbox_main.addWidget(aver_over_time_widget);
+    left_hand_list->appendWidget(aver_over_time_widget);
 
     // - pokazujemy -
     aver_over_time_widget->setVisible(true);
@@ -3045,7 +2955,7 @@ void body::close_window_for_aver_over_time()
     aver_over_time_widget->setVisible(false);
 
     // - odpinamy od vboxa -
-    vbox_main.removeWidget(aver_over_time_widget);
+    left_hand_list->deleteWidgetFromList(aver_over_time_widget);
 
     // - zmieniamy boola -
     aver_over_time_window_opened = 0;
@@ -3114,7 +3024,7 @@ void body::make_lcs_slot()
     min = yind + 1;
     max = yind + 1;
 
-    dataTable->averageOverVelocity4Pols(min, max, include_pytime->isChecked());
+    dataTable->averageOverVelocity4Pols(min, max, left_hand_list->IsotimeInclude->isChecked());
 
     string message = "";
     message = "Created lc over channel " + to_string(min) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
@@ -3746,8 +3656,7 @@ void body::open_cal_layout()
     }
 
     // -- dodajemy do vboxa --
-    vbox_main.addWidget(calibrate_widget);
-
+    left_hand_list->appendWidget(calibrate_widget);
     // -- ustawiamy visibility --
     calibrate_widget->setVisible(true);
 
@@ -3763,7 +3672,7 @@ void body::close_cal_layout()
     calibrate_widget->setVisible(false);
 
     // -- odpinamy od vboxa --
-    vbox_main.removeWidget(calibrate_widget);
+    left_hand_list->deleteWidgetFromList(calibrate_widget);
 
     // -- ustawiamy boola --
     calibration_section_opened = 0;
@@ -4582,7 +4491,7 @@ void body::update_dynamic_spectrum()
 
     errorBars->setAntialiased(false);
     errorBars->setDataPlottable(lcs_dynamic_spectrum.graph(0));
-    if(!dark_mode_switch->isChecked())
+    if(!left_hand_list->DarthMode->isChecked())
         errorBars->setPen(QPen(QColor(180,180,180)));
     else
         errorBars->setPen(QPen(QColor(105,105,105)));
@@ -4668,7 +4577,7 @@ void body::update_dynamic_spectrum()
 
 
     single_dynamic_spectrum.graph(2)->setData(x_dot_spec, y_dot_spec);
-    if(dark_mode_switch->isChecked())
+    if(left_hand_list->DarthMode->isChecked())
         single_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
     else
         single_dynamic_spectrum.graph(2)->setPen(pen2);
@@ -4700,7 +4609,7 @@ void body::update_dynamic_spectrum()
     // -- stylistyka --
     lcs_dynamic_spectrum.graph(2)->setData(x_dot_lcs, y_dot_lcs);
 
-    if(dark_mode_switch->isChecked())
+    if(left_hand_list->DarthMode->isChecked())
         lcs_dynamic_spectrum.graph(2)->setPen(QPen(Qt::magenta));
     else
         lcs_dynamic_spectrum.graph(2)->setPen(pen2);
@@ -4709,7 +4618,7 @@ void body::update_dynamic_spectrum()
     lcs_dynamic_spectrum.graph(2)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
 
     // -- dark i light mode --
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
     {
         single_dynamic_spectrum.graph(0)->setPen(graph_dark);
         lcs_dynamic_spectrum.graph(0)->setPen(graph_dark);
@@ -4790,8 +4699,7 @@ void body::open_dynspectum_layout()
     }
 
     // przypinamy do vboxa
-    vbox_main.addWidget(ex_dynsp_widget);
-
+    left_hand_list->appendWidget(ex_dynsp_widget);
     // ustalamy visibility
     ex_dynsp_widget->setVisible(true);
 
@@ -4804,7 +4712,7 @@ void body::close_dynspectrum_layout()
     // -- znikamy --
     ex_dynsp_widget->setVisible(false);
     // -- odpinamy od vboxa --
-    vbox_main.removeWidget(ex_dynsp_widget);
+    left_hand_list->deleteWidgetFromList(ex_dynsp_widget);
     // -- ustalamy boola --
     wd_section_opened = 0;
 }
@@ -4873,7 +4781,7 @@ void body::export_file_for_dynamic_spectrum()
     if (max_epoch > dataTable->mjdTable.size())
         max_epoch = dataTable->mjdTable.size();
 
-    dataTable->saveDynamicSpectrumToFile(min_epoch, max_epoch, min, max, include_pytime->isChecked());
+    dataTable->saveDynamicSpectrumToFile(min_epoch, max_epoch, min, max, left_hand_list->IsotimeInclude->isChecked());
 
     // wiadomość końcowa
     string message = "";
@@ -4936,12 +4844,11 @@ void body::open_rms_section_slot()
     show_lns->setVisible(true);
     rect_zoom->setVisible(true);
     selection_of_point->setVisible(true);
-
     // dodajemy do grida widget sekcji
     grid->addWidget(rms_section_widget, 0, 1, 9, 5);
 
     // dodajemy zamykający button do głównego panelu
-    vbox_main.addWidget(kill_rms_section);
+    left_hand_list->appendWidget(kill_rms_section);
 
     // ustalamy szerokość kolumn
     grid->setColumnStretch(1,1);
@@ -4951,7 +4858,6 @@ void body::open_rms_section_slot()
     grid->setColumnStretch(5,2);
 
     rms_section_opened = 1;
-
     set_plot_on_rms_vs_time();
     set_plot_on_int_vs_time();
     set_plot_on_tsys_vs_time();
@@ -4984,7 +4890,7 @@ void body::close_rms_section_slot()
 
     // odpinamy od grida
     grid->removeWidget(rms_section_widget);
-    vbox_main.removeWidget(kill_rms_section);
+    left_hand_list->deleteWidgetFromList(kill_rms_section);
     /*
     // ustalamy szerokość kolumn
     grid->setColumnStretch(1,1);
@@ -5033,7 +4939,7 @@ void body::set_plot_on_rms_vs_time()
         rms_vs_time.graph(0)->setVisible(false);
     }
     rms_vs_time.graph(0)->setName("I");
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         rms_vs_time.graph(0)->setPen(graph_dark);
     else
         rms_vs_time.graph(0)->setPen(graph_light);
@@ -5050,7 +4956,7 @@ void body::set_plot_on_rms_vs_time()
         rms_vs_time.graph(1)->setVisible(false);
     }
     rms_vs_time.graph(1)->setName("V");
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         rms_vs_time.graph(1)->setPen(QPen(Qt::white));
     else
         rms_vs_time.graph(1)->setPen(QPen(Qt::black));
@@ -5178,14 +5084,14 @@ void body::set_plot_on_tsys_vs_time()
     for(unsigned int i = 0; i < dataTable->spectraTableI.size(); i++)
     {
         xI[i] = dataTable->mjdTable[i];
-        yI[i] = tsyslst[i];
+        yI[i] = dataTable->tsysTable[i];
     }
     // -- graphy --
     // -- dodajemy grafike (I) --
     tsys_vs_time.addGraph();
 
     tsys_vs_time.graph(0)->setName("I");
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         tsys_vs_time.graph(0)->setPen(graph_dark);
     else
         tsys_vs_time.graph(0)->setPen(graph_light);
@@ -5338,7 +5244,7 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(0)->setVisible(false);
     }
     int_vs_time.graph(0)->setName("I");
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         int_vs_time.graph(0)->setPen(graph_dark);
     else
         int_vs_time.graph(0)->setPen(graph_light);
@@ -5356,7 +5262,7 @@ void body::set_plot_on_int_vs_time()
         int_vs_time.graph(1)->setVisible(false);
     }
     int_vs_time.graph(1)->setName("V");
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         int_vs_time.graph(1)->setPen(QPen(Qt::white));
     else
         int_vs_time.graph(1)->setPen(QPen(Qt::black));
@@ -5690,7 +5596,7 @@ void body::exp_sint_vs_time()
     string filename = working_directory + "/" + srcname + "_integrated_flux_density_" + to_string(min_rms_int_channel+1) + "_to_" + to_string(max_rms_int_channel+1) +  ".DAT";
     integ.open(filename.c_str());
 
-    if(include_pytime->isChecked())
+    if(left_hand_list->IsotimeInclude->isChecked())
     {
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year I err V err LHC err RHC err" << endl;
@@ -5728,7 +5634,7 @@ void body::exp_rms_vs_time()
     string filename = working_directory + "/" + srcname + "_rms_vs_time.DAT";
     integ.open(filename.c_str());
 
-    if(include_pytime->isChecked())
+    if(left_hand_list->IsotimeInclude->isChecked())
     {
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year RMS_I RMS_V RMS_LHC RMS_RHC" << endl;
@@ -5773,7 +5679,7 @@ void body::exp_tsys_vs_time()
     string filename = working_directory + "/" + srcname + "_tsys_vs_time.DAT";
     integ.open(filename.c_str());
 
-    if(include_pytime->isChecked())
+    if(left_hand_list->IsotimeInclude->isChecked())
     {
         // wpisujemy naglowek do pliku
         integ << "# time_in_isoformat MJD year Tsys (K)" << endl;
@@ -5781,7 +5687,7 @@ void body::exp_tsys_vs_time()
         for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            integ << fixed << setprecision(11) << pytime_format[i] << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << dataTable->tsysTable[i] << endl;
             //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
         //cout << "Zaznaczono pytime" << endl;
@@ -5794,7 +5700,7 @@ void body::exp_tsys_vs_time()
         for(int i = 0; i < dataTable->spectraTableI.size(); i++)
         {
             // wrzucamy wszystko do pliku
-            integ << fixed << setprecision(11) << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << tsyslst[i] << endl;
+            integ << fixed << setprecision(11) << "   " << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << dataTable->tsysTable[i] << endl;
             //integ << fixed << setprecision(11) << dataTable->mjdTable[i] << "   " << yrlst[i] << "   " << integrated_fluxlst_I[i] << "  " <<  integrated_fluxlst_V[i] << "   " << integrated_fluxlst_LHC[i] << "   " << integrated_fluxlst_RHC[i] << endl;
         }
     }
@@ -5822,7 +5728,7 @@ void body::cross_hair_rms_vs_time(QMouseEvent * event)
     y = rms_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         pen.setColor(Qt::white);
     else
         pen.setColor(Qt::black);
@@ -5843,7 +5749,7 @@ void body::cross_hair_rms_vs_time(QMouseEvent * event)
     string tekst;
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     rms_csh_label->setText(tekst.c_str());
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
     {
         rms_csh_label->setColor(Qt::white);
     }
@@ -5875,7 +5781,7 @@ void body::cross_hair_tsys_vs_time(QMouseEvent * event)
     y = tsys_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         pen.setColor(Qt::white);
     else
         pen.setColor(Qt::black);
@@ -5897,7 +5803,7 @@ void body::cross_hair_tsys_vs_time(QMouseEvent * event)
     string tekst;
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     tsys_csh_label->setText(tekst.c_str());
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
     {
         tsys_csh_label->setColor(Qt::white);
     }
@@ -5928,7 +5834,7 @@ void body::cross_hair_tint_vs_time(QMouseEvent * event)
     y = int_vs_time.yAxis->pixelToCoord(event -> pos().y());
     //cout << x << "   " << y << endl;
     QPen pen;
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
         pen.setColor(Qt::white);
     else
         pen.setColor(Qt::black);
@@ -5951,7 +5857,7 @@ void body::cross_hair_tint_vs_time(QMouseEvent * event)
     tekst = "    X: " + to_string(x) + "\n" + "Y: " + to_string(y) + "\n\n";
     tint_csh_label->setText(tekst.c_str());
 
-    if (dark_mode_switch->isChecked())
+    if (left_hand_list->DarthMode->isChecked())
     {
         tint_csh_label->setColor(Qt::white);
     }
@@ -6139,7 +6045,7 @@ void body::select_on_rms_section(double x)
     //tsys_vs_time
     QVector < double > Ytsys(1), Xtsys(1);
     Xtsys[0] = dataTable->mjdTable[xind];
-    Ytsys[0] = tsyslst[xind];
+    Ytsys[0] = dataTable->tsysTable[xind];
     tsys_vs_time.graph(1)->setData(Xtsys,Ytsys);
     tsys_vs_time.replot();
     //rms_vs_time
@@ -6206,7 +6112,7 @@ void body::open_popup_window()
  // -- wykres --
  spectrum_on_popup_window.clearGraphs();
  QVector < double > I_pop(dataTable->spectraTableI[xind].size()), V_pop(dataTable->spectraTableI[xind].size()), LHC_pop((dataTable->spectraTableI[xind].size())), RHC_pop(dataTable->spectraTableI[xind].size()), VEL_pop(dataTable->spectraTableI[xind].size());
- for (int i = 0; i < dataTable->spectraTableI[xind].size(); i++)
+ for (int i = 0; i < (int) dataTable->spectraTableI[xind].size(); i++)
  {
      I_pop[i] = dataTable->spectraTableI[xind][i];
      V_pop[i] = dataTable->spectraTableV[xind][i];
@@ -6226,7 +6132,7 @@ void body::open_popup_window()
  }
  spectrum_on_popup_window.graph(0)->setName("I");
 
- if(dark_mode_switch->isChecked())
+ if(left_hand_list->DarthMode->isChecked())
      spectrum_on_popup_window.graph(0)->setPen(graph_dark);
  else
      spectrum_on_popup_window.graph(0)->setPen(graph_light);
@@ -6244,7 +6150,7 @@ void body::open_popup_window()
      spectrum_on_popup_window.graph(1)->setVisible(false);
  }
  spectrum_on_popup_window.graph(1)->setName("V");
- if (dark_mode_switch->isChecked())
+ if (left_hand_list->DarthMode->isChecked())
      spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::white));
  else
      spectrum_on_popup_window.graph(1)->setPen(QPen(Qt::black));
@@ -6372,7 +6278,7 @@ void body::set_label_on_popup_window()
 
     label_to_popup_window += "Date (YYYY MM DD): " + yearstr + " " + monthstr + " " + daystr + "\n\n";
 
-    label_to_popup_window += "Tsys: " + to_string(tsyslst[xind]) +"\n\n";
+    label_to_popup_window += "Tsys: " + to_string(dataTable->tsysTable[xind]) +"\n\n";
     label_to_popup_window += "RMS (I): " + to_string(dataTable->spectraTableIERR[xind]) +"\n";
     label_to_popup_window += "RMS (V): " + to_string(dataTable->spectraTableVERR[xind]) +"\n";
     label_to_popup_window += "RMS (LHC): " + to_string(dataTable->spectraTableLHCERR[xind]) +"\n";
@@ -7292,7 +7198,7 @@ void body::open_gauss_widget()
 
 
     // dodajemy zamykający button do głównego panelu
-    vbox_main.addWidget(kill_gauss);
+    left_hand_list->appendWidget(kill_gauss);
 
     // ustalamy visibilities
     gauss_fitting_widget->setVisible(true);
@@ -7313,7 +7219,7 @@ void body::close_gauss_widget()
     kill_gauss->setVisible(false);
 
     // -- odpinamy od rozmiarowkarzow --
-    vbox_main.removeWidget(kill_gauss);
+    left_hand_list->deleteWidgetFromList(kill_gauss);
     grid->removeWidget(gauss_fitting_widget);
 
     // -- ustawiamy boole --

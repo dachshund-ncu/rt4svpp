@@ -23,14 +23,12 @@ int main(int argc, char *argv[])
     if (argc > 1)
     {
         body * okno = new body(argv[1]);
-        return program.exec();
-
     }
     else
     {
         body * okno = new body("");
-        return program.exec();
     }
+    return program.exec();
     // -- probojemy czytac podane w argumencie --
     //return program.exec();
 }
