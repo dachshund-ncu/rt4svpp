@@ -5,6 +5,7 @@
  * dwa checkboxy etc.
  * layout będzie oparty na gridzie, nie jak poprzednio na QVboxLayout
  */
+#include "integrate_widget.h"
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
@@ -51,16 +52,26 @@ public:
     QLabel * ExportAndAnalysisLabel = new QLabel(this);
     QLabel * OthersLabel = new QLabel(this);
 
+    bool setctionOpened = 0;
+
+
 
 public:
     void appendWidget(QWidget * widget);
     void deleteWidgetFromList(QWidget * widget);
+public slots:
+    // -- integrate --
+    //void openInt();
+    //void closeInt();
+    // -- averOverVel --
+    // i tak dalej...
 private:
     void makeProperSizeForButtons();
     void makeProperLabelsForButtons();
     void setupLabels();
     void addEverythingToWidget();
     void connectToSlots(QObject * parent);
+    void closeAnySection();
 };
 
 #endif // VBOX_MAIN_H

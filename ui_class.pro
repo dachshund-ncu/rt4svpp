@@ -16,13 +16,15 @@ SOURCES += \
     data/spectralindex.cpp \
     data/rotation.cpp \
     data/savespectrumtoascii.cpp \
-    UI/vbox_main.cpp
+    UI/vbox_main.cpp \
+    UI/integrate_widget.cpp
 
 HEADERS += \
     body.h \
     data/spectral_container.h \
     libs/qcustomplot.h \
-    UI/vbox_main.h
+    UI/vbox_main.h \
+    UI/integrate_widget.h
 
 RESOURCES += \
     resources.qrc

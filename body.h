@@ -17,6 +17,7 @@
 #include <CCfits/CCfits>
 #include "data/spectral_container.h"
 #include "UI/vbox_main.h"
+#include "UI/integrate_widget.h"
 using namespace std;
 
 class body : public QObject
@@ -29,6 +30,12 @@ public:
 
     // ------------------------------
     vbox_mainw * left_hand_list = new vbox_mainw(this);
+    integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)");
+    integrate_widget * averOverVelocityWidget = new integrate_widget(this, "A.O.V. (channels)");
+    integrate_widget * averOverTimeWidget = new integrate_widget(this, "A.O.T. (epochs)");
+    integrate_widget * SpectralIndexWidget = new integrate_widget(this, "S.I. (epochs)");
+    // -------------------------------
+
 
     // -- do przechowywania danych --
     spectral_container * dataTable = new spectral_container;
@@ -199,81 +206,6 @@ public:
 
     QCustomPlot * colorbar_widget = new QCustomPlot();
     QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
-
-    // - integrate -
-    // widget
-    QWidget * integrate_widget = new QWidget(&window);
-    // butonny do widgetu
-    QPushButton * make_int2 = new QPushButton(integrate_widget);
-    QPushButton * cancel_int = new QPushButton(integrate_widget);
-    // layouty do widgetu
-    QVBoxLayout * integration_layout = new QVBoxLayout(integrate_widget);
-    QHBoxLayout * start_integration_channels = new QHBoxLayout();
-    QHBoxLayout * end_integration_channels = new QHBoxLayout();
-    QHBoxLayout * integration_buttons = new QHBoxLayout();
-    // text edity
-    QTextEdit * starting_channel_int = new QTextEdit(integrate_widget);
-    QTextEdit * ending_channel_int = new QTextEdit(integrate_widget);
-    // labele
-    QLabel * start_label_int = new QLabel(integrate_widget);
-    QLabel * end_label_int = new QLabel(integrate_widget);
-
-    // - aver over velocity -
-    // widget
-    QWidget * aver_over_vel_widget = new QWidget(&window);
-    // button do glownego vboxa
-    // buttony do widgetu
-    QPushButton * make_aver_over_vel = new QPushButton(aver_over_vel_widget);
-    QPushButton * cancel_aver_over_vel = new QPushButton(aver_over_vel_widget);
-    // layouty do widgetu
-    QVBoxLayout * aver_over_vel_layout = new QVBoxLayout(aver_over_vel_widget);
-    QHBoxLayout * start_aver_over_vel_channels = new QHBoxLayout();
-    QHBoxLayout * end_aver_over_vel_channels = new QHBoxLayout();
-    QHBoxLayout * aver_over_vel_buttons = new QHBoxLayout();
-    // text edity
-    QTextEdit * starting_channel_aov = new QTextEdit(aver_over_vel_widget);
-    QTextEdit * ending_channel_aov = new QTextEdit(aver_over_vel_widget);
-    // labele
-    QLabel * start_label_aov = new QLabel(aver_over_vel_widget);
-    QLabel * end_label_aov = new QLabel(aver_over_vel_widget);
-
-
-    // - aver over time -
-    // widget
-    QWidget * aver_over_time_widget = new QWidget(&window);
-    // button do glownego vboxa
-    // buttony do widgetu
-    QPushButton * make_aver_over_time = new QPushButton(aver_over_time_widget);
-    QPushButton * cancel_aver_over_time = new QPushButton(aver_over_time_widget);
-    // layouty do widgetu
-    QVBoxLayout * aver_over_time_layout = new QVBoxLayout(aver_over_time_widget);
-    QHBoxLayout * start_aver_over_time_channels = new QHBoxLayout();
-    QHBoxLayout * end_aver_over_time_channels = new QHBoxLayout();
-    QHBoxLayout * aver_over_time_buttons = new QHBoxLayout();
-    // text edity
-    QTextEdit * starting_channel_time = new QTextEdit(aver_over_time_widget);
-    QTextEdit * ending_channel_time = new QTextEdit(aver_over_time_widget);
-    // labele
-    QLabel * start_label_time = new QLabel(aver_over_time_widget);
-    QLabel * end_label_time = new QLabel(aver_over_time_widget);
-
-    // - spectral index -
-    QWidget * aver_over_spi_widget = new QWidget(&window);
-    // button do glownego vboxa
-    // buttony do widgetu
-    QPushButton * make_aver_over_spi = new QPushButton(aver_over_spi_widget);
-    QPushButton * cancel_aver_over_spi = new QPushButton(aver_over_spi_widget);
-    // layouty do widgetu
-    QVBoxLayout * aver_over_spi_layout = new QVBoxLayout(aver_over_spi_widget);
-    QHBoxLayout * start_aver_over_spi_channels = new QHBoxLayout();
-    QHBoxLayout * end_aver_over_spi_channels = new QHBoxLayout();
-    QHBoxLayout * aver_over_spi_buttons = new QHBoxLayout();
-    // text edity
-    QTextEdit * starting_channel_spi = new QTextEdit(aver_over_spi_widget);
-    QTextEdit * ending_channel_spi = new QTextEdit(aver_over_spi_widget);
-    // labele
-    QLabel * start_label_spi = new QLabel(aver_over_spi_widget);
-    QLabel * end_label_spi = new QLabel(aver_over_spi_widget);
 
     // - ex_dynsp -
     QWidget * ex_dynsp_widget = new QWidget(&window);
@@ -597,7 +529,6 @@ public slots:
     // -- METODY - do przyciskow --
     void display_single_spectrum();
     void load_time_series();
-    void integrate_time_series();
     void kill_single_spectrum();
 
     void set_dynamic_spectrum_widget();
@@ -608,10 +539,6 @@ public slots:
     void set_single_spectrum_widget();
     void plot_single_spectrum();
 
-    void set_integrate_widget();
-    void set_aver_over_vel_widget();
-    void set_aver_over_time_widget();
-    void set_spectral_index_widget();
     void set_wd_widget();
     void set_calibrate_widget();
 
@@ -625,21 +552,12 @@ public slots:
     void set_V_on_dynamic_spectrum();
     void set_RHC_on_dynamic_spectrum();
     void set_LHC_on_dynamic_spectrum();
-    void calculate_aver_over_velocity();
-    void calculate_aver_over_time();
-    void calculate_spectral_index();
+
     void combo_box_display();
     void set_default_range();
     void remove_selected_graph();
     void save_plots_from_single_spectrum();
-    void calculate_integrate_for_time_series_with_buttons();
-    void close_window_for_integrate();
-    void calculate_spectral_index_for_time_series_with_buttons();
-    void close_window_for_spind();
-    void calculate_aver_over_velocity_for_time_series_with_buttons();
-    void close_window_for_aver_over_velocity();
-    void calculate_aver_over_time_for_time_series_with_buttons();
-    void close_window_for_aver_over_time();
+
     void reload_slot();
     void make_lcs_slot();
     void flag_slot();
@@ -804,7 +722,6 @@ public:
     double mean_rms_LHC = 0.0;
     double mean_rms_RHC = 0.0;
 
-    void integrate_single(int min, int max, unsigned int marker);
     void read_chan4rms();
     void press_map_met(unsigned long int x, unsigned long int y);
 
@@ -858,10 +775,30 @@ public:
     bool check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path);
     //void connectToSlotsVboxMain();
     //void read_chan4int();
-private:
+public slots:
     void set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_cl);
-
-
+    // --- POBOCZNE SEKCJE DO EKSPORTU ---
+    // -- metody pomocnicze --
+    std::vector < int > readMinMaxValuesFromChannels(QTextEdit & minChannelTE, QTextEdit & maxChannelTE);
+    std::vector < int > readMinMaxValuesFromEpochs(QTextEdit & minEpochlTE, QTextEdit & maxEpochlTE);
+    void closeOtherSections();
+    void connectSectionsToSlots();
+    // -- integrate --
+    void integrate_time_series();
+    void openIntegrateSection();
+    void closeIntegrateSection();
+    // -- aver over velocity --
+    void calculate_aver_over_velocity();
+    void openAOVSection();
+    void closeAOVSection();
+    // -- aver over time --
+    void openAOTSection();
+    void closeAOTSection();
+    void calculate_aver_over_time();
+    // -- spectral index --
+    void openSPINDSection();
+    void closeSPINDSection();
+    void calculate_spectral_index();
 };
 
 #endif // BODY_H

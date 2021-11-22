@@ -80,6 +80,7 @@ body::body(const char * nazwa)
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
     kill_gauss->setMaximumSize(10000,10000);
     recreate_I_button->setMaximumSize(10000,10000);
+    kill_dynspec->setMaximumSize(10000,10000);
 
 
     y_down_border->setMinimumSize(0,0);
@@ -114,6 +115,8 @@ body::body(const char * nazwa)
     kill_gauss->setMinimumSize(0,0);
     recreate_I_button->setMinimumSize(0,0);
 
+    kill_dynspec->setMinimumSize(0,0);
+
     grid->addWidget(left_hand_list, 0,0,9,1);
     grid->setColumnStretch(0,1);
 
@@ -144,12 +147,10 @@ body::body(const char * nazwa)
     set_dynamic_spectrum_widget();
     set_rms_section_widget();
     set_gauss_widget();
-    set_integrate_widget();
-    set_aver_over_vel_widget();
-    set_aver_over_time_widget();
-    set_spectral_index_widget();
     set_wd_widget();
     set_calibrate_widget();
+
+    connectSectionsToSlots();
 
     //cout << "Widgets set" << endl;
 
@@ -536,185 +537,6 @@ void body::set_rms_section_widget()
     connect(int_vs_time.yAxis, SIGNAL(rangeChanged(QCPRange)), int_vs_time.yAxis2, SLOT(setRange(QCPRange)));
     connect(spectrum_on_popup_window.xAxis, SIGNAL(rangeChanged(QCPRange)), spectrum_on_popup_window.xAxis2, SLOT(setRange(QCPRange)));
     connect(spectrum_on_popup_window.yAxis, SIGNAL(rangeChanged(QCPRange)), spectrum_on_popup_window.yAxis2, SLOT(setRange(QCPRange)));
-
-}
-
-void body::set_integrate_widget()
-{
-    // - size policy -
-    integrate_widget->setMaximumSize(100000,150);
-
-    // - przy starcie nie chcemy go widziec -
-    integrate_widget->setVisible(false);
-    // - rozmiaty text editow -
-    starting_channel_int->setMaximumSize(100,30);
-    ending_channel_int->setMaximumSize(100,30);
-
-    starting_channel_int->setMinimumSize(0,0);
-    ending_channel_int->setMinimumSize(0,0);
-
-    // - rozmiaty przyciskow -
-    cancel_int->setMinimumSize(0,0);
-    make_int2->setMinimumSize(0,0);
-
-    // - teksty na przyciskach i labelach -
-    start_label_int->setText("Start Channel");
-    end_label_int->setText("End Channel");
-    make_int2->setText("Integrate");
-    cancel_int->setText("Cancel");
-
-    // - dodajemy do layoutow -
-    // start
-    start_integration_channels->addWidget(start_label_int,Qt::AlignHCenter);
-    start_integration_channels->addWidget(starting_channel_int,Qt::AlignHCenter);
-    // end
-    end_integration_channels->addWidget(end_label_int,Qt::AlignHCenter);
-    end_integration_channels->addWidget(ending_channel_int,Qt::AlignHCenter);
-    // przyciski
-    integration_buttons->addWidget(cancel_int,Qt::AlignHCenter);
-    integration_buttons->addWidget(make_int2,Qt::AlignHCenter);
-    // do integrate
-    integration_layout->addLayout(start_integration_channels,Qt::AlignHCenter);
-    integration_layout->addLayout(end_integration_channels,Qt::AlignHCenter);
-    integration_layout->addLayout(integration_buttons,Qt::AlignHCenter);
-    // - connectujemy buttony -
-    QPushButton::connect(cancel_int, SIGNAL(clicked()), this, SLOT(close_window_for_integrate()));
-    QPushButton::connect(make_int2, SIGNAL(clicked()), this, SLOT(integrate_time_series()));
-}
-
-void body::set_aver_over_vel_widget()
-{
-    // - size policy -
-    aver_over_vel_widget->setMaximumSize(100000,150);
-
-    // - przy starcie nie chcemy go widziec -
-    aver_over_vel_widget->setVisible(false);
-
-    // - rozmiaty text editow -
-    starting_channel_aov->setMaximumSize(100,30);
-    ending_channel_aov->setMaximumSize(100,30);
-
-    starting_channel_aov->setMinimumSize(0,0);
-    ending_channel_aov->setMinimumSize(0,0);
-
-    // - rozmiaty przyciskow -
-    cancel_aver_over_vel->setMinimumSize(0,0);
-    make_aver_over_vel->setMinimumSize(0,0);
-
-    // - teksty na przyciskach i labelach -
-    start_label_aov->setText("Start Channel");
-    end_label_aov->setText("End Channel");
-    make_aver_over_vel->setText("Aver over vel.");
-    cancel_aver_over_vel->setText("Cancel");
-
-    // - dodajemy do layoutow -
-    // start
-    start_aver_over_vel_channels->addWidget(start_label_aov,Qt::AlignHCenter);
-    start_aver_over_vel_channels->addWidget(starting_channel_aov,Qt::AlignHCenter);
-    // end
-    end_aver_over_vel_channels->addWidget(end_label_aov,Qt::AlignHCenter);
-    end_aver_over_vel_channels->addWidget(ending_channel_aov,Qt::AlignHCenter);
-    // przyciski
-    aver_over_vel_buttons->addWidget(cancel_aver_over_vel,Qt::AlignHCenter);
-    aver_over_vel_buttons->addWidget(make_aver_over_vel,Qt::AlignHCenter);
-    // do integrate
-    aver_over_vel_layout->addLayout(start_aver_over_vel_channels,Qt::AlignHCenter);
-    aver_over_vel_layout->addLayout(end_aver_over_vel_channels,Qt::AlignHCenter);
-    aver_over_vel_layout->addLayout(aver_over_vel_buttons,Qt::AlignHCenter);
-
-    // - connectujemy buttony -
-    QPushButton::connect(cancel_aver_over_vel, SIGNAL(clicked()), this, SLOT(close_window_for_aver_over_velocity()));
-    QPushButton::connect(make_aver_over_vel, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity()));
-}
-
-void body::set_aver_over_time_widget()
-{
-    // - size policy -
-    aver_over_time_widget->setMaximumSize(100000,150);
-
-    // - przy starcie nie chcemy go widziec -
-    aver_over_time_widget->setVisible(false);
-
-    // - rozmiaty text editow -
-    starting_channel_time->setMaximumSize(100,30);
-    ending_channel_time->setMaximumSize(100,30);
-
-    starting_channel_time->setMinimumSize(0,0);
-    ending_channel_time->setMinimumSize(0,0);
-
-    // - rozmiaty przyciskow -
-    cancel_aver_over_time->setMinimumSize(0,0);
-    make_aver_over_time->setMinimumSize(0,0);
-
-    // - teksty na przyciskach i labelach -
-    start_label_time->setText("Start epoch");
-    end_label_time->setText("End epoch");
-    make_aver_over_time->setText("Aver over time");
-    cancel_aver_over_time->setText("Cancel");
-
-    // - dodajemy do layoutow -
-    // start
-    start_aver_over_time_channels->addWidget(start_label_time,Qt::AlignHCenter);
-    start_aver_over_time_channels->addWidget(starting_channel_time,Qt::AlignHCenter);
-    // end
-    end_aver_over_time_channels->addWidget(end_label_time,Qt::AlignHCenter);
-    end_aver_over_time_channels->addWidget(ending_channel_time,Qt::AlignHCenter);
-    // przyciski
-    aver_over_time_buttons->addWidget(cancel_aver_over_time,Qt::AlignHCenter);
-    aver_over_time_buttons->addWidget(make_aver_over_time,Qt::AlignHCenter);
-    // do integrate
-    aver_over_time_layout->addLayout(start_aver_over_time_channels,Qt::AlignHCenter);
-    aver_over_time_layout->addLayout(end_aver_over_time_channels,Qt::AlignHCenter);
-    aver_over_time_layout->addLayout(aver_over_time_buttons,Qt::AlignHCenter);
-
-    // - connectujemy buttony -
-    QPushButton::connect(cancel_aver_over_time, SIGNAL(clicked()), this, SLOT(close_window_for_aver_over_time()));
-    QPushButton::connect(make_aver_over_time, SIGNAL(clicked()), this, SLOT(calculate_aver_over_time()));
-}
-
-void body::set_spectral_index_widget()
-{
-    // - size policy -
-    aver_over_spi_widget->setMaximumSize(100000,150);
-
-    // - przy starcie nie chcemy go widziec -
-    aver_over_spi_widget->setVisible(false);
-
-    // - rozmiaty text editow -
-    starting_channel_spi->setMaximumSize(100,30);
-    ending_channel_spi->setMaximumSize(100,30);
-
-    starting_channel_spi->setMinimumSize(0,0);
-    ending_channel_spi->setMinimumSize(0,0);
-
-    // - rozmiaty przyciskow -
-    make_aver_over_spi->setMinimumSize(0,0);
-    cancel_aver_over_spi->setMinimumSize(0,0);
-
-    // - teksty na przyciskach i labelach -
-    start_label_spi->setText("Start epoch");
-    end_label_spi->setText("End epoch");
-    make_aver_over_spi->setText("Spindicate");
-    cancel_aver_over_spi->setText("Cancel");
-
-    // - dodajemy do layoutow -
-    // start
-    start_aver_over_spi_channels->addWidget(start_label_spi,Qt::AlignHCenter);
-    start_aver_over_spi_channels->addWidget(starting_channel_spi,Qt::AlignHCenter);
-    // end
-    end_aver_over_spi_channels->addWidget(end_label_spi,Qt::AlignHCenter);
-    end_aver_over_spi_channels->addWidget(ending_channel_spi,Qt::AlignHCenter);
-    // przyciski
-    aver_over_spi_buttons->addWidget(cancel_aver_over_spi,Qt::AlignHCenter);
-    aver_over_spi_buttons->addWidget(make_aver_over_spi,Qt::AlignHCenter);
-    // do integrate
-    aver_over_spi_layout->addLayout(start_aver_over_spi_channels,Qt::AlignHCenter);
-    aver_over_spi_layout->addLayout(end_aver_over_spi_channels,Qt::AlignHCenter);
-    aver_over_spi_layout->addLayout(aver_over_spi_buttons,Qt::AlignHCenter);
-
-    // - connectujemy buttony -
-    QPushButton::connect(cancel_aver_over_spi, SIGNAL(clicked()), this, SLOT(close_window_for_spind()));
-    QPushButton::connect(make_aver_over_spi, SIGNAL(clicked()), this, SLOT(calculate_spectral_index()));
 
 }
 
@@ -1154,6 +976,7 @@ void body::display_single_spectrum()
     plot_single_spectrum();
 
     // -- ustawiamy visibility naszego widgetu --
+    left_hand_list->appendWidget(kill_singspec);
     single_spectrum_widget->setVisible(true);
     kill_singspec->setVisible(true);
 
@@ -1233,7 +1056,7 @@ void body::kill_single_spectrum()
     // - odpinamy od grida -
     grid->removeWidget(single_spectrum_widget);
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(kill_dynspec);
+    left_hand_list->deleteWidgetFromList(kill_singspec);
 
     // - znikamy -
     single_spectrum_widget->setVisible(false);
@@ -1308,60 +1131,24 @@ void body::load_time_series()
 
 }
 
+
 // -- liczy calke z wszystkich widm --
 void body::integrate_time_series()
 {
-
-    unsigned int min, max;
-    QString mins,maxs;
-    mins = starting_channel_int->toPlainText();
-    maxs = ending_channel_int->toPlainText();
-
-    // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "")
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+    std::vector < int > minmax = readMinMaxValuesFromChannels(*intWidget->startingChannelInt, *intWidget->endingChannelInt);
+    int min = minmax[0];
+    int max = minmax[1];
+    if (min == -1 and max == -1)
         return;
-    }
-
-    // -- konwertujemy tera wartosci z text edit na inty--
-    try
-    {
-        min = stoi(mins.toStdString());
-        max = stoi(maxs.toStdString());
-    }
-    catch(...)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
-        return;
-    }
-
-    // -- obsługujemy kilka przypadków błędnego wpisania paramatrów --
-    // początkowy channel większy od końcowego
-    if (min > max)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
-        return;
-    }
-    // początkowy channel mniejszy od zera
-    if (min < 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
-        return;
-    }
-    // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size())
-        max = dataTable->spectraTableI[0].size();
-
     // --- całka właściwa ---
     dataTable->integrate4Pols(min, max, left_hand_list->IsotimeInclude->isChecked());
-
     // --- wiadomość końcowa ---
     string message = "";
     message = "Integrated over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
-    close_window_for_integrate();
+    closeIntegrateSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 }
+
 
 void body::plot_dynamic_spectrum()
 {
@@ -2266,67 +2053,19 @@ bool body::read_chan4int()
 // -- liczy srednia po predkosci - dla wszystkich epok --
 void body::calculate_aver_over_velocity()
 {
-    if (loaded_data == 0)
-    {
-        //cout << endl;
-        //cout << "----> Please load data first!" << endl;
-        //cout << endl;
-        // ee
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+    std::vector < int > minmax = readMinMaxValuesFromChannels(*averOverVelocityWidget->startingChannelInt, *averOverVelocityWidget->endingChannelInt);
+    int min = minmax[0];
+    int max = minmax[1];
+    if (min == -1 and max == -1)
         return;
-    }
-
-    int min, max;
-    QString mins,maxs;
-    mins = starting_channel_aov->toPlainText();
-    maxs = ending_channel_aov->toPlainText();
-
-    // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "")
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
-        return;
-    }
-
-    // -- konwertujemy tera wartosci z text edit na inty--
-    try
-    {
-        min = stoi(mins.toStdString());
-        max = stoi(maxs.toStdString());
-    }
-    catch(...)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
-        return;
-    }
-
-    // -- kilka szczególnych przypadków złej obsługi metody --
-    // początkowy channel większy od końcowego channel
-    if (min > max)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
-        return;
-    }
-
-    // początkowy channel mniejszy od 0
-    if (min < 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
-        return;
-    }
-
-    // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size())
-        max = dataTable->spectraTableI[0].size();
 
     // liczymy aver over velocity
     dataTable->averageOverVelocity4Pols(min, max, left_hand_list->IsotimeInclude->isChecked());
 
     string message = "";
     message = "Averaged over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
-    close_window_for_aver_over_velocity();
+    closeAOVSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
-
 
 }
 
@@ -2365,48 +2104,12 @@ vector < double > body::average_over_time(int min_epoch, int max_epoch, vector <
 // -- liczy srednia po czasie - dla wszystkich epok --
 void body::calculate_aver_over_time()
 {
-    if (dataTable->loadedData == false)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+    // wypisujemy co chcemy
+    std::vector < int > minmax = readMinMaxValuesFromEpochs(*averOverTimeWidget->startingChannelInt, *averOverTimeWidget->endingChannelInt);
+    int min = minmax[0];
+    int max = minmax[1];
+    if (min == -1 and max == -1)
         return;
-    }
-
-    QString mins,maxs;
-    mins = starting_channel_time->toPlainText();
-    maxs = ending_channel_time->toPlainText();
-    int min, max;
-
-    // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "")
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
-        return;
-    }
-
-    // -- konwertujemy tera wartosci z text edit na inty--
-    try
-    {
-        min = stoi(mins.toStdString());
-        max = stoi(maxs.toStdString());
-    }
-    catch(...)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
-        return;
-    }
-
-    if (min > max)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min epoch > max epoch!"));
-        return;
-    }
-    if (min < 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
-    }
-
-    if (max > dataTable->mjdTable.size())
-        max = dataTable->mjdTable.size();
 
     // wykonujemy właściwej transformacji
     dataTable->averOverTime4Pols(min, max);
@@ -2415,204 +2118,20 @@ void body::calculate_aver_over_time()
     string message;
     message = "Averaged over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
     message = message + "Saved to " + dataTable->getAverOverTimeFileName(min, max);
-    close_window_for_aver_over_time();
+    closeAOTSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 }
 
-// -- liczy VI, FI i chi2red dla jednego kanału --
-vector < double >  body::spectral_index_from_lcs(int min_epoch, int max_epoch, vector < double > time_series, vector < double > error)
-{
-    double max_flux, err_of_max;
-    int index_of_max;
-    vector < double > params (3);
-    params = max_w_index(min_epoch, max_epoch,time_series, error);
-    max_flux = params[0];
-    err_of_max = params[1];
-    index_of_max = int(params[2]);
-    double min_flux, err_of_min;
-    int index_of_min;
-    params = min_w_index(min_epoch, max_epoch,time_series, error);
-    min_flux = params[0];
-    err_of_min = params[1];
-    index_of_min = int(params[2]);
-
-    if (min_epoch < 0)
-        min_epoch = 0;
-    if (max_epoch < min_epoch)
-        max_epoch = min_epoch;
-    int time_span = max_epoch - min_epoch + 1;
-
-    // srednia
-    double mean = 0.0;
-    for (int i = 0; i < time_span; i++)
-    {
-        mean = mean + time_series[min_epoch + i];
-    }
-
-    mean = mean / time_span;
-
-    // -- liczymy VI
-    double VI;
-    if (min_flux < 0.0)
-        min_flux = 0.0;
-
-    if (max_flux > 3.0 * err_of_max && (max_flux - err_of_max) + (min_flux + err_of_min) > 0.1)
-        VI = ((max_flux - err_of_max) - (min_flux + err_of_min)) / ((max_flux - err_of_max) + (min_flux + err_of_min));
-    else
-        VI = 0.0;
-
-    // -- liczymy FI --
-    // wagi
-    vector < double > weight (error.size());
-    for (int i = 0; i < error.size(); i++)
-    {
-        weight[i] = 1.0 / (error[i]*error[i]);
-    }
-    // trzy sumy
-    double sum1 = 0.0;
-    double sum2 = 0.0;
-    double sum3 = 0.0;
-    // liczymy sumy
-    for(int i = 0; i < time_span; i++)
-    {
-        sum1 = sum1 + (time_series[min_epoch + i]*time_series[min_epoch + i] ) * weight[min_epoch + i];
-        sum2 = sum2 + (time_series[min_epoch + i] * weight[min_epoch + i]);
-        sum3 = sum3 + weight[min_epoch + i];
-    }
-    // liczymy FI
-    sum2 = mean * sum2;
-    double FI;
-    if (time_span == 1 || sum1 == 0.0 || sum2 == 0.0 || mean < 0.1)
-        FI = 0.0;
-    else
-        FI = sqrt(abs((((sum1 - sum2)/(time_span-1)) - 1.0) * time_span / sum3)) * 1.0 / mean;
-
-    if (FI < 0.0)
-        FI = 0.0;
-
-    // liczymy chi2
-
-    double sum_chi = 0.0;
-    for(int i = 0; i < time_span; i++)
-    {
-        sum_chi = sum_chi + pow(((time_series[min_epoch + i] - mean) / (error[min_epoch + i] )),2);
-    }
-    double chi2;
-    if (time_span <= 1)
-        chi2 = 0.0;
-    else
-        chi2 = 1.0 / (time_span - 1) * sum_chi;
-
-    vector < double > wynik (3);
-    wynik[0] = VI;
-    wynik[1] = FI;
-    wynik[2] = chi2;
-    return wynik;
-}
-
-// -- znajduje maksimum w zadanej w argumencie serii czasowej --
-vector < double >  body::max_w_index(int min_epoch, int max_epoch, vector < double > time_series, vector < double > error)
-{
-    if (min_epoch < 0)
-        min_epoch = 0;
-    if (max_epoch < min_epoch)
-        max_epoch = min_epoch;
-    int time_span = max_epoch - min_epoch + 1;
-
-    double max_value;
-    double index_of_maximum = 0.0;
-    max_value = 0.0;
-    max_value = time_series[0];
-    for (int i = 0; i < time_span; i++)
-    {
-        if (time_series[min_epoch + i] > max_value)
-        {
-            max_value = time_series[min_epoch + i];
-            index_of_maximum = double(min_epoch + i);
-        }
-    }
-    vector < double > wynik (3);
-    wynik[0] = max_value;
-    wynik[1] = error[int(index_of_maximum)];
-    wynik[2] = index_of_maximum;
-    return wynik;
-}
-
-// -- znajduje minimum w zadanej w argumencie serii czasowej --
-vector < double >  body::min_w_index(int min_epoch, int max_epoch, vector < double > time_series, vector < double > error)
-{
-        if (min_epoch < 0)
-            min_epoch = 0;
-        if (max_epoch < min_epoch)
-            max_epoch = min_epoch;
-        int time_span = max_epoch - min_epoch + 1;
-
-        double max_value;
-        double index_of_maximum = 0.0;
-        max_value = 0.0;
-        for (int i = 0; i < time_span; i++)
-        {
-            if (time_series[min_epoch + i] < max_value && time_series[min_epoch + i] > 0.0+error[min_epoch+i])
-            {
-                max_value = time_series[min_epoch + i];
-                index_of_maximum = double(min_epoch + i);
-            }
-        }
-        vector < double > wynik (3);
-        wynik[0] = max_value;
-        wynik[1] = error[int(index_of_maximum)];
-        wynik[2] = index_of_maximum;
-        return wynik;
-}
 
 // -- liczy VI, FI i chi2red dla wszystkich kanałów --
 void body::calculate_spectral_index()
 {
-    if (loaded_data == 0)
-    {
-        //cout << endl;
-        //cout << "----> Please load data first!" << endl;
-        //cout << endl;
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+    // wypisujemy co chcemy
+    std::vector < int > minmax = readMinMaxValuesFromEpochs(*SpectralIndexWidget->startingChannelInt, *SpectralIndexWidget->endingChannelInt);
+    int min = minmax[0];
+    int max = minmax[1];
+    if (min == -1 and max == -1)
         return;
-    }
-
-    QString mins,maxs;
-    mins = starting_channel_spi->toPlainText();
-    maxs = ending_channel_spi->toPlainText();
-    int min, max;
-
-    // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "")
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
-        return;
-    }
-
-    // -- konwertujemy tera wartosci z text edit na inty--
-    try
-    {
-        min = stoi(mins.toStdString());
-        max = stoi(maxs.toStdString());
-    }
-    catch(...)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
-        return;
-    }
-
-    if (min > max)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min epoch > max epoch!"));
-        return;
-    }
-    if (min < 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Bad min epoch!"));
-    }
-
-    if (max > dataTable->mjdTable.size())
-        max = dataTable->mjdTable.size();
 
     dataTable->spectralIndex4Pol(min, max, 0.0);
 
@@ -2622,7 +2141,7 @@ void body::calculate_spectral_index()
     message = message + "FI Saved to " + dataTable->getFIFileName(min, max) + "\n";
     message = message + "Chi2Red Saved to " + dataTable->getChi2RedFileName(min, max) + "\n";
     //message = message + "chi2 Saved to " + filenamechi2 + "\n";
-    close_window_for_spind();
+    closeSPINDSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
 }
@@ -2764,202 +2283,6 @@ void body::set_down_IVLHCRHCbuttons()
     window.show();
 }
 
-// -- wyświetla layout do integrate (przyciski i text edity z numerami kanałów)
-void body::calculate_integrate_for_time_series_with_buttons()
-{
-    // ----------------------------------------------
-    // - poczatkowe moduly, obslugujace standardowe sytuacje -
-    // - gdy sekcja jest juz otwarta -
-    if (integrate_window_opened == 1)
-        return;
-
-    // - gdy dane nie sa zaladowane -
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-
-    // - gdy otwarta jest inna sekcja -
-    if (wd_section_opened == 1 || calibration_section_opened == 1 || spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-    // ---------------------------------------------
-
-    // ---------------------------------------------
-    // -- setup sekcji, potrzebny przy kazdym wywolaniu --
-    // - gdy otwarte jest widmo dynamiczne, zapełniamy text edity od razu zasiegiem tegoż -
-    if(dynamic_spectrum_opened == 1)
-    {
-        starting_channel_int->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        ending_channel_int->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
-    }
-
-    // - ustawiamy boola na True -
-    integrate_window_opened = 1;
-
-    // - dodajemy widget do glownego vboxa -
-    left_hand_list->appendWidget(integrate_widget);
-
-    // - pokazujemy widget -
-    integrate_widget->setVisible(true);
-    // -----------------------------------------------
-}
-
-// -- zamyka poprzedni layout --
-void body::close_window_for_integrate()
-{
-    // -- znikamy widget --
-    integrate_widget->setVisible(false);
-    // -- odpinamy od vboxa --
-    left_hand_list->deleteWidgetFromList(integrate_widget);
-    // -- ustawiamy boola na 0 --
-    integrate_window_opened = 0;
-}
-
-// -- layout do liczenia VI FI i chi2red --
-void body::calculate_spectral_index_for_time_series_with_buttons()
-{
-    if (spind_window_opened == 1)
-        return;
-
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-
-    // setujemy epoki
-    starting_channel_spi->setText(QString::fromStdString(to_string(1)));
-    ending_channel_spi->setText(QString::fromStdString(to_string(dataTable->spectraTableI.size())));
-
-    // - przypinamy do vboxa -
-    left_hand_list->appendWidget(aver_over_spi_widget);
-
-    // - pokazujemy -
-    aver_over_spi_widget->setVisible(true);
-
-    // - ustawiamy boola -
-    spind_window_opened = 1;
-}
-
-// -- zamyka layout do liczenia VI FI i chi2red --
-void body::close_window_for_spind()
-{
-    // - znikamy widget -
-    aver_over_spi_widget->setVisible(false);
-
-    // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(aver_over_spi_widget);
-
-    // - usrtawiamy boola -
-    spind_window_opened = 0;
-}
-
-// -- layout do liczenia średniej po prędkościach --
-void body::calculate_aver_over_velocity_for_time_series_with_buttons()
-{
-    // ---------------------------------------------
-    // - standardwoe procedury dla znanych zdarzeń -
-    // jeśli okno jest już otwarte
-    if (aver_over_velocity_window_opened == 1)
-        return;
-
-    // jeśli dane nie są załadowane
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-
-    // jeśli jest otwarta inna sekcja
-    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || aver_over_time_window_opened == 1 || spind_window_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-    // -----------------------------------------------
-
-    // -----------------------------------------------
-    // - używane przy każdym otwarciu sekcji -
-    // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
-    if(dynamic_spectrum_opened == 1)
-    {
-        starting_channel_aov->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        ending_channel_aov->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
-    }
-
-    // - ustawiamy boola, informującego o otwarciu sekcji -
-    aver_over_velocity_window_opened = 1;
-
-    // - przypinamy do vboxa -
-    left_hand_list->appendWidget(aver_over_vel_widget);
-
-    // - pokazujemy -
-    aver_over_vel_widget->setVisible(true);
-}
-
-// -- zamyka layout do liczenia średniej po prędkościach --
-void body::close_window_for_aver_over_velocity()
-{
-    // - znikamy widget -
-    aver_over_vel_widget->setVisible(false);
-    // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(aver_over_vel_widget);
-    // - ustalamy boola -
-    aver_over_velocity_window_opened = 0;
-}
-
-// -- layout do liczenia średniej po czasie --
-void body::calculate_aver_over_time_for_time_series_with_buttons()
-{
-    if (aver_over_time_window_opened == 1)
-        return;
-
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-    if (wd_section_opened == 1 || calibration_section_opened == 1 || integrate_window_opened == 1 || spind_window_opened == 1 || aver_over_velocity_window_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-
-    // ustalamy epoki na pierwszą i ostatnią
-    starting_channel_time->setText(QString::fromStdString(to_string(1)));
-    ending_channel_time->setText(QString::fromStdString(to_string(dataTable->spectraTableI.size())));
-
-    // ustalamy boola
-    aver_over_time_window_opened = 1;
-
-    // - przypinamy do vboxa -
-    left_hand_list->appendWidget(aver_over_time_widget);
-
-    // - pokazujemy -
-    aver_over_time_widget->setVisible(true);
-}
-
-// -- zamyka layout do liczenia średniej po czasie --
-void body::close_window_for_aver_over_time()
-{
-    // - znikamy -
-    aver_over_time_widget->setVisible(false);
-
-    // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(aver_over_time_widget);
-
-    // - zmieniamy boola -
-    aver_over_time_window_opened = 0;
-}
 
 // -- przeładowuje obecnie załadowane dane --
 void body::reload_slot()
@@ -7650,4 +6973,298 @@ void body::make_new_I_and_V_for_epoch_on_dynspec()
     dataTable->recalculateIfromPols();
     // -- aktualizujemy widmo dynamiczne --
     update_dynamic_spectrum();
+}
+
+// -----------------------------------------------------------------------------------
+void body::openIntegrateSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+    // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
+    if(dynamic_spectrum_opened == 1)
+    {
+        intWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        intWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+    }
+
+    // - ustawiamy boola, informującego o otwarciu sekcji -
+    integrate_window_opened = 1;
+
+    // - przypinamy do vboxa -
+    left_hand_list->appendWidget(intWidget);
+    intWidget->setVisible(true);
+}
+
+// -----------------------------------------------------------------------------------
+void body::closeIntegrateSection()
+{
+    // - znikamy widget -
+    intWidget->setVisible(false);
+    // - odpinamy od vboxa -
+    left_hand_list->deleteWidgetFromList(intWidget);
+    // - ustalamy boola -
+    integrate_window_opened = 0;
+}
+
+// -----------------------------------------------------------------------------------
+void body::openAOVSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+    // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
+    if(dynamic_spectrum_opened == 1)
+    {
+        averOverVelocityWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        averOverVelocityWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+    }
+
+    // - ustawiamy boola, informującego o otwarciu sekcji -
+    aver_over_velocity_window_opened = 1;
+
+    // - przypinamy do vboxa -
+    left_hand_list->appendWidget(averOverVelocityWidget);
+
+    // - pokazujemy -
+    averOverVelocityWidget->setVisible(true);
+}
+
+// -----------------------------------------------------------------------------------
+void body::closeAOVSection()
+{
+    // - znikamy widget -
+    averOverVelocityWidget->setVisible(false);
+    // - odpinamy od vboxa -
+    left_hand_list->deleteWidgetFromList(averOverVelocityWidget);
+    // - ustalamy boola -
+    aver_over_velocity_window_opened = 0;
+}
+
+// -----------------------------------------------------------------------------------
+void body::openAOTSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+    // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
+    if(dynamic_spectrum_opened == 1)
+    {
+        averOverTimeWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_obs_number+1)));
+        averOverTimeWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_obs_number+1))));
+    }
+
+    // ustalamy boola
+    aver_over_time_window_opened = 1;
+
+    // - przypinamy do vboxa -
+    left_hand_list->appendWidget(averOverTimeWidget);
+
+    // - pokazujemy -
+    averOverTimeWidget->setVisible(true);
+}
+
+// -----------------------------------------------------------------------------------
+void body::closeAOTSection()
+{
+    // - znikamy -
+    averOverTimeWidget->setVisible(false);
+
+    // - odpinamy od vboxa -
+    left_hand_list->deleteWidgetFromList(averOverTimeWidget);
+
+    // - zmieniamy boola -
+    aver_over_time_window_opened = 0;
+}
+
+// -- layout do liczenia VI FI i chi2red --
+void body::openSPINDSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+    // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
+    if(dynamic_spectrum_opened == 1)
+    {
+        SpectralIndexWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_obs_number+1)));
+        SpectralIndexWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_obs_number+1))));
+    }
+
+    // - przypinamy do vboxa -
+    left_hand_list->appendWidget(SpectralIndexWidget);
+
+    // - pokazujemy -
+    SpectralIndexWidget->setVisible(true);
+
+    // - ustawiamy boola -
+    spind_window_opened = 1;
+}
+
+// -- zamyka layout do liczenia VI FI i chi2red --
+void body::closeSPINDSection()
+{
+    // - znikamy widget -
+    SpectralIndexWidget->setVisible(false);
+
+    // - odpinamy od vboxa -
+    left_hand_list->deleteWidgetFromList(SpectralIndexWidget);
+
+    // - usrtawiamy boola -
+    spind_window_opened = 0;
+}
+
+// -----------------------------------------------------------------------------------
+std::vector <int> body::readMinMaxValuesFromChannels(QTextEdit &minChannelTE, QTextEdit &maxChannelTE)
+{
+    std::vector <int> returnedValues = {-1,-1};
+    unsigned int min, max;
+    QString mins = minChannelTE.toPlainText();
+    QString maxs = maxChannelTE.toPlainText();
+
+    // -- sprawdzamy, czy text edity sa wypelnione --
+    if (mins.toStdString() == "" || maxs.toStdString() == "")
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        return returnedValues;
+    }
+
+    // -- konwertujemy tera wartosci z text edit na inty--
+    try
+    {
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
+    }
+    catch(...)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        return returnedValues;
+    }
+
+    // -- obsługujemy kilka przypadków błędnego wpisania paramatrów --
+    // początkowy channel większy od końcowego
+    if (min > max)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
+        return returnedValues;
+    }
+    // początkowy channel mniejszy od 1
+    if (min < 1)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
+        return returnedValues;
+    }
+    // koncowy channel większy od maksymalnej ilości kanałów
+    if (max > dataTable->spectraTableI[0].size())
+        max = dataTable->spectraTableI[0].size();
+
+    // ustalamy wartości zwracanego wektora
+    returnedValues[0] = min;
+    returnedValues[1] = max;
+
+    return returnedValues;
+}
+
+// -----------------------------------------------------------------------------------
+std::vector <int> body::readMinMaxValuesFromEpochs(QTextEdit &minEpochlTE, QTextEdit &maxEpochlTE)
+{
+    std::vector <int> returnedValues = {-1,-1};
+    unsigned int min, max;
+    QString mins = minEpochlTE.toPlainText();
+    QString maxs = maxEpochlTE.toPlainText();
+
+    // -- sprawdzamy, czy text edity sa wypelnione --
+    if (mins.toStdString() == "" || maxs.toStdString() == "")
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        return returnedValues;
+    }
+
+    // -- konwertujemy tera wartosci z text edit na inty--
+    try
+    {
+        min = stoi(mins.toStdString());
+        max = stoi(maxs.toStdString());
+    }
+    catch(...)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        return returnedValues;
+    }
+
+    // -- obsługujemy kilka przypadków błędnego wpisania paramatrów --
+    // początkowy channel większy od końcowego
+    if (min > max)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
+        return returnedValues;
+    }
+    // początkowy channel mniejszy od 1
+    if (min < 1)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
+        return returnedValues;
+    }
+    // koncowy channel większy od maksymalnej ilości kanałów
+    if (max > dataTable->spectraTableI.size())
+        max = dataTable->spectraTableI.size();
+
+    // ustalamy wartości zwracanego wektora
+    returnedValues[0] = min;
+    returnedValues[1] = max;
+
+    return returnedValues;
+}
+
+// -----------------------------------------------------------------------------------
+void body::connectSectionsToSlots()
+{
+    // integrate
+    QObject::connect(intWidget->make, SIGNAL(clicked()), this, SLOT(integrate_time_series()));
+    QObject::connect(intWidget->cancel, SIGNAL(clicked()), this, SLOT(closeIntegrateSection()));
+    // AOV
+    QObject::connect(averOverVelocityWidget->make, SIGNAL(clicked()), this, SLOT(calculate_aver_over_velocity()));
+    QObject::connect(averOverVelocityWidget->cancel, SIGNAL(clicked()), this, SLOT(closeAOVSection()));
+    // AOT
+    QObject::connect(averOverTimeWidget->make, SIGNAL(clicked()), this, SLOT(calculate_aver_over_time()));
+    QObject::connect(averOverTimeWidget->cancel, SIGNAL(clicked()), this, SLOT(closeAOTSection()));
+    // SPIND
+    QObject::connect(SpectralIndexWidget->make, SIGNAL(clicked()), this, SLOT(calculate_spectral_index()));
+    QObject::connect(SpectralIndexWidget->cancel, SIGNAL(clicked()), this, SLOT(closeSPINDSection()));
+}
+
+// -----------------------------------------------------------------------------------
+void body::closeOtherSections()
+{
+    if(wd_section_opened)
+       close_dynspectrum_layout();
+    if (calibration_section_opened)
+       close_cal_layout();
+    if (integrate_window_opened)
+       closeIntegrateSection();
+    if (aver_over_time_window_opened)
+        closeAOTSection();
+    if (spind_window_opened)
+        closeSPINDSection();
+    if (aver_over_velocity_window_opened)
+        closeAOVSection();
 }

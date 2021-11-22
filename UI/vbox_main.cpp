@@ -133,12 +133,12 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(Quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
     QObject::connect(LoadAVRFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
     QObject::connect(LoadFITSFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
-    QObject::connect(Integrate, SIGNAL(clicked()), parent, SLOT(calculate_integrate_for_time_series_with_buttons()));
+    QObject::connect(Integrate, SIGNAL(clicked()), parent, SLOT(openIntegrateSection()));
     QObject::connect(SingleSpectrum, SIGNAL(clicked()), parent, SLOT(display_single_spectrum()));
     QObject::connect(DynamicSpectrum, SIGNAL(clicked()), parent, SLOT(display_dynamic_spectrum()));
-    QObject::connect(AverOverVelocity, SIGNAL(clicked()), parent, SLOT(calculate_aver_over_velocity_for_time_series_with_buttons()));
-    QObject::connect(AverOverTime, SIGNAL(clicked()), parent, SLOT(calculate_aver_over_time_for_time_series_with_buttons()));
-    QObject::connect(SpectralIndex, SIGNAL(clicked()), parent, SLOT(calculate_spectral_index_for_time_series_with_buttons()));
+    QObject::connect(AverOverVelocity, SIGNAL(clicked()), parent, SLOT(openAOVSection()));
+    QObject::connect(AverOverTime, SIGNAL(clicked()), parent, SLOT(openAOTSection()));
+    QObject::connect(SpectralIndex, SIGNAL(clicked()), parent, SLOT(openSPINDSection()));
     QObject::connect(Reload, SIGNAL(clicked()), parent, SLOT(reload_slot()));
     QObject::connect(Calibrate, SIGNAL(clicked()), parent, SLOT(open_cal_layout()));
     QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(open_dynspectum_layout()));
@@ -146,4 +146,27 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(set_dark_mode()));
     QObject::connect(GaussFitting, SIGNAL(clicked()), parent, SLOT(open_gauss_widget()));
 }
+// ---------------------------------------------------------------
 
+/*
+void openInt()
+{
+    // gdy otwarta jest inna sekcja
+    if (sectionOpened)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous section"));
+        return;
+    }
+
+    // otwieramy sekcję
+    appendWidget(intWidget);
+    // ustalamy visible
+    appendWidget.setVisible(true);
+}
+
+void closeInt()
+{
+    intWidget.setVisible(false);
+    deleteWidgetFromList(intWidget);
+}
+*/
