@@ -4,7 +4,6 @@
  * Taka sobei klasa do wielokrotnego użytku - będzie przechowywać prosty interfejs z text editami do wpisania
  * channelów
  */
-#include "vbox_main.h"
 #include <iostream>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -21,7 +20,6 @@ class integrate_widget : public QWidget
 public:
     // konstruktor
     integrate_widget(QObject * parent = 0, const char * name = 0);
-
     // -- elementy interfejsu --
     // buttony
     QPushButton * make = new QPushButton(this);
@@ -41,13 +39,6 @@ public:
 // prywatne metody
 private:
     void setUpWidget(const char * name = 0);
-public:
-    std::vector < int > readValuesFromTextEd();
-public slots:
-    void addToParentWidget();
-    void removeFromParentWidget();
-    void makeIntegration();
-
 };
 
 #endif // INTEGRATE_WIDGET_H

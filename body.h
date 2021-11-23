@@ -18,6 +18,8 @@
 #include "data/spectral_container.h"
 #include "UI/vbox_main.h"
 #include "UI/integrate_widget.h"
+#include "UI/export_dynamic_spectrum_widget.h"
+#include "UI/calsection.h"
 using namespace std;
 
 class body : public QObject
@@ -34,6 +36,8 @@ public:
     integrate_widget * averOverVelocityWidget = new integrate_widget(this, "A.O.V. (channels)");
     integrate_widget * averOverTimeWidget = new integrate_widget(this, "A.O.T. (epochs)");
     integrate_widget * SpectralIndexWidget = new integrate_widget(this, "S.I. (epochs)");
+    export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export DS");
+    calsection * calibrateWidget = new calsection(this, "Calibrate");
     // -------------------------------
 
 
@@ -206,50 +210,6 @@ public:
 
     QCustomPlot * colorbar_widget = new QCustomPlot();
     QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
-
-    // - ex_dynsp -
-    QWidget * ex_dynsp_widget = new QWidget(&window);
-    // button do glownego vboxa
-    // buttony do widgetu
-    QPushButton * make_ex_dynsp = new QPushButton(ex_dynsp_widget);
-    QPushButton * cancel_ex_dynsp = new QPushButton(ex_dynsp_widget);
-    // layouty do widgetu
-    QVBoxLayout * ex_dynsp_layout = new QVBoxLayout(ex_dynsp_widget);
-    QHBoxLayout * start_ex_dynsp_channels = new QHBoxLayout();
-    QHBoxLayout * end_ex_dynsp_channels = new QHBoxLayout();
-    QHBoxLayout * ex_dynsp_buttons = new QHBoxLayout();
-    QHBoxLayout * start_ex_dynsp_epoch = new QHBoxLayout();
-    QHBoxLayout * end_ex_dynsp_epoch = new QHBoxLayout();
-    // text edity
-    QTextEdit * starting_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
-    QTextEdit * ending_channel_ex_dynsp = new QTextEdit(ex_dynsp_widget);
-    QTextEdit * starting_epoch_ex_dynsp = new QTextEdit(ex_dynsp_widget);
-    QTextEdit * ending_epoch_ex_dynsp = new QTextEdit(ex_dynsp_widget);
-    // labele
-    QLabel * start_label_ex_dynsp = new QLabel(ex_dynsp_widget);
-    QLabel * end_label_ex_dynsp = new QLabel(ex_dynsp_widget);
-    QLabel * start_epoch_label_ex_dynsp = new QLabel(ex_dynsp_widget);
-    QLabel * end_epoch_label_ex_dynsp = new QLabel(ex_dynsp_widget);
-
-    // - calibrate -
-    // - widget -
-    QWidget * calibrate_widget = new QWidget(&window);
-    // - button do glownego vboxa -
-    // buttony do widgetu
-    QPushButton * load_caltab_l1 = new QPushButton(calibrate_widget);
-    QPushButton * load_caltab_r1 = new QPushButton(calibrate_widget);
-    QPushButton * start_calibration = new QPushButton(calibrate_widget);
-    QPushButton * cancel_calib = new QPushButton(calibrate_widget);
-    // layouty
-    QVBoxLayout * calibrate_layout = new QVBoxLayout(calibrate_widget);
-    QHBoxLayout * L1 = new QHBoxLayout();
-    QHBoxLayout * R1 = new QHBoxLayout();
-    QHBoxLayout * calbtns = new QHBoxLayout();
-    // labele
-    QLabel * caltab_l1_path = new QLabel(calibrate_widget); // tekst pokazujacy czy zaladowano caltab
-    QLabel * caltab_r1_path = new QLabel(calibrate_widget); // tekst pokazujacy czy zaladowano caltab
-
-    // texty
 
     // stringi
     string caltab_LHC_path;
@@ -539,9 +499,6 @@ public slots:
     void set_single_spectrum_widget();
     void plot_single_spectrum();
 
-    void set_wd_widget();
-    void set_calibrate_widget();
-
     void kill_dynamic_spectrum();
     void press_map(QMouseEvent * event);
     void set_max_range_on_dynamic_specrum_y_up();
@@ -564,16 +521,6 @@ public slots:
     void rotate_slot_plus();
     void rotate_slot_minus();
     void save_rotated_spectras();
-
-    void open_cal_layout();
-    void close_cal_layout();
-    void load_l1_caltab_button();
-    void load_r1_caltab_button();
-    void calibrate_button();
-
-    void open_dynspectum_layout();
-    void close_dynspectrum_layout();
-    void export_file_for_dynamic_spectrum();
 
     void set_rms_section_widget();
     void open_rms_section_slot();
@@ -799,6 +746,16 @@ public slots:
     void openSPINDSection();
     void closeSPINDSection();
     void calculate_spectral_index();
+    // -- dynamic spectrum exp --
+    void openWDSection();
+    void closeWDSection();
+    void export_file_for_dynamic_spectrum();
+    // -- sekcja do kalibracji --
+    void openCALSection();
+    void closeCALSection();
+    void load_l1_caltab_button();
+    void load_r1_caltab_button();
+    void calibrate_button();
 };
 
 #endif // BODY_H

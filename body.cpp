@@ -69,12 +69,6 @@ body::body(const char * nazwa)
     save_rotation->setMaximumSize(10000,10000);
     number_of_rotated_channels_texted->setMaximumSize(60,30);
 
-    load_caltab_l1->setMaximumSize(10000,10000);
-    load_caltab_r1->setMaximumSize(10000,10000);
-
-    start_calibration->setMaximumSize(10000,10000);
-    caltab_l1_path->setMaximumSize(10000,10000);
-    caltab_r1_path->setMaximumSize(10000,10000);
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
     save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
@@ -105,10 +99,6 @@ body::body(const char * nazwa)
     save_rotation->setMinimumSize(0,0);
     number_of_rotated_channels_texted->setMinimumSize(0,0);
 
-    load_caltab_l1->setMinimumSize(0,0);
-    load_caltab_r1->setMinimumSize(0,0);
-    start_calibration->setMinimumSize(0,0);
-
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
     save_all_spectra_to_gnuplot->setMinimumSize(0,0);
@@ -128,10 +118,6 @@ body::body(const char * nazwa)
     save_rotation->setText("Save");
     flag->setText("Flag");
 
-    load_caltab_l1->setText("Load LHC caltab");
-    load_caltab_r1->setText("Load RHC caltab");
-    start_calibration->setText("START");
-
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
     // -- dodajemy layout do okna --
@@ -147,8 +133,6 @@ body::body(const char * nazwa)
     set_dynamic_spectrum_widget();
     set_rms_section_widget();
     set_gauss_widget();
-    set_wd_widget();
-    set_calibrate_widget();
 
     connectSectionsToSlots();
 
@@ -539,100 +523,6 @@ void body::set_rms_section_widget()
     connect(spectrum_on_popup_window.yAxis, SIGNAL(rangeChanged(QCPRange)), spectrum_on_popup_window.yAxis2, SLOT(setRange(QCPRange)));
 
 }
-
-void body::set_wd_widget()
-{
-    // - size policy -
-    ex_dynsp_widget->setMaximumSize(100000,150);
-
-    // - przy starcie nie chcemy go widziec -
-    ex_dynsp_widget->setVisible(false);
-
-    // - rozmiaty text editow -
-    starting_channel_ex_dynsp->setMaximumSize(100,30);
-    ending_channel_ex_dynsp->setMaximumSize(100,30);
-    starting_epoch_ex_dynsp->setMaximumSize(100,30);
-    ending_epoch_ex_dynsp->setMaximumSize(100,30);
-
-    starting_channel_ex_dynsp->setMinimumSize(0,0);
-    ending_channel_ex_dynsp->setMinimumSize(0,0);
-    starting_epoch_ex_dynsp->setMinimumSize(0,0);
-    ending_epoch_ex_dynsp->setMinimumSize(0,0);
-
-    // - rozmiaty przyciskow -
-    cancel_ex_dynsp->setMinimumSize(0,0);
-    make_ex_dynsp->setMinimumSize(0,0);
-
-    // - teksty na przyciskach i labelach -
-    start_label_ex_dynsp->setText("Start Channel");
-    end_label_ex_dynsp->setText("End Channel");
-    make_ex_dynsp->setText("Export dynspec.");
-    cancel_ex_dynsp->setText("Cancel");
-    start_epoch_label_ex_dynsp->setText("Start epoch");
-    end_epoch_label_ex_dynsp->setText("End epoch");
-
-    // - dodajemy do layoutow -
-    // start chan
-    start_ex_dynsp_channels->addWidget(start_label_ex_dynsp,Qt::AlignHCenter);
-    start_ex_dynsp_channels->addWidget(starting_channel_ex_dynsp,Qt::AlignHCenter);
-    // end chan
-    end_ex_dynsp_channels->addWidget(end_label_ex_dynsp,Qt::AlignHCenter);
-    end_ex_dynsp_channels->addWidget(ending_channel_ex_dynsp,Qt::AlignHCenter);
-    // start epoch
-    start_ex_dynsp_epoch->addWidget(start_epoch_label_ex_dynsp, Qt::AlignHCenter);
-    start_ex_dynsp_epoch->addWidget(starting_epoch_ex_dynsp, Qt::AlignHCenter);
-    // end epoch
-    end_ex_dynsp_epoch->addWidget(end_epoch_label_ex_dynsp, Qt::AlignHCenter);
-    end_ex_dynsp_epoch->addWidget(ending_epoch_ex_dynsp, Qt::AlignHCenter);
-    // przyciski
-    ex_dynsp_buttons->addWidget(cancel_ex_dynsp,Qt::AlignHCenter);
-    ex_dynsp_buttons->addWidget(make_ex_dynsp,Qt::AlignHCenter);
-    // do integrate
-    ex_dynsp_layout->addLayout(start_ex_dynsp_channels,Qt::AlignHCenter);
-    ex_dynsp_layout->addLayout(end_ex_dynsp_channels,Qt::AlignHCenter);
-    ex_dynsp_layout->addLayout(start_ex_dynsp_epoch,Qt::AlignHCenter);
-    ex_dynsp_layout->addLayout(end_ex_dynsp_epoch,Qt::AlignHCenter);
-    ex_dynsp_layout->addLayout(ex_dynsp_buttons,Qt::AlignHCenter);
-
-    // connectujemy buttony
-    QPushButton::connect(cancel_ex_dynsp, SIGNAL(clicked()), this, SLOT(close_dynspectrum_layout()));
-    QPushButton::connect(make_ex_dynsp, SIGNAL(clicked()), this, SLOT(export_file_for_dynamic_spectrum()));
-}
-
-void body::set_calibrate_widget()
-{
-    // - size policy -
-    calibrate_widget->setMaximumSize(100000,150);
-
-    // - visibility -
-    calibrate_widget->setVisible(false);
-
-    // - setujemy tekst -
-    cancel_calib->setText("Cancel");
-
-    // - rozmiarówka -
-    load_caltab_l1 -> setMinimumSize(0,0);
-    load_caltab_r1 -> setMinimumSize(0,0);
-    start_calibration -> setMinimumSize(0,0);
-
-    // - konstrukcja widgetu -
-    L1->addWidget(load_caltab_l1,Qt::AlignHCenter);
-    L1->addWidget(caltab_l1_path,Qt::AlignHCenter);
-    R1->addWidget(load_caltab_r1,Qt::AlignHCenter);
-    R1->addWidget(caltab_r1_path,Qt::AlignHCenter);
-    calbtns->addWidget(start_calibration,Qt::AlignHCenter);
-    calbtns->addWidget(cancel_calib,Qt::AlignHCenter);
-    calibrate_layout->addLayout(L1,Qt::AlignHCenter);
-    calibrate_layout->addLayout(R1,Qt::AlignHCenter);
-    calibrate_layout->addLayout(calbtns,Qt::AlignHCenter);
-
-    // - connectujemy buttony -
-    QPushButton::connect(cancel_calib, SIGNAL(clicked()), this, SLOT(close_cal_layout()));
-    QPushButton::connect(start_calibration, SIGNAL(clicked()), this, SLOT(calibrate_button()));
-    QPushButton::connect(load_caltab_l1, SIGNAL(clicked()), this, SLOT(load_l1_caltab_button()));
-    QPushButton::connect(load_caltab_r1, SIGNAL(clicked()), this, SLOT(load_r1_caltab_button()));
-}
-
 
 void body::set_gauss_widget()
 {
@@ -2932,75 +2822,6 @@ void body::read_number_of_rotated_channels()
     }
 }
 
-void body::open_cal_layout()
-{
-    // - standardowa sekcja -
-    // -----------------------------------------------------------
-    if (calibration_section_opened == 1)
-        return;
-
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-
-    if (wd_section_opened == 1 || spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1 || integrate_window_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-    // ------------------------------------------------------------
-
-
-    // ------------------------------------------------------------
-    // -- setujemy default na labele --
-    if (caltabs_loaded == 0)
-    {
-        caltab_l1_path->setText(QString::fromStdString("Not loaded!"));
-        caltab_r1_path->setText(QString::fromStdString("Not loaded!"));
-    }
-    else
-    {
-        caltab_l1_path->setText(QString::fromStdString("Loaded"));
-        caltab_r1_path->setText(QString::fromStdString("Loaded"));
-    }
-
-    // -- ustawiamy napis na przycisku, w zależności od tego czy kalibrowaliśmy czy nie --
-    if (calibration_done == 0)
-    {
-        start_calibration->setText("Calibrate");
-        start_calibration->setDown(false);
-    }
-    else if (calibration_done == 1)
-    {
-        start_calibration->setText("Uncalibrate");
-        start_calibration->setDown(true);
-    }
-
-    // -- dodajemy do vboxa --
-    left_hand_list->appendWidget(calibrate_widget);
-    // -- ustawiamy visibility --
-    calibrate_widget->setVisible(true);
-
-    // -- ustawiamy boola --
-    calibration_section_opened = 1;
-
-
-}
-
-void body::close_cal_layout()
-{
-    // -- znikamy --
-    calibrate_widget->setVisible(false);
-
-    // -- odpinamy od vboxa --
-    left_hand_list->deleteWidgetFromList(calibrate_widget);
-
-    // -- ustawiamy boola --
-    calibration_section_opened = 0;
-}
-
 // -- kalibruje podaną w argumencie epokę obserwacji --
 vector < double > body::calibrate_single(int epoch_number)
 {
@@ -3132,7 +2953,7 @@ void body::load_l1_caltab(string filename)
     tab.close();
 
     lhc_loaded = 1;
-    caltab_l1_path->setText(QString::fromStdString("Loaded"));
+    calibrateWidget->caltabL1LoadedLabel->setText(QString::fromStdString("Loaded"));
     if (rhc_loaded == 1)
         caltabs_loaded = 1;
     else
@@ -3187,7 +3008,7 @@ void body::load_r1_caltab(string filename)
     tab.close();
 
     rhc_loaded = 1;
-    caltab_r1_path->setText(QString::fromStdString("Loaded"));
+    calibrateWidget->caltabR1LoadedLabel->setText(QString::fromStdString("Loaded"));
     if (lhc_loaded == 1)
         caltabs_loaded = 1;
     else
@@ -3305,8 +3126,8 @@ void body::calibrate_method()
         }
         //calibrate_single(23);
         calibration_done = 1;
-        start_calibration->setDown(true);
-        start_calibration->setText("Uncalibrate");
+        calibrateWidget->make->setDown(true);
+        calibrateWidget->make->setText("Uncalibrate");
     }
     else if (calibration_done == 1)
     {
@@ -3364,8 +3185,8 @@ void body::calibrate_method()
         }
         //calibrate_single(23);
         calibration_done = 0;
-        start_calibration->setDown(false);
-        start_calibration->setText("Calibrate");
+        calibrateWidget->make->setDown(false);
+        calibrateWidget->make->setText("Calibrate");
     }
 }
 
@@ -3988,122 +3809,20 @@ bool body::read_calconfig()
 
 }
 
-void body::open_dynspectum_layout()
-{
-    // -------------- standardowa sekcja ----------------------
-    if (wd_section_opened == 1)
-        return;
-
-    if (loaded_data == 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
-        return;
-    }
-
-    if (wd_section_opened == 1)
-    {
-        return;
-    }
-
-    if (spind_window_opened == 1 || aver_over_time_window_opened == 1 || aver_over_velocity_window_opened == 1 || integrate_window_opened == 1 || calibration_section_opened == 1)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, close previous window"));
-        return;
-    }
-    // ---------------------------------------------------------
-
-    // dla otwarteg owidma dynczmicznego - zapełniamy text edity
-    if(dynamic_spectrum_opened== 1)
-    {
-        starting_channel_ex_dynsp->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        ending_channel_ex_dynsp->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
-        starting_epoch_ex_dynsp ->setText(QString::fromStdString(to_string(min_obs_number+1)));
-        ending_epoch_ex_dynsp->setText((QString::fromStdString(to_string(max_obs_number+1))));
-    }
-
-    // przypinamy do vboxa
-    left_hand_list->appendWidget(ex_dynsp_widget);
-    // ustalamy visibility
-    ex_dynsp_widget->setVisible(true);
-
-    // ustalamy boola
-    wd_section_opened = 1;
-}
-
-void body::close_dynspectrum_layout()
-{
-    // -- znikamy --
-    ex_dynsp_widget->setVisible(false);
-    // -- odpinamy od vboxa --
-    left_hand_list->deleteWidgetFromList(ex_dynsp_widget);
-    // -- ustalamy boola --
-    wd_section_opened = 0;
-}
 
 void body::export_file_for_dynamic_spectrum()
 {
     // -- inty z przechowywanymi granicami --
+    std::vector < int > minmaxchannels = readMinMaxValuesFromChannels(*exDynspWidget->startChannelTextEd, *exDynspWidget->endChannelTextEd);
+    std::vector < int > minmaxepochs = readMinMaxValuesFromEpochs(*exDynspWidget->startEpochTextEd, *exDynspWidget->endEpochTextEd);
+
     int min, max, min_epoch, max_epoch;
-
-    // -- stringi, do zczytywania wartości z text editów --
-    QString mins,maxs, min_epoch_str, max_epoch_str;
-
-    // -- czytamy wartości z pól tekstowych --
-    // -- kanaly --
-    mins = starting_channel_ex_dynsp->toPlainText();
-    maxs = ending_channel_ex_dynsp->toPlainText();
-    // -- epoki --
-    min_epoch_str = starting_epoch_ex_dynsp->toPlainText();
-    max_epoch_str = ending_epoch_ex_dynsp ->toPlainText();
-
-    // -- sprawdzamy, czy text edity sa wypelnione --
-    if (mins.toStdString() == "" || maxs.toStdString() == "" || min_epoch_str == "" || max_epoch_str == "")
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+    min = minmaxchannels[0];
+    max = minmaxchannels[1];
+    min_epoch = minmaxepochs[0];
+    max_epoch = minmaxepochs[1];
+    if(min == -1 || max == -1 || min_epoch == -1 || max_epoch == -1)
         return;
-    }
-
-    // -- konwertujemy tera wartosci z text edit na inty--
-    try
-    {
-        min = stoi(mins.toStdString());
-        max = stoi(maxs.toStdString());
-        min_epoch = stoi(min_epoch_str.toStdString());
-        max_epoch = stoi(max_epoch_str.toStdString());
-    }
-    catch(...)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
-        return;
-    }
-
-    // -- kilka szczególnych przypadków złej obsługi metody --
-    // początkowy channel większy od końcowego channel
-    if (min > max)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
-        return;
-    }
-
-    // początkowy channel mniejszy od 0
-    if (min < 0)
-    {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
-        return;
-    }
-
-    // koncowy channel większy od maksymalnej ilości kanałów
-    if (max > dataTable->spectraTableI[0].size())
-        max = dataTable->spectraTableI[0].size();
-
-    // początkowa epoka mniejsza, niż 0:
-    if (min_epoch < 1)
-        min_epoch = 1;
-
-    // końcowa, większa niż całość:
-    if (max_epoch > dataTable->mjdTable.size())
-        max_epoch = dataTable->mjdTable.size();
-
     dataTable->saveDynamicSpectrumToFile(min_epoch, max_epoch, min, max, left_hand_list->IsotimeInclude->isChecked());
 
     // wiadomość końcowa
@@ -4112,7 +3831,7 @@ void body::export_file_for_dynamic_spectrum()
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
     // -- zamykamy sekcje dynspec --
-    close_dynspectrum_layout();
+    closeWDSection();
 }
 
 void body::open_rms_section_slot()
@@ -7132,6 +6851,97 @@ void body::closeSPINDSection()
     // - usrtawiamy boola -
     spind_window_opened = 0;
 }
+void body::openWDSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+
+    // dla otwarteg owidma dynczmicznego - zapełniamy text edity
+    if(dynamic_spectrum_opened== 1)
+    {
+        exDynspWidget->startChannelTextEd->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
+        exDynspWidget->endChannelTextEd->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+        exDynspWidget->startEpochTextEd->setText(QString::fromStdString(to_string(min_obs_number+1)));
+        exDynspWidget->endEpochTextEd->setText((QString::fromStdString(to_string(max_obs_number+1))));
+    }
+
+    // przypinamy do vboxa
+    left_hand_list->appendWidget(exDynspWidget);
+    // ustalamy visibility
+    exDynspWidget->setVisible(true);
+
+    // ustalamy boola
+    wd_section_opened = 1;
+}
+
+void body::closeWDSection()
+{
+    // -- znikamy --
+    exDynspWidget->setVisible(false);
+    // -- odpinamy od vboxa --
+    left_hand_list->deleteWidgetFromList(exDynspWidget);
+    // -- ustalamy boola --
+    wd_section_opened = 0;
+}
+
+void body::openCALSection()
+{
+    // jeśli dane nie są załadowane
+    if (dataTable->loadedData == 0)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    // zamykamy inne otwarte sekcje
+    closeOtherSections();
+    // ------------------------------------------------------------
+    // -- setujemy default na labele --
+    if (caltabs_loaded == 0)
+    {
+        calibrateWidget->caltabL1LoadedLabel->setText(QString::fromStdString("Not loaded!"));
+        calibrateWidget->caltabR1LoadedLabel->setText(QString::fromStdString("Not loaded!"));
+    }
+    else
+    {
+        calibrateWidget->caltabL1LoadedLabel->setText(QString::fromStdString("Loaded"));
+        calibrateWidget->caltabR1LoadedLabel->setText(QString::fromStdString("Loaded"));
+    }
+    // ------------------------------------------------------------
+    // -- ustawiamy napis na przycisku, w zależności od tego czy kalibrowaliśmy czy nie --
+    if (calibration_done == 0)
+    {
+        calibrateWidget->make->setText("Calibrate");
+        calibrateWidget->make->setDown(false);
+    }
+    else if (calibration_done == 1)
+    {
+        calibrateWidget->make->setText("Uncalibrate");
+        calibrateWidget->make->setDown(true);
+    }
+    // ------------------------------------------------------------
+    // -- dodajemy do vboxa --
+    left_hand_list->appendWidget(calibrateWidget);
+    // -- ustawiamy visibility --
+    calibrateWidget->setVisible(true);
+    // -- ustawiamy boola --
+    calibration_section_opened = 1;
+}
+
+void body::closeCALSection()
+{
+    // -- znikamy --
+    calibrateWidget->setVisible(false);
+    // -- odpinamy od vboxa --
+    left_hand_list->deleteWidgetFromList(calibrateWidget);
+    // -- ustawiamy boola --
+    calibration_section_opened = 0;
+}
 
 // -----------------------------------------------------------------------------------
 std::vector <int> body::readMinMaxValuesFromChannels(QTextEdit &minChannelTE, QTextEdit &maxChannelTE)
@@ -7250,15 +7060,23 @@ void body::connectSectionsToSlots()
     // SPIND
     QObject::connect(SpectralIndexWidget->make, SIGNAL(clicked()), this, SLOT(calculate_spectral_index()));
     QObject::connect(SpectralIndexWidget->cancel, SIGNAL(clicked()), this, SLOT(closeSPINDSection()));
+    // WD
+    QObject::connect(exDynspWidget->make, SIGNAL(clicked()), this, SLOT(export_file_for_dynamic_spectrum()));
+    QObject::connect(exDynspWidget->cancel, SIGNAL(clicked()), this, SLOT(closeWDSection()));
+    // CAL
+    QObject::connect(calibrateWidget->make, SIGNAL(clicked()), this, SLOT(calibrate_button()));
+    QObject::connect(calibrateWidget->cancel, SIGNAL(clicked()), this, SLOT(closeWDSection()));
+    QObject::connect(calibrateWidget->loadCaltabL1, SIGNAL(clicked()), this, SLOT(load_l1_caltab_button()));
+    QObject::connect(calibrateWidget->loadCaltabR1, SIGNAL(clicked()), this, SLOT(load_r1_caltab_button()));
 }
 
 // -----------------------------------------------------------------------------------
 void body::closeOtherSections()
 {
     if(wd_section_opened)
-       close_dynspectrum_layout();
+       closeWDSection();
     if (calibration_section_opened)
-       close_cal_layout();
+       closeCALSection();
     if (integrate_window_opened)
        closeIntegrateSection();
     if (aver_over_time_window_opened)

@@ -17,14 +17,18 @@ SOURCES += \
     data/rotation.cpp \
     data/savespectrumtoascii.cpp \
     UI/vbox_main.cpp \
-    UI/integrate_widget.cpp
+    UI/integrate_widget.cpp \
+    UI/export_dynamic_spectrum_widget.cpp \
+    UI/calsection.cpp
 
 HEADERS += \
     body.h \
     data/spectral_container.h \
     libs/qcustomplot.h \
     UI/vbox_main.h \
-    UI/integrate_widget.h
+    UI/integrate_widget.h \
+    UI/export_dynamic_spectrum_widget.h \
+    UI/calsection.h
 
 RESOURCES += \
     resources.qrc

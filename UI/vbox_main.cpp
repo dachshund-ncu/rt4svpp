@@ -140,8 +140,8 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(AverOverTime, SIGNAL(clicked()), parent, SLOT(openAOTSection()));
     QObject::connect(SpectralIndex, SIGNAL(clicked()), parent, SLOT(openSPINDSection()));
     QObject::connect(Reload, SIGNAL(clicked()), parent, SLOT(reload_slot()));
-    QObject::connect(Calibrate, SIGNAL(clicked()), parent, SLOT(open_cal_layout()));
-    QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(open_dynspectum_layout()));
+    QObject::connect(Calibrate, SIGNAL(clicked()), parent, SLOT(openCALSection()));
+    QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(clicked()), parent, SLOT(open_rms_section_slot()));
     QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(set_dark_mode()));
     QObject::connect(GaussFitting, SIGNAL(clicked()), parent, SLOT(open_gauss_widget()));
