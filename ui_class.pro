@@ -6,6 +6,7 @@ TEMPLATE = app
 
 SOURCES += \
     body.cpp \
+    data/calibration.cpp \
     data/spectral_container.cpp \
     libs/qcustomplot.cpp \
     main.cpp \

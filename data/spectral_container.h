@@ -60,6 +60,10 @@ public:
     std::vector < double > bandWidthTable; // 1D kontener z szerokościami wstęgi [MHz]
     std::vector < double > vlsrTable; // 1D kontener z prędkościami centralnymi [Km/s]
     std::vector < std::string > isotimeTable; // 1D kontener z czasem w formacie ISO
+    // tablice kalibracyjne <opcjonalne>
+    std::vector < double > caltabLHCMjd, caltabLHC, caltabRHCMjd, caltabRHC;
+    bool lhcCaltabLoaded = false;
+    bool rhcCaltabLoaded = false;
     // czy plik to fits czy AVR
     // nazwy plików
     std::vector < std::string > fileNamesTab; // nazwy plików [ścieżki absolutne]
@@ -109,6 +113,12 @@ public:
     void saveSpectrum(int epoch);
     void saveAllSpectra();
     std::string getFileNameForAsciiSave(int epoch);
+    // -- loading caltabów LHC --
+    void loadLHCCaltab(string CaltabFileName);
+    void loadRHCCaltab(string CaltabFileName);
+    // - kalibrowanie -
+    void calibrateEpoch(int epochNr, bool direction=true);
+    void calibrateAll(bool direction = true);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -167,11 +177,16 @@ private:
     void rotate1Pol(std::vector < std::vector  < double > > & poltab, int epoch, int nChans);
     void addToListOfModified(int epoch);
     bool checkIfOnTheList(int epoch, std::vector < int > & list);
-
     void makeBackupOfFile(int epoch, bool fits);
-
     void saveActualTablesToFits(int epoch);
     void saveActualTablesToAVR(int epoch);
+    // ----------------------
+    // -- calibrate --
+    std::vector < std::vector < double > > loadCaltab(string CaltabFileName);
+    double findCalCoeff(std::vector < double > caltabEpochs, std::vector < double > caltabCoeffs, double MJD);
+    std::vector < std::vector < double > > findBeforeAndAfterEpochs(std::vector < double > caltabEpochs, std::vector < double > caltabCoeffs, double MJD);
+    double interpolateCAL(double beginEpoch, double beginCoeff, double endEpoch, double endCoeff, double MJD);
+    double calibrateEpoch(double calCoeff, double epochNR);
 
 };
 
