@@ -20,7 +20,8 @@ SOURCES += \
     UI/vbox_main.cpp \
     UI/integrate_widget.cpp \
     UI/export_dynamic_spectrum_widget.cpp \
-    UI/calsection.cpp
+    UI/calsection.cpp \
+    UI/heat_map_widget.cpp
 
 HEADERS += \
     body.h \
@@ -29,7 +30,8 @@ HEADERS += \
     UI/vbox_main.h \
     UI/integrate_widget.h \
     UI/export_dynamic_spectrum_widget.h \
-    UI/calsection.h
+    UI/calsection.h \
+    UI/heat_map_widget.h
 
 RESOURCES += \
     resources.qrc

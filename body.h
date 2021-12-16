@@ -20,6 +20,7 @@
 #include "UI/integrate_widget.h"
 #include "UI/export_dynamic_spectrum_widget.h"
 #include "UI/calsection.h"
+#include "UI/heat_map_widget.h"
 using namespace std;
 
 class body : public QObject
@@ -46,6 +47,9 @@ public:
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
+
+    // -- do widma dynamicznego --
+    heat_map_widget * dspw = new heat_map_widget();
 
     // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
     // - WIDGET -
