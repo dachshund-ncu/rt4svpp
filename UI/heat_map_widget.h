@@ -5,12 +5,20 @@
 #include <QWidget>
 #include <iostream>
 #include "libs/qcustomplot.h"
+#include "data/spectral_container.h"
+// -- definiujemy klasę, która będzie używana późneij --
 
 class heat_map_widget : public QWidget
 {
+    Q_OBJECT
+
 public:
+    // wskaźnik na kontener z danymi
+    spectral_container * dataTable = new spectral_container;
     // konstruktor
-    heat_map_widget();
+    heat_map_widget(spectral_container * dataTable);
+    // destruktor
+    virtual ~heat_map_widget() {}
 
     // główne miejsca
     // grid
@@ -51,14 +59,39 @@ public:
     // - heat map -
     QCustomPlot * heatMapPlot = new QCustomPlot(this);
     QCPColorMap * heatMap = new QCPColorMap(heatMapPlot->xAxis, heatMapPlot->yAxis);
+    QCPItemLine * x_axis_line = new QCPItemLine(heatMapPlot);
+    QCPItemLine * y_axis_line = new QCPItemLine(heatMapPlot);
+    QCPItemRect * rectangle = new QCPItemRect(heatMapPlot);
+    QCPColorGradient gradient;
     // - colorbar -
     QCustomPlot * colorbarWidget = new QCustomPlot(this);
     QCPColorScale * colorbar = new QCPColorScale(colorbarWidget);
     // - widmo -
     QCustomPlot * spectrumPlot = new QCustomPlot(this);
+    QCPItemLine * spectrumVline = new QCPItemLine(spectrumPlot);
     // - krzywa blasku -
     QCustomPlot * lcsPlot = new QCustomPlot(this);
     QCPErrorBars * errorBars = new QCPErrorBars(lcsPlot->xAxis, lcsPlot->yAxis);
+    QCPItemLine * lcsVline = new QCPItemLine(lcsPlot);
+
+    // -- zesrawy parametrów --
+    unsigned long int minRangeVelIndex = 0;
+    unsigned long int minObsNumber = 0;
+    unsigned long int maxRangeVelIndex = 0;
+    unsigned long int maxObsNumber = 0;
+    unsigned long int rozmiarY = 0;
+    unsigned long int rozmiarX = 0;
+    unsigned long int xIndex = 0;
+    unsigned long int yIndex = 0;
+
+public slots:
+    void tmp_plot();
+    void pressMap(QMouseEvent * event);
+
+    //void updateDynamicSpectrum();
+    //void onClick();
+    //void setClickedPoint(unsigned long int x, unsigned long int y);
+
 
 private:
     void setButtonsProperties();
@@ -66,7 +99,18 @@ private:
     void placeWidgets();
     void managePlottables();
     void setLabelTexts();
-
+    void connectAllSlots();
+    void firstPlotOnDynamicSpectrum();
+    void connectForAxis();
+    void addGraphs();
+    // klikanie widma dynamicznego
+    unsigned long int searchForClickedX(double x);
+    unsigned long int searchForClickedY(double y);
+    void setMapPressed(unsigned long int x, unsigned long int y);
+        void setCrosshair(unsigned long int x, unsigned long int y);
+        void plotSingleSpectrum(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
+        void plotLCS(unsigned long int x, unsigned long int y);
+        void setLabelClicked(unsigned long int x, unsigned long int y);
 };
 
 #endif // HEAT_MAP_WIDGET_H

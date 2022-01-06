@@ -49,7 +49,7 @@ public:
     QGridLayout * grid = new QGridLayout(&window); // siatka
 
     // -- do widma dynamicznego --
-    heat_map_widget * dspw = new heat_map_widget();
+    heat_map_widget * dspw = new heat_map_widget(dataTable);
 
     // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
     // - WIDGET -
