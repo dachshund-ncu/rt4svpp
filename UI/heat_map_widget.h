@@ -1,6 +1,9 @@
 #ifndef HEAT_MAP_WIDGET_H
 #define HEAT_MAP_WIDGET_H
-
+/*
+   Klasa, porzechowująca interfejs do dynamic spectrum (heat map)
+   Ma dostęp do spectral_container (dataTable)
+*/
 #include <QtGui>
 #include <QWidget>
 #include <iostream>
@@ -33,6 +36,12 @@ public:
     QPushButton * yUpBorder = new QPushButton(this);
     QPushButton * xDownBorder = new QPushButton(this);
     QPushButton * xUpBorder = new QPushButton(this);
+    //-
+    QShortcut * yDownBorder_shrt = new QShortcut(this);
+    QShortcut * yUpBorder_shrt = new QShortcut(this);
+    QShortcut * xDownBorder_shrt = new QShortcut(this);
+    QShortcut * xUpBorder_shrt = new QShortcut(this);
+    QShortcut * heatMapReset = new QShortcut(this);
     // -- polaryzacje --
     QPushButton * Ibut = new QPushButton(this);
     QPushButton * Vbut = new QPushButton(this);
@@ -74,7 +83,7 @@ public:
     QCPErrorBars * errorBars = new QCPErrorBars(lcsPlot->xAxis, lcsPlot->yAxis);
     QCPItemLine * lcsVline = new QCPItemLine(lcsPlot);
 
-    // -- zesrawy parametrów --
+    // -- zestawy parametrów --
     unsigned long int minRangeVelIndex = 0;
     unsigned long int minObsNumber = 0;
     unsigned long int maxRangeVelIndex = 0;
@@ -83,10 +92,28 @@ public:
     unsigned long int rozmiarX = 0;
     unsigned long int xIndex = 0;
     unsigned long int yIndex = 0;
+    // -- boole polaryzacji --
+    bool polI = true;
+    bool polV = false;
+    bool polLHC = false;
+    bool polRHC = false;
 
 public slots:
     void tmp_plot();
     void pressMap(QMouseEvent * event);
+
+
+private slots:
+    void updateHeatMap();
+        void setMinVelOnHeatMap();
+        void setMaxVelOnHeatMap();
+        void setMinEpochOnHeatMap();
+        void setMaxEpochOnHeatMap();
+        void resetHeatMap();
+        void choosePolI();
+        void choosePolV();
+        void choosePolLHC();
+        void choosePolRHC();
 
     //void updateDynamicSpectrum();
     //void onClick();
@@ -109,8 +136,14 @@ private:
     void setMapPressed(unsigned long int x, unsigned long int y);
         void setCrosshair(unsigned long int x, unsigned long int y);
         void plotSingleSpectrum(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
-        void plotLCS(unsigned long int x, unsigned long int y);
-        void setLabelClicked(unsigned long int x, unsigned long int y);
+        void plotLCS(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab, std::vector < double > & errtab);
+        void setLabelClicked(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
+    // ogólne do skalowania wykresu etc.
+    void rescaleGraph(QCustomPlot * plot);
+    std::vector < std::vector < double > > * getPoltab();
+    std::vector < double > * getErrtab();
+    void setDownPolButtons();
+
 };
 
 #endif // HEAT_MAP_WIDGET_H

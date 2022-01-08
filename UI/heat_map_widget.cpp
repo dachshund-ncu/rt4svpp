@@ -51,8 +51,8 @@ void heat_map_widget::setButtonsProperties()
     // -- teksty --
     yDownBorder->setText("Down");
     yUpBorder->setText("Up");
-    xDownBorder->setText("|<-");
-    xUpBorder->setText("->|");
+    xDownBorder->setText("->|");
+    xUpBorder->setText("|<-");
     Ibut->setText("I");
     Vbut->setText("V");
     LHCbut->setText("LHC");
@@ -170,10 +170,13 @@ void heat_map_widget::managePlottables()
 
     // dane
     QPen pendane;
-    pendane.setColor(QColor(135,206,250));
+    pendane.setColor(QColor(0,0,255));
 
     QPen penkropka;
     penkropka.setColor(QColor(182,26,26));
+
+    QPen penerrory;
+    penerrory.setColor(QColor(105,105,105));
 
     // teraz widmo singlowe
     // -- dodajemy podpis --
@@ -212,6 +215,7 @@ void heat_map_widget::managePlottables()
     lcsPlot->graph(1)->setPen(penkropka);
     lcsPlot->graph(1)->setLineStyle(QCPGraph::lsNone);
     lcsPlot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 9));
+    errorBars->setPen(penerrory);
     spectrumVline->setPen(penkropka);
 
     // -- crosshair --
@@ -226,7 +230,7 @@ void heat_map_widget::managePlottables()
 
 void heat_map_widget::setLabelTexts()
 {
-    QFont f( "Arial", 10, QFont::Bold);
+    QFont f( "Arial", 11, QFont::Bold);
     leftLabel->setFont(f);
     rightLabel->setFont(f);
     leftLabel->setText("MJD = \nChannel = \nVel = ");
@@ -240,42 +244,12 @@ void heat_map_widget::firstPlotOnDynamicSpectrum()
         return;
     // -----------------------------
 
-    // -- ustalamy kilka rzeczy na początek --
-    maxRangeVelIndex = dataTable->velocityTable[0].size()-1;
-    maxObsNumber = dataTable->mjdTable.size()-1;
-    rozmiarX = dataTable->mjdTable.size();
-    rozmiarY = dataTable->velocityTable[0].size();
-    // ---------------------------------------
-
-    double minVelocity = dataTable->velocityTable[0][minRangeVelIndex];
-    double maxVelocity = dataTable->velocityTable[0][maxRangeVelIndex];
-    std::vector < std::vector < double > > & poltab = dataTable->spectraTableI;
-    // -- setujemy size (ilość komórek) --
-    heatMap->data()->setSize(rozmiarX, rozmiarY);
-    // -- setujemy range --
-    if (rozmiarX != 1)
-        heatMap->data()->setRange(QCPRange(minObsNumber, maxObsNumber), QCPRange(minVelocity, maxVelocity ) );
-    else
-        heatMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(minVelocity, maxVelocity ) );
-    // -- zagnieżdżona pętla z tymi koksowymi cellami --
-    for (unsigned long int xIndex = 0; xIndex < rozmiarX; xIndex++)
-    {
-        for (unsigned long int yIndex = 0; yIndex < rozmiarY; yIndex++)
-        {
-            heatMap->data()->setCell(xIndex, yIndex, poltab[xIndex][yIndex]);
-        }
-    }
-    // --------------------------------------------------
-    // pozostałe ustawienia
+    resetHeatMap();
     gradient.loadPreset(QCPColorGradient::gpJet);
     heatMap->setGradient(gradient);
     heatMap->setDataScaleType(QCPAxis::stLinear);
-    heatMap->rescaleDataRange();
-    heatMap->rescaleKeyAxis();
-    heatMap->rescaleValueAxis();
     heatMap->setTightBoundary(false);
-
-    colorbar->setDataRange(heatMap->dataRange());
+    updateHeatMap();
 }
 
 void heat_map_widget::connectForAxis()
@@ -290,10 +264,35 @@ void heat_map_widget::connectForAxis()
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMap, SLOT(setDataRange(QCPRange)));
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMapPlot, SLOT(replot()));
 
-    QObject::connect(Ibut, SIGNAL(clicked()), this, SLOT( tmp_plot() ) );
+    QObject::connect(flag, SIGNAL(clicked()), this, SLOT( tmp_plot() ) );
 
     // klikałke
     QObject::connect(heatMapPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(pressMap(QMouseEvent*)) );
+
+    // -- zasięgi --
+    // skróty
+    yDownBorder_shrt->setKey(QKeySequence("d"));
+    yUpBorder_shrt->setKey(QKeySequence("g"));
+    xDownBorder_shrt->setKey(QKeySequence("l"));
+    xUpBorder_shrt->setKey(QKeySequence("p"));
+    heatMapReset->setKey(QKeySequence("b"));
+    // -
+    QObject::connect(yDownBorder, SIGNAL(clicked()), this, SLOT(setMinVelOnHeatMap()));
+    QObject::connect(yUpBorder, SIGNAL(clicked()), this, SLOT(setMaxVelOnHeatMap()));
+    QObject::connect(xDownBorder, SIGNAL(clicked()), this, SLOT(setMinEpochOnHeatMap()));
+    QObject::connect(xUpBorder, SIGNAL(clicked()), this, SLOT(setMaxEpochOnHeatMap()));
+    //-
+    QObject::connect(yDownBorder_shrt, SIGNAL(activated()), this, SLOT(setMinVelOnHeatMap()));
+    QObject::connect(yUpBorder_shrt, SIGNAL(activated()), this, SLOT(setMaxVelOnHeatMap()));
+    QObject::connect(xDownBorder_shrt, SIGNAL(activated()), this, SLOT(setMinEpochOnHeatMap()));
+    QObject::connect(xUpBorder_shrt, SIGNAL(activated()), this, SLOT(setMaxEpochOnHeatMap()));
+    QObject::connect(heatMapReset, SIGNAL(activated()), this, SLOT(resetHeatMap()));
+
+    // - polaryzacje -
+    QObject::connect(Ibut, SIGNAL(clicked()), this, SLOT(choosePolI()));
+    QObject::connect(Vbut, SIGNAL(clicked()), this, SLOT(choosePolV()));
+    QObject::connect(LHCbut, SIGNAL(clicked()), this, SLOT(choosePolLHC()));
+    QObject::connect(RHCbut, SIGNAL(clicked()), this, SLOT(choosePolRHC()));
 }
 
 void heat_map_widget::tmp_plot()
@@ -318,22 +317,24 @@ void heat_map_widget::pressMap(QMouseEvent *event)
 
 void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
 {
+    // bierzemy odpowiednią polaryzację
+    std::vector < std::vector < double > > * poltab = getPoltab();
+    std::vector < double > * errtab = getErrtab();
     // ustawiamy crosshair
     setCrosshair(x,y);
     // ustawiamy widmo
-    plotSingleSpectrum(x,y, dataTable->spectraTableI);
+    plotSingleSpectrum(x,y, *poltab);
     // ustawiamy LCS
-    //plotLCS(x,y);
+    plotLCS(x,y, *poltab, *errtab);
     // ustalamy labele
-    //setLabelClicked(x,y);
-
+    setLabelClicked(x,y, *poltab);
     // updatujemy graphy
     heatMapPlot->replot();
     spectrumPlot->replot();
     lcsPlot->replot();
-    //lcsPlot->layer("linex")->replot();
-    //lcsPlot->layer("liney")->replot();
-    //lcsPlot->layer("prectangle")->replot();
+    // setujemy do zmiennych globalnych co jest kliknięte
+    xIndex = x;
+    yIndex = y;
 }
 
 // metody pomocnicze do klikałke
@@ -345,6 +346,7 @@ unsigned long int  heat_map_widget::searchForClickedX(double x)
         x = dataTable->mjdTable.size()-1;
     return (unsigned long int) round(x);
 }
+
 unsigned long int  heat_map_widget::searchForClickedY(double y)
 {
     unsigned long int yind = 0;
@@ -397,14 +399,16 @@ void heat_map_widget::setCrosshair(unsigned long x, unsigned long y)
 
 void heat_map_widget::plotSingleSpectrum(unsigned long x, unsigned long y, std::vector < std::vector < double > > & poltab)
 {
-    // epoki
-    #if QT_VERSION > QT_VERSION_CHECK(5,14,0)
-        QVector < double > fluxes = QVector <double> (poltab[x].begin(), poltab[x].end());
-        QVector < double > vels = QVector <double> (dataTable->velocityTable[x].begin(), dataTable->velocityTable[x].end());
-    #else
-        QVector < double > fluxes = QVector <double>::fromStdVector(poltab[x]);
-        QVector < double > vels = QVector <double>::fromStdVector(dataTable->velocityTable[x]);
-    #endif
+    // skrowidz: x - epoka y - kanał
+    // tutaj idziemy po kanałach, stała prędkość
+    // -- będziemy na piechotkę przypisywać wartości do kontenerów --
+    // widmo
+    QVector <double> vels(rozmiarY), fluxes(rozmiarY);
+    for(int i = 0; i < rozmiarY; i++)
+    {
+        vels[i] = dataTable->velocityTable[x][minRangeVelIndex + i];
+        fluxes[i] = poltab[x][minRangeVelIndex + i];
+    }
     QVector < double > flux(1) ,vel(1);
     flux[0] = poltab[x][y];
     vel[0] = dataTable->velocityTable[x][y];
@@ -413,5 +417,247 @@ void heat_map_widget::plotSingleSpectrum(unsigned long x, unsigned long y, std::
     spectrumPlot->graph(1)->setData(vel, flux); // kropka
     spectrumVline->start->setCoords(dataTable->velocityTable[x][y], -QCPRange::maxRange);
     spectrumVline->end->setCoords(dataTable->velocityTable[x][y], QCPRange::maxRange);
-    spectrumPlot->rescaleAxes();
+    rescaleGraph(spectrumPlot);
+}
+
+void heat_map_widget::plotLCS(unsigned long x, unsigned long y, std::vector<std::vector<double> > &poltab, std::vector<double> &errtab)
+{
+    // skrowidz: x - epoka y - kanał
+    // tutaj idziemy po epokach, kanał stały
+    // -- będziemy na piechotkę przypisywać wartości do kontenerów --
+    QVector <double> epochs(rozmiarX), fluxes(rozmiarX), errors(rozmiarX);
+    for(int i = 0; i < rozmiarX; i++)
+    {
+        epochs[i] = dataTable->mjdTable[i + minObsNumber];
+        fluxes[i] = poltab[i + minObsNumber][y];
+        errors[i] = errtab[i + minObsNumber];
+    }
+    QVector < double > flux(1) ,epoch(1);
+    flux[0] = poltab[x][y];
+    epoch[0] = dataTable->mjdTable[x];
+    // setujemy
+    lcsPlot->graph(0)->setData(epochs, fluxes); // całe dane
+    lcsPlot->graph(1)->setData(epoch, flux); // kropka
+    errorBars->setDataPlottable(lcsPlot->graph(0));// errory
+    errorBars->setData(errors); // errory
+    lcsVline->start->setCoords(dataTable->mjdTable[x], -QCPRange::maxRange);
+    lcsVline->end->setCoords(dataTable->mjdTable[x], QCPRange::maxRange);
+    rescaleGraph(lcsPlot);
+}
+
+void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y, std::vector<std::vector<double> > &poltab)
+{
+    // -- setujemy tekst do displayowania informacji --
+    // --------------
+    // Lewy
+    string text_mjdlabel = "";
+    text_mjdlabel.append(string("MJD = "));
+    text_mjdlabel.append(std::to_string(int(dataTable->mjdTable[x])));
+    text_mjdlabel.append(string("\nChannel: "));
+    text_mjdlabel.append(std::to_string((int) dataTable->channelTable[x][y]));
+    text_mjdlabel.append(string("\nVel: "));
+    // Tworzymy ostringstream
+    std::ostringstream streamObjvel;
+    // ustalamy notację o stałej liczbie po przecinku
+    streamObjvel << std::fixed;
+    streamObjvel << std::setprecision(3);
+    // zapisujemy double do ostringstreama
+    streamObjvel << dataTable->velocityTable[x][y];
+    // wyłuskujemy to jako stringi
+    std::string strObjvel = streamObjvel.str();
+    text_mjdlabel.append(strObjvel);
+
+    // --------------
+    // ---------------
+    // Prawy
+    string cocochanel_txt = "";
+    cocochanel_txt.append(string("Date: "));
+    cocochanel_txt.append(std::to_string(int(dataTable->datetimeTable[x][0])));
+    cocochanel_txt.append(string(" "));
+    if (int(dataTable->datetimeTable[x][1]) < 10)
+        cocochanel_txt.append("0" + std::to_string(int(dataTable->datetimeTable[x][1])));
+    else
+        cocochanel_txt.append(std::to_string(int(dataTable->datetimeTable[x][1])));
+    cocochanel_txt.append(string(" "));
+    if (int(dataTable->datetimeTable[x][2]) < 10)
+        cocochanel_txt.append("0" + std::to_string(int(dataTable->datetimeTable[x][2])));
+    else
+        cocochanel_txt.append(std::to_string(int(dataTable->datetimeTable[x][2])));
+    cocochanel_txt.append(string("\n"));
+    cocochanel_txt.append(string("Value: "));
+
+    //value
+    std::ostringstream streamObj3;
+    streamObj3 << std::fixed;
+    streamObj3 << std::setprecision(3);
+    streamObj3 << poltab[x][y];
+    cocochanel_txt.append(streamObj3.str());
+    cocochanel_txt.append(string("\n"));
+    cocochanel_txt.append(string("Number: "));
+    cocochanel_txt.append(std::to_string(x+1));
+
+    leftLabel->setText(QString::fromStdString(text_mjdlabel));
+    rightLabel->setText(QString::fromStdString(cocochanel_txt));
+}
+
+void heat_map_widget::rescaleGraph(QCustomPlot * plot)
+{
+    plot->rescaleAxes();
+    double max_x, min_x, max_y, min_y;
+    max_x = plot->xAxis->range().upper;
+    min_x = plot->xAxis->range().lower;
+    max_y = plot->yAxis->range().upper;
+    min_y = plot->yAxis->range().lower;
+    double diffrence_x = max_x - min_x;
+    double diffrence_y = max_y - min_y;
+    plot->xAxis->setRange(min_x - (0.05 * diffrence_x), max_x + (0.05 * diffrence_x));
+    plot->yAxis->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+}
+
+void heat_map_widget::updateHeatMap()
+{
+    // sekcja ustawiania informacji na kolor mapie
+    heatMap->data()->clear();
+    // rozmiar
+    heatMap->data()->setSize(rozmiarX, rozmiarY);
+    // zakres danych - od najmniejsej do największej -0.5 * krok prędkości
+    double minVelocity = dataTable->velocityTable[minObsNumber][minRangeVelIndex];
+    double maxVelocity = dataTable->velocityTable[minObsNumber][maxRangeVelIndex];// - abs(dataTable->velocityTable[minObsNumber][1]-dataTable->velocityTable[minObsNumber][0]);
+    // rozmiar
+    if (rozmiarX != 1)
+        heatMap->data()->setRange(QCPRange(minObsNumber, maxObsNumber), QCPRange(minVelocity, maxVelocity ) );
+    else
+        heatMap->data()->setRange(QCPRange(-0.5, 0.5), QCPRange(minVelocity, maxVelocity ) );
+    // bierzemy tablicę z konkretną polaryzacją
+    std::vector < std::vector < double > > *poltab = getPoltab();
+    std::vector < double > *errtab = getErrtab();
+    // zapełniamy heat mapę
+    for (unsigned long int indexWX = 0; indexWX < rozmiarX; indexWX++)
+    {
+        for (unsigned long int indexWY = 0; indexWY < rozmiarY; indexWY++)
+        {
+            heatMap->data()->setCell(indexWX, indexWY, (*poltab)[minObsNumber+indexWX][minRangeVelIndex + indexWY]);
+        }
+    }
+    // reskalujemy widmo dynamiczne
+    heatMap->rescaleDataRange();
+    heatMap->rescaleKeyAxis();
+    heatMap->rescaleValueAxis();
+    colorbar->setDataRange(heatMap->dataRange());
+    // robimy również update widm
+    plotSingleSpectrum(xIndex, yIndex,  *poltab);
+    plotLCS(xIndex, yIndex, *poltab, *errtab);
+    setLabelClicked(xIndex, yIndex, *poltab);
+    // robimy na koniec replot
+    heatMapPlot->replot();
+    colorbarWidget->replot();
+    spectrumPlot->replot();
+    lcsPlot->replot();
+}
+
+std::vector < std::vector < double > > * heat_map_widget::getPoltab()
+{
+    if(polI)
+        return &dataTable->spectraTableI;
+    else if(polV)
+        return &dataTable->spectraTableV;
+    else if (polLHC)
+        return &dataTable->spectraTableLHC;
+    else if (polRHC)
+        return  &dataTable->spectraTableRHC;
+}
+
+std::vector < double > * heat_map_widget::getErrtab()
+{
+    if(polI)
+        return &dataTable->spectraTableIERR;
+    else if(polV)
+        return &dataTable->spectraTableVERR;
+    else if (polLHC)
+        return &dataTable->spectraTableLHCERR;
+    else if (polRHC)
+        return  &dataTable->spectraTableRHCERR;
+}
+
+void heat_map_widget::setMinVelOnHeatMap()
+{
+    minRangeVelIndex = yIndex;
+    rozmiarY = maxRangeVelIndex - minRangeVelIndex + 1;
+    updateHeatMap();
+}
+
+void heat_map_widget::setMaxVelOnHeatMap()
+{
+    maxRangeVelIndex = yIndex;
+    rozmiarY = maxRangeVelIndex - minRangeVelIndex + 1;
+    updateHeatMap();
+}
+
+void heat_map_widget::setMinEpochOnHeatMap()
+{
+    minObsNumber = xIndex;
+    rozmiarX = maxObsNumber - minObsNumber + 1;
+    updateHeatMap();
+}
+
+void heat_map_widget::setMaxEpochOnHeatMap()
+{
+    maxObsNumber = xIndex;
+    rozmiarX = maxObsNumber - minObsNumber + 1;
+    updateHeatMap();
+}
+
+void heat_map_widget::resetHeatMap()
+{
+    minRangeVelIndex = 0;
+    maxRangeVelIndex = dataTable->velocityTable[0].size()-1;
+    minObsNumber = 0;
+    maxObsNumber = dataTable->mjdTable.size()-1;
+    rozmiarX = dataTable->mjdTable.size();
+    rozmiarY = dataTable->velocityTable[0].size();
+    updateHeatMap();
+}
+
+void heat_map_widget::choosePolI()
+{
+    polI = true;
+    polV = false;
+    polLHC = false;
+    polRHC = false;
+    setDownPolButtons();
+    updateHeatMap();
+}
+void heat_map_widget::choosePolV()
+{
+    polI = false;
+    polV = true;
+    polLHC = false;
+    polRHC = false;
+    setDownPolButtons();
+    updateHeatMap();
+}
+void heat_map_widget::choosePolLHC()
+{
+    polI = false;
+    polV = false;
+    polLHC = true;
+    polRHC = false;
+    setDownPolButtons();
+    updateHeatMap();
+}
+void heat_map_widget::choosePolRHC()
+{
+    polI = false;
+    polV = false;
+    polLHC = false;
+    polRHC = true;
+    setDownPolButtons();
+    updateHeatMap();
+}
+void heat_map_widget::setDownPolButtons()
+{
+    Ibut->setDown(polI);
+    Vbut->setDown(polV);
+    LHCbut->setDown(polLHC);
+    RHCbut->setDown(polRHC);
 }
