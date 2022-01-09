@@ -18,8 +18,9 @@ class heat_map_widget : public QWidget
 public:
     // wskaźnik na kontener z danymi
     spectral_container * dataTable = new spectral_container;
+    QCheckBox * isotime = new QCheckBox();
     // konstruktor
-    heat_map_widget(spectral_container * dataTable);
+    heat_map_widget(spectral_container * dataTable, QCheckBox * isotime);
     // destruktor
     virtual ~heat_map_widget() {}
 
@@ -98,9 +99,9 @@ public:
     bool polLHC = false;
     bool polRHC = false;
 
-public slots:
-    void tmp_plot();
-    void pressMap(QMouseEvent * event);
+public:
+    void darthMode(bool enabled = false);
+
 
 
 private slots:
@@ -114,7 +115,14 @@ private slots:
         void choosePolV();
         void choosePolLHC();
         void choosePolRHC();
-
+    void rotatePlus();
+    void rotateMinus();
+    void saveEditedSpectra();
+    void recal();
+    void makeLCS();
+    void setLogScale_slot();
+    void tmp_plot();
+    void pressMap(QMouseEvent * event);
     //void updateDynamicSpectrum();
     //void onClick();
     //void setClickedPoint(unsigned long int x, unsigned long int y);
@@ -143,6 +151,16 @@ private:
     std::vector < std::vector < double > > * getPoltab();
     std::vector < double > * getErrtab();
     void setDownPolButtons();
+    // rotacja widma
+    void rotateSpectrum(bool direction);
+    int readNumberOfRotatedChannels();
+    double average(std::vector < double > table);
+    void scaleHeatMap();
+    void setDarkMode();
+    void setLightMode();
+    void colorGraphs(QPen dataPen, QPen errorPen, QPen dotPen);
+    void colorCanvas(QPen background, QPen spines);
+    void colorSpines(QCustomPlot * plot, QPen pendulum);
 
 };
 

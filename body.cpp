@@ -5471,6 +5471,7 @@ void body::autorange_plot(QCustomPlot * plot)
 
 void body::set_dark_mode()
 {
+    dspw->darthMode(!dark_mode_enabled);
     // pomocnicze prezydenty
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));

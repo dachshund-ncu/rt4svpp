@@ -73,6 +73,7 @@ public:
     std::string nameOfSource; // nazwa źródła
     std::string saveDirectory; // nazwa katalogu, w którym będą zapistwane pliki
     bool loadedData = false;
+    bool madeRotation = false;
     // czy czytamy fits czy avr
     std::vector < bool > fileTypesTab;
 

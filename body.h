@@ -31,6 +31,7 @@ class body : public QObject
 public:
     body(const char * nazwa);
 
+    // NEW STUFF
     // ------------------------------
     vbox_mainw * left_hand_list = new vbox_mainw(this);
     integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)");
@@ -40,16 +41,16 @@ public:
     export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export DS");
     calsection * calibrateWidget = new calsection(this, "Calibrate");
     // -------------------------------
-
-
     // -- do przechowywania danych --
     spectral_container * dataTable = new spectral_container;
+    // -- do widma dynamicznego --
+    // dostaje dodatkowy wskaźnik na checkbox do isotime, żeby móc czytać jaki jest jego stan
+    heat_map_widget * dspw = new heat_map_widget(dataTable, left_hand_list->IsotimeInclude);
+    // END OF NEW STUFF
+
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
-
-    // -- do widma dynamicznego --
-    heat_map_widget * dspw = new heat_map_widget(dataTable);
 
     // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
     // - WIDGET -

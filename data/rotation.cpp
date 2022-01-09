@@ -20,6 +20,7 @@ void spectral_container::rotate(int epoch, int nChans, bool direction, bool Irot
     if(RHCrot)
         rotate1Pol(spectraTableRHC, epoch, nChans);
 
+    madeRotation = true;
     addToListOfModified(epoch);
 }
 
@@ -78,14 +79,7 @@ void spectral_container::recalculateIfromPols(bool modified)
             spectraTableV[epoch-1] = tmpIV[1];
         }
     }
-
-    /*
-    for(int i = 0; i < listOfModified.size(); i++)
-    {
-        std::cout << i << "  " << listOfModified[i] << " | ";
-    }
-    std::cout << std::endl;
-    */
+    madeRotation = true;
 }
 
 void spectral_container::saveModifiedEpochs()
@@ -111,7 +105,8 @@ void spectral_container::saveModifiedEpochs()
 
     // clearujemy tablicę z modyfikowanymi
     listOfModified.clear();
-
+    // setujemy boola na false
+    madeRotation = false;
 }
 
 void spectral_container::makeBackupOfFile(int epoch, bool fits=true)

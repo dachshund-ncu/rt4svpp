@@ -2,15 +2,17 @@
 
 // -- konstruktor widgetu --
 // -- od razu ustala wskaźnik na kontener z danymi --
-heat_map_widget::heat_map_widget(spectral_container * dataTable)
+heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * isotime)
 {
     this->dataTable = dataTable;
+    this->isotime = isotime;
     setButtonsProperties();
     processTextEdits();
     placeWidgets();
     managePlottables();
     setLabelTexts();
     connectForAxis();
+    setDownPolButtons();
     this->setGeometry(200,200, 1366, 720);
     this->setVisible(true);
 }
@@ -64,11 +66,16 @@ void heat_map_widget::setButtonsProperties()
     rotate_minus->setText("Rotate-");
     saveEdition->setText("Save");
     // -------------------------
+    // -- checkboxy --
+    rotateAllPols->setChecked(true);
+    // -- button --
+    Ibut->setDown(true);
 }
 
 void heat_map_widget::processTextEdits()
 {
     numberOfRotatedChannelsTexted->setMaximumSize(60,30);
+    numberOfRotatedChannelsTexted->setText("1");
 }
 
 void heat_map_widget::placeWidgets()
@@ -287,12 +294,20 @@ void heat_map_widget::connectForAxis()
     QObject::connect(xDownBorder_shrt, SIGNAL(activated()), this, SLOT(setMinEpochOnHeatMap()));
     QObject::connect(xUpBorder_shrt, SIGNAL(activated()), this, SLOT(setMaxEpochOnHeatMap()));
     QObject::connect(heatMapReset, SIGNAL(activated()), this, SLOT(resetHeatMap()));
-
     // - polaryzacje -
     QObject::connect(Ibut, SIGNAL(clicked()), this, SLOT(choosePolI()));
     QObject::connect(Vbut, SIGNAL(clicked()), this, SLOT(choosePolV()));
     QObject::connect(LHCbut, SIGNAL(clicked()), this, SLOT(choosePolLHC()));
     QObject::connect(RHCbut, SIGNAL(clicked()), this, SLOT(choosePolRHC()));
+    // - rotacja -
+    QObject::connect(rotate, SIGNAL(clicked()), this, SLOT(rotatePlus()));
+    QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotateMinus()));
+    QObject::connect(saveEdition, SIGNAL(clicked()), this, SLOT(saveEditedSpectra()));
+    QObject::connect(recreateIButton, SIGNAL(clicked()), this, SLOT(recal()));
+    // - krzywa blasku -
+    QObject::connect(makeLcsButton, SIGNAL(clicked()), this, SLOT(makeLCS()));
+    // - widmo dynamiczne -
+    QObject::connect(setLogScale, SIGNAL(clicked()), this, SLOT(setLogScale_slot()));
 }
 
 void heat_map_widget::tmp_plot()
@@ -313,6 +328,7 @@ void heat_map_widget::pressMap(QMouseEvent *event)
     unsigned long int yind = searchForClickedY(y);
     // wywołujemy metodę
     setMapPressed(xind, yind);
+    setDownPolButtons();
 }
 
 void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
@@ -340,32 +356,31 @@ void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
 // metody pomocnicze do klikałke
 unsigned long int  heat_map_widget::searchForClickedX(double x)
 {
-    if(x < 0)
-        x = 0.0;
-    else if (x > dataTable->mjdTable.size()-1)
-        x = dataTable->mjdTable.size()-1;
-    return (unsigned long int) round(x);
+    unsigned long int tmpx = (unsigned long int) round(x);
+    if( tmpx < minObsNumber)
+        tmpx = minObsNumber;
+    else if (tmpx > maxObsNumber)
+        tmpx = maxObsNumber;
+    return tmpx;
 }
 
 unsigned long int  heat_map_widget::searchForClickedY(double y)
 {
     unsigned long int yind = 0;
     // zabezpieczenie przed błędami
-    if(y < dataTable->velocityTable[0][0])
+    if(y < dataTable->velocityTable[xIndex][minRangeVelIndex])
     {
-        y = dataTable->velocityTable[0][0];
-        return (unsigned long int) 0;
+        return (unsigned long int) minRangeVelIndex;
     }
-    else if (y > dataTable->velocityTable[0][dataTable->velocityTable[0].size()-1])
+    else if (y > dataTable->velocityTable[xIndex][maxRangeVelIndex])
     {
-        y = dataTable->velocityTable[0][dataTable->velocityTable[0].size()-1];
-        return dataTable->velocityTable[0].size()-1;
+        return maxRangeVelIndex;
     }
 
     // następnie musimy przeszukać tablicę Vel, by znaleźć indeks, odpowiadający klikniętemu Y:
-    for(int i=0; i < dataTable->velocityTable[0].size(); i++)
+    for(int i=0; i < dataTable->velocityTable[xIndex].size(); i++)
     {
-        if (dataTable->velocityTable[0][i] > y+0.5*(dataTable->velocityTable[0][1]-dataTable->velocityTable[0][0]))
+        if (dataTable->velocityTable[xIndex][i] > y+0.5*(dataTable->velocityTable[xIndex][1]-dataTable->velocityTable[xIndex][0]))
         {
             yind = i-1;
             break;
@@ -540,10 +555,7 @@ void heat_map_widget::updateHeatMap()
         }
     }
     // reskalujemy widmo dynamiczne
-    heatMap->rescaleDataRange();
-    heatMap->rescaleKeyAxis();
-    heatMap->rescaleValueAxis();
-    colorbar->setDataRange(heatMap->dataRange());
+    scaleHeatMap();
     // robimy również update widm
     plotSingleSpectrum(xIndex, yIndex,  *poltab);
     plotLCS(xIndex, yIndex, *poltab, *errtab);
@@ -553,6 +565,8 @@ void heat_map_widget::updateHeatMap()
     colorbarWidget->replot();
     spectrumPlot->replot();
     lcsPlot->replot();
+    // sprawiamy, że wybrana polaryzacja nie znika
+    setDownPolButtons();
 }
 
 std::vector < std::vector < double > > * heat_map_widget::getPoltab()
@@ -660,4 +674,267 @@ void heat_map_widget::setDownPolButtons()
     Vbut->setDown(polV);
     LHCbut->setDown(polLHC);
     RHCbut->setDown(polRHC);
+}
+
+void heat_map_widget::rotateSpectrum(bool direction)
+{
+    // -- czytamy z texteda o ile mamy rotować --
+    int noOfRotatedChannels = readNumberOfRotatedChannels();
+    if (noOfRotatedChannels < 0)
+        return;
+    // -- sprawdzamy, która to epoka --
+    int rotatedEpoch = xIndex;
+    // -- wywołujemy rotację --
+    if(rotateAllPols->isChecked())
+        dataTable->rotate(rotatedEpoch+1, noOfRotatedChannels, direction, 1,1,1,1);
+    else
+        dataTable->rotate(rotatedEpoch+1, noOfRotatedChannels, direction, polI, polV, polLHC, polRHC);
+    // updatujemy
+    updateHeatMap();
+}
+
+int heat_map_widget::readNumberOfRotatedChannels()
+{
+    // Qstring, do którego zgrywamy tekst z text edit
+    QString numberInString = numberOfRotatedChannelsTexted->toPlainText();
+    // -- sprawdzamy, czy text edit jest wypełniony --
+    if (numberInString == "")
+    {
+        // jeśli nie, nic nie robimy
+        return -1;
+    }
+
+    // -- konwertujemy wartość z texedit na int--
+    try
+    {
+        int number_of_rotated_channels = std::stoi(numberInString.toStdString());
+        return number_of_rotated_channels;
+    }
+    catch(...)
+    {
+        return -1;
+    }
+}
+void heat_map_widget::rotatePlus()
+{
+    rotateSpectrum(true);
+}
+void heat_map_widget::rotateMinus()
+{
+    rotateSpectrum(false);
+}
+
+void heat_map_widget::saveEditedSpectra()
+{
+    // -- warunek podstawowy - sprawdza, czy została wykonana jakaś edycja na widmie dynamicznym (w domyśle rotacja albo przeliczenie I/V ) --
+    if (!dataTable->madeRotation)
+    {
+        QMessageBox::information(this, tr("Error!"), tr("There are no edited spectras, so nothing will be saved"));
+        return;
+    }
+    // -- okno do upewniania sie, ze na pewno chcesz --
+    QMessageBox::StandardButton upewka;
+    upewka = QMessageBox::question(this, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectras (non - rotated versions will be stored at *noedt.DAT)?"), QMessageBox::Yes| QMessageBox::No);
+    if (upewka == QMessageBox::No)
+    {
+        // -- jeśli klikniesz nie, nie pójdzie dalej --
+        return;
+    }
+    // -- konstruujemy wiadomość --
+    string message = "Saved edited spectra for: ";
+    for (auto &i : dataTable->listOfModified)
+    {
+        message += " " + dataTable->fileNamesTab[i] + "\n";
+    }
+    // -- faktycznie zapisujemy --
+    dataTable->saveModifiedEpochs();
+    // -- wyświetlamy wiadomość --
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void heat_map_widget::recal()
+{
+    dataTable->recalculateIfromPols();
+    updateHeatMap();
+}
+
+
+void heat_map_widget::makeLCS()
+{
+    dataTable->averageOverVelocity4Pols(yIndex+1, yIndex+1, isotime->isChecked());
+    string message = "";
+    message = "Created lc over channel " + std::to_string(yIndex+1) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(yIndex+1, yIndex+1);
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void heat_map_widget::setLogScale_slot()
+{
+    if(setLogScale->isChecked())
+    {
+        // bierzemy średni RMS
+        double dno = average(*getErrtab());
+        // ustalamy color mapę
+        heatMap->data()->recalculateDataBounds();
+        QCPRange zasieg(dno, heatMap->data()->dataBounds().upper);
+        colorbar->setDataRange(zasieg);
+        // zmieniamy scale type
+        heatMap->setDataScaleType(QCPAxis::stLogarithmic);
+        colorbar->setDataScaleType(QCPAxis::stLogarithmic);
+        colorbar->axis()->setTicker(QSharedPointer<QCPAxisTickerLog>(new QCPAxisTickerLog));
+        colorbarWidget->replot();
+        heatMapPlot->replot();
+        setDownPolButtons();
+    }
+    else
+    {
+        // -- zmieniamy na skale liniowa --
+        heatMap->setDataScaleType(QCPAxis::stLinear);
+        heatMap->setDataScaleType(QCPAxis::stLinear);
+        // -- skalujemy od 0 do max --
+        heatMap->rescaleDataRange();
+        // -- replotujemy --
+        heatMapPlot->replot();
+        setDownPolButtons();
+        colorbar->setDataRange(heatMap->dataRange());
+        //colorbar->axis()->rescale();
+        colorbar->axis()->setTicker(QSharedPointer<QCPAxisTicker>(new QCPAxisTicker));
+        colorbarWidget->replot();
+    }
+}
+
+double heat_map_widget::average(std::vector<double> table)
+{
+    double suma = 0.0;
+    for(auto &i : table)
+        suma += i;
+    return suma / table.size();
+}
+
+void heat_map_widget::scaleHeatMap()
+{
+    heatMap->rescaleKeyAxis();
+    heatMap->rescaleValueAxis();
+    if(setLogScale->isChecked())
+    {
+        double dno = average(*getErrtab());
+        heatMap->data()->recalculateDataBounds();
+        QCPRange zasieg(dno, heatMap->data()->dataBounds().upper);
+        colorbar->setDataRange(zasieg);
+    }
+    else
+    {
+        heatMap->rescaleDataRange();
+        colorbar->setDataRange(heatMap->dataRange());
+    }
+}
+
+void heat_map_widget::colorGraphs(QPen dataPen, QPen errorPen, QPen dotPen)
+{
+    spectrumPlot->graph(0)->setPen(dataPen);
+    spectrumPlot->graph(1)->setPen(dotPen);
+    lcsPlot->graph(0)->setPen(dataPen);
+    lcsPlot->graph(1)->setPen(dotPen);
+    errorBars->setPen(errorPen);
+}
+
+void heat_map_widget::colorSpines(QCustomPlot *plot, QPen pendulum)
+{
+    plot->axisRect()->axis(QCPAxis::atTop)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atLeft)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atBottom)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atRight)->setBasePen(pendulum);
+    // - zmiana kolorów czcionki -
+    // ticklabele
+    plot->xAxis->setTickLabelColor(pendulum.color());
+    plot->xAxis2->setTickLabelColor(pendulum.color());
+    plot->yAxis->setTickLabelColor(pendulum.color());
+    plot->yAxis2->setTickLabelColor(pendulum.color());
+    // subtick
+    plot->xAxis->setSubTickPen(pendulum);
+    plot->xAxis2->setSubTickPen(pendulum);
+    plot->yAxis->setSubTickPen(pendulum);
+    plot->yAxis2->setSubTickPen(pendulum);
+    // tick
+    plot->xAxis->setTickPen(pendulum);
+    plot->xAxis2->setTickPen(pendulum);
+    plot->yAxis->setTickPen(pendulum);
+    plot->yAxis2->setTickPen(pendulum);
+    // label
+    plot->xAxis->setLabelColor(pendulum.color());
+    plot->xAxis2->setLabelColor(pendulum.color());
+    plot->yAxis->setLabelColor(pendulum.color());
+    plot->yAxis2->setLabelColor(pendulum.color());
+}
+
+void heat_map_widget::colorCanvas(QPen background, QPen spines)
+{
+    // -- tła --
+    spectrumPlot->setBackground(background.color());
+    spectrumPlot->axisRect()->setBackground(background.color());
+    lcsPlot->setBackground(background.color());
+    lcsPlot->axisRect()->setBackground(background.color());
+    heatMapPlot->setBackground(background.color());
+    heatMapPlot->axisRect()->setBackground(background.color());
+    colorbarWidget->setBackground(background.color());
+    // -- spines --
+    colorSpines(spectrumPlot, spines);
+    colorSpines(lcsPlot, spines);
+    // szczególne przypadki
+    // - heat map --
+    heatMapPlot->xAxis->setTickLabelColor(spines.color());
+    heatMapPlot->xAxis2->setTickLabelColor(spines.color());
+    heatMapPlot->yAxis->setTickLabelColor(spines.color());
+    heatMapPlot->yAxis2->setTickLabelColor(spines.color());
+    // label
+    heatMapPlot->xAxis->setLabelColor(spines.color());
+    heatMapPlot->xAxis2->setLabelColor(spines.color());
+    heatMapPlot->yAxis->setLabelColor(spines.color());
+    heatMapPlot->yAxis2->setLabelColor(spines.color());
+    // - colorbar -
+    // ticklabele
+    colorbar->axis()->setTickPen(spines);
+    colorbar->axis()->setSubTickPen(spines);
+    colorbar->axis()->setTickLabelColor(spines.color());
+}
+
+void heat_map_widget::setDarkMode()
+{
+    // -- odpowiednie długopisy --
+    QPen dataPen(QColor(135,206,250));
+    dataPen.setWidth(2);
+    QPen errorPen(QColor(180,180,180));
+    QPen dotPen(Qt::magenta);
+    // -- kolorujemy wykresy --
+    colorGraphs(dataPen, errorPen, dotPen);
+    // ------------------------
+    QPen spinesPen(Qt::white);
+    QPen background(Qt::black);
+    colorCanvas(background, spinesPen);
+}
+
+void heat_map_widget::setLightMode()
+{
+    // -- odpowiednie długopisy --
+    QPen dataPen(QColor(0,0,255)); // graph
+    dataPen.setWidth(2);
+    QPen errorPen(QColor(105,105,105)); // errorbary
+    QPen dotPen(QColor(182,26,26));
+    // -- kolorujemy wykresy --
+    colorGraphs(dataPen, errorPen, dotPen);
+    // ------------------------
+    QPen spinesPen(Qt::black);
+    QPen background(Qt::white);
+    colorCanvas(background, spinesPen);
+}
+
+void heat_map_widget::darthMode(bool enabled)
+{
+    if(enabled)
+        setDarkMode();
+    else
+        setLightMode();
+    heatMapPlot->replot();
+    colorbarWidget->replot();
+    spectrumPlot->replot();
+    lcsPlot->replot();
 }
