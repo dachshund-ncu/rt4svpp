@@ -98,19 +98,22 @@ public:
     bool polV = false;
     bool polLHC = false;
     bool polRHC = false;
+    // -- inne --
+    bool firstPlotDone = false;
 
 public:
     void darthMode(bool enabled = false);
+    void firstPlotOnDynamicSpectrum();
 
-
+public slots:
+    void resetHeatMap();
 
 private slots:
     void updateHeatMap();
         void setMinVelOnHeatMap();
         void setMaxVelOnHeatMap();
         void setMinEpochOnHeatMap();
-        void setMaxEpochOnHeatMap();
-        void resetHeatMap();
+        void setMaxEpochOnHeatMap();  
         void choosePolI();
         void choosePolV();
         void choosePolLHC();
@@ -135,7 +138,6 @@ private:
     void managePlottables();
     void setLabelTexts();
     void connectAllSlots();
-    void firstPlotOnDynamicSpectrum();
     void connectForAxis();
     void addGraphs();
     // klikanie widma dynamicznego

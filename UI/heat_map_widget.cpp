@@ -4,6 +4,7 @@
 // -- od razu ustala wskaźnik na kontener z danymi --
 heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * isotime)
 {
+    this->setVisible(false);
     this->dataTable = dataTable;
     this->isotime = isotime;
     setButtonsProperties();
@@ -13,8 +14,7 @@ heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * iso
     setLabelTexts();
     connectForAxis();
     setDownPolButtons();
-    this->setGeometry(200,200, 1366, 720);
-    this->setVisible(true);
+    //this->setGeometry(200,200, 1366, 720);
 }
 
 void heat_map_widget::setButtonsProperties()
@@ -256,6 +256,7 @@ void heat_map_widget::firstPlotOnDynamicSpectrum()
     heatMap->setGradient(gradient);
     heatMap->setDataScaleType(QCPAxis::stLinear);
     heatMap->setTightBoundary(false);
+    firstPlotDone = true;
     updateHeatMap();
 }
 

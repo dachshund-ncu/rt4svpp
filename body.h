@@ -45,7 +45,7 @@ public:
     spectral_container * dataTable = new spectral_container;
     // -- do widma dynamicznego --
     // dostaje dodatkowy wskaźnik na checkbox do isotime, żeby móc czytać jaki jest jego stan
-    heat_map_widget * dspw = new heat_map_widget(dataTable, left_hand_list->IsotimeInclude);
+    heat_map_widget * dynspecWidget = new heat_map_widget(dataTable, left_hand_list->IsotimeInclude);
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
@@ -204,76 +204,17 @@ public:
 
     // -- group boxy --
     // -- glowne widgety --
-
-    QWidget * dynamic_spectrum_widget = new QWidget(&window);
-
-    QPushButton * kill_dynspec = new QPushButton(dynamic_spectrum_widget);
+    QPushButton * kill_dynspec = new QPushButton(dynspecWidget);
 
 
     QWidget * single_spectrum_widget = new QWidget(&window);
     QWidget * rms_section_widget = new QWidget(&window);
 
-    QCustomPlot * colorbar_widget = new QCustomPlot();
-    QCPColorScale * colorbar = new QCPColorScale(colorbar_widget);
-
-    // stringi
-    string caltab_LHC_path;
-    string caltab_RHC_path;
-    // boole
-    bool calibration_section_opened = 0;
-    bool calgridloaded = 0;
-    bool lhc_loaded = 0;
-    bool rhc_loaded = 0;
-    bool cal_toggled = 0;
-    bool calibration_done = 0;
-    // kontenery
-    vector < double > CALTAB_L1_epochs;
-    vector < double > CALTAB_L1;
-    vector < double > CALTAB_R1_epochs;
-    vector < double > CALTAB_R1;
-    vector < double > calcoefs_lhc;
-    vector < double > calcoefs_rhc;
-
-    // funkcje
-    double find_cal_coefficent(double epoch);
-
-    //QWidget window_for_integrate;
-    //QPushButton * make_int = new QPushButton(&window);
-    //QPushButton * make_aver = new QPushButton(&window);
-    //QPushButton * make_aver_time = new QPushButton(&window);
-    //QPushButton * cancel = new QPushButton(&window);
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
-
     QPushButton * kill_singspec = new QPushButton(&window);
 
-    // -----------
-    QVBoxLayout * checkboxes_dynspec = new QVBoxLayout();
-    QCheckBox * set_log_scale = new QCheckBox ("Log scale", &window);
-    QCheckBox * rotate_all_pols = new QCheckBox ("Rotate IVLR", &window);
-    // -------------
-    QPushButton * y_down_border = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * y_up_border = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * x_left_border = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * x_right_border = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * Ibut = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * Vbut = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * LHCbut = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * RHCbut = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * flag = new QPushButton(dynamic_spectrum_widget); // do flagowania
-    QPushButton * make_lcs_button = new QPushButton(dynamic_spectrum_widget); // robi krzywe blasku z zaznaczonego kwadratu
-    QPushButton * recreate_I_button = new QPushButton(dynamic_spectrum_widget);
-    // -- Do rotacji widm --
-    QPushButton * rotate = new QPushButton(dynamic_spectrum_widget);
-    QPushButton * rotate_minus = new QPushButton(dynamic_spectrum_widget);
-    QTextEdit * number_of_rotated_channels_texted = new QTextEdit(dynamic_spectrum_widget);
-    QPushButton * save_rotation = new QPushButton(dynamic_spectrum_widget);
-    // --------------------------------------
-    QSizePolicy sizepolicy;
-    QCPColorGradient gradient;
-
-    bool first_time_dynamic_spectrum_opened = 1;
     QPushButton * save_plots_on_single_spectrum = new QPushButton(single_spectrum_widget);
     QPushButton * display_plot_on_single_spectrum = new QPushButton(single_spectrum_widget);
     QPushButton * set_default_range_button = new QPushButton(single_spectrum_widget);
@@ -281,12 +222,6 @@ public:
     QPushButton * save_all_spectra_to_gnuplot = new QPushButton(single_spectrum_widget);
 
     QStringList AVRNAMES_from_load;
-
-    
-    // -- do robienia pliku z widmem dynamicznym --
-    //QPushButton * WD_start = new QPushButton(&window);
-
-    bool wd_section_opened = 0;
 
     // -- do robienia sekcji rms vs czas --
     // - buttony -
@@ -374,7 +309,6 @@ public:
 
     // -- ISTOTNE - widgety do umieszczania wykresow --
     // - gridy -
-    QGridLayout * grid_dynamic_spectrum_widget  = new QGridLayout(dynamic_spectrum_widget);
     QGridLayout * grid_single_spectrum_widget = new QGridLayout(single_spectrum_widget);
     QGridLayout * grid_rms_section_widget = new QGridLayout(rms_section_widget);
 
@@ -382,50 +316,7 @@ public:
     bool geometry_window_set = 0;
     // -- ploty --
     QCustomPlot spectrum;
-    QCustomPlot dynamic_spectrum_pl;
-    //QCustomPlot  * color_scale_plot = new QCustomPlot(&dynamic_spectrum_pl);
-    QCustomPlot single_dynamic_spectrum;
-    QCustomPlot lcs_dynamic_spectrum;
-    QCPItemLine * x_axis_line = new QCPItemLine(&dynamic_spectrum_pl);
-    QCPItemLine * y_axis_line = new QCPItemLine(&dynamic_spectrum_pl);
 
-
-    QCPItemLine * vel_line = new QCPItemLine(&single_dynamic_spectrum);
-    QCPItemLine * epoch_line = new QCPItemLine(&lcs_dynamic_spectrum);
-
-    // - wertykalne linie -
-    QCPItemStraightLine * inf_vel_line = new QCPItemStraightLine(&single_dynamic_spectrum);
-    QCPItemStraightLine * inf_epoch_line = new QCPItemStraightLine(&lcs_dynamic_spectrum);
-
-    QCPColorMap * colorMap = new QCPColorMap(dynamic_spectrum_pl.xAxis, dynamic_spectrum_pl.yAxis);
-    QCPColorScale * colorScale = new QCPColorScale(&dynamic_spectrum_pl);
-    QCPMarginGroup * marginGroup = new QCPMarginGroup(&dynamic_spectrum_pl);
-
-    QCPErrorBars * errorBars = new QCPErrorBars(lcs_dynamic_spectrum.xAxis, lcs_dynamic_spectrum.yAxis);
-    QShortcut * y_down_border_shrt = new QShortcut(dynamic_spectrum_widget);
-    QShortcut * y_up_border_shrt = new QShortcut(dynamic_spectrum_widget);
-    QShortcut * x_down_border_shrt = new QShortcut(dynamic_spectrum_widget);
-    QShortcut * x_up_border_shrt = new QShortcut(dynamic_spectrum_widget);
-    QShortcut * reset_dynamic_spectrum = new QShortcut(dynamic_spectrum_widget);
-    QGroupBox * obsparams = new QGroupBox();
-    QCPItemRect * rectangle = new QCPItemRect(&dynamic_spectrum_pl);
-    QLabel mjd_label;
-    QLabel date;
-    QLabel cocochanel;
-    QLabel radial_velocity;
-    QLabel obsnumber;
-    QLabel value;
-    //QWidget for_vboxmain;
-    //QVBoxLayout * vbox_main = new QVBoxLayout(&for_vboxmain);
-    QVBoxLayout * on_dyn_spec_buttons = new QVBoxLayout();
-
-
-
-    //QWidget * for_hbox = new QWidget();
-    QGroupBox * butters = new QGroupBox();
-    QHBoxLayout * hbox = new QHBoxLayout();
-    QHBoxLayout * operations = new QHBoxLayout();
-    QVBoxLayout * vbox_single = new QVBoxLayout();
     QComboBox * list_of_observations = new QComboBox();
 
 
@@ -433,10 +324,10 @@ public:
 
 
     // -- boole do sprawdzania statusow --
-    bool layers_exist = 0;
+    bool wd_section_opened = false;
+    bool calibration_section_opened = false;
+    bool calibration_done = false;
     bool color_scale_indicator = 0;
-    bool single_dynamic_spectrum_graph_added = 0;
-    bool lcs_dynamic_spectrum_graph_added = 0;
     bool dynamic_spectrum_opened = 0;
     bool single_spectrum_opened = 0;
     bool graphs_next_to_dynamical_spectrum = 0;
@@ -453,7 +344,6 @@ public:
     bool rhc_pressed = 0;
     bool I_pressed = 1;
     bool v_pressed = 0;
-    bool buttons_on_dynamic_spectrum_connected = 0;
     bool combo_loaded = 0;
     bool layout_single_loaded = 0;
     bool single_spectrum_buttons_connected = 0;
@@ -496,24 +386,12 @@ public slots:
     void load_time_series();
     void kill_single_spectrum();
 
-    void set_dynamic_spectrum_widget();
-    void plot_dynamic_spectrum();
     void display_dynamic_spectrum();
 
-    //void set_dynamic_spectrum_widget();
     void set_single_spectrum_widget();
     void plot_single_spectrum();
 
     void kill_dynamic_spectrum();
-    void press_map(QMouseEvent * event);
-    void set_max_range_on_dynamic_specrum_y_up();
-    void set_max_range_on_dynamic_specrum_y_down();
-    void set_max_range_on_dynamic_specrum_x_right();
-    void set_max_range_on_dynamic_specrum_x_left();
-    void set_I_on_dynamic_spectrum();
-    void set_V_on_dynamic_spectrum();
-    void set_RHC_on_dynamic_spectrum();
-    void set_LHC_on_dynamic_spectrum();
 
     void combo_box_display();
     void set_default_range();
@@ -521,11 +399,6 @@ public slots:
     void save_plots_from_single_spectrum();
 
     void reload_slot();
-    void make_lcs_slot();
-    void flag_slot();
-    void rotate_slot_plus();
-    void rotate_slot_minus();
-    void save_rotated_spectras();
 
     void set_rms_section_widget();
     void open_rms_section_slot();
@@ -550,13 +423,6 @@ public slots:
     void selection_point_on_rms_slot_for_graph_visibility();
     void open_popup_window();
     void close_popup_window_slot();
-    void calculate_log();
-    void calculate_mean_rms();
-
-    void range_zmienion_na_cb();
-    void range_data_zmienion_na_cb();
-    void set_down_IVLHCRHCbuttons();
-
     void save_all_to_gnuplot_slot();
     void autorange_plot(QCustomPlot * plot);
 
@@ -588,8 +454,6 @@ public slots:
     void show_crosshair_gauss();
 
     void cross_hair_gauss(QMouseEvent * event);
-
-    void make_new_I_and_V_for_epoch_on_dynspec();
 
     //void fitted_parameters_creator(unsigned long int amount);
     //void menu_request(QPoint pos);
@@ -675,30 +539,12 @@ public:
     double mean_rms_RHC = 0.0;
 
     void read_chan4rms();
-    void press_map_met(unsigned long int x, unsigned long int y);
 
     bool read_flagged_files();
     bool read_chan4int();
     bool check_if_flagged(string avr_filename);
-    void append_to_rotated_lst(int marker);
-    bool check_if_is_on_rotated_lst(int marker);
-    void save_avr_file(string target_filename, string header, vector < double > i, vector < double > v, vector < double > lhc, vector < double > rhc);
-
-    void read_number_of_rotated_channels();
-
-    void load_l1_caltab(string filename);
-    void load_r1_caltab(string filename);
-    void calibrate_method();
-    void update_dynamic_spectrum();
-
     void set_label_on_popup_window();
     bool read_calconfig();
-
-    int find_epoch_in_caltab(int index_of_epoch, string type_of_caltab);
-    int find_previous_epoch(int index_of_epoch, string type_of_caltab);
-    int find_next_epoch(int index_of_epoch, string type_of_caltab);
-    vector < double > calibrate_single(int epoch_number);
-
 
     // -- pozostale konterery --
     vector < double > average_over_velocity(int min_chan, int max_chan, vector < double > stokes_parameter, vector < double > error);
@@ -728,7 +574,6 @@ public:
     //void connectToSlotsVboxMain();
     //void read_chan4int();
 public slots:
-    void set_dynamic_spectrum_labels_for_clicked(int x_index_cl, int y_index_cl);
     // --- POBOCZNE SEKCJE DO EKSPORTU ---
     // -- metody pomocnicze --
     std::vector < int > readMinMaxValuesFromChannels(QTextEdit & minChannelTE, QTextEdit & maxChannelTE);
@@ -758,9 +603,9 @@ public slots:
     // -- sekcja do kalibracji --
     void openCALSection();
     void closeCALSection();
+    void calibrate_button();
     void load_l1_caltab_button();
     void load_r1_caltab_button();
-    void calibrate_button();
 };
 
 #endif // BODY_H
