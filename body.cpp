@@ -23,7 +23,6 @@ using namespace CCfits;
 // -- konstruktor klasy programu --
 body::body(const char * nazwa)
 {
-    srand(QDateTime::currentDateTime().toTime_t());
     Q_INIT_RESOURCE(resources);
 
     // -- ustawiamy rozmiary okna --
@@ -45,27 +44,16 @@ body::body(const char * nazwa)
     // -- sizepolicy --
     kill_singspec->setMaximumSize(10000,10000);
 
-    list_of_observations->setMaximumSize(10000,10000);
-    save_plots_on_single_spectrum->setMaximumSize(10000,10000);
-    display_plot_on_single_spectrum->setMaximumSize(10000,10000);
-    set_default_range_button->setMaximumSize(10000,10000);
-    erase_last_graph->setMaximumSize(10000,10000);
 
     kill_rms_section->setMaximumSize(10000,10000);
     recalculate_integration->setMaximumSize(10000,10000);
-    save_all_spectra_to_gnuplot->setMaximumSize(10000,10000);
     kill_gauss->setMaximumSize(10000,10000);
     kill_dynspec->setMaximumSize(10000,10000);
 
     kill_singspec->setMinimumSize(0,0);
-    save_plots_on_single_spectrum->setMinimumSize(0,0);
-    display_plot_on_single_spectrum->setMinimumSize(0,0);
-    set_default_range_button->setMinimumSize(0,0);
-    erase_last_graph->setMinimumSize(0,0);
 
     kill_rms_section->setMinimumSize(0,0);
     recalculate_integration->setMinimumSize(0,0);
-    save_all_spectra_to_gnuplot->setMinimumSize(0,0);
     kill_gauss->setMinimumSize(0,0);
     kill_dynspec->setMinimumSize(0,0);
 
@@ -73,7 +61,10 @@ body::body(const char * nazwa)
     grid->setColumnStretch(0,1);
 
     kill_dynspec->setText("Kill dynamic spectrum");
-    //kill_dynspec->setVisible(false);
+    kill_singspec->setText("Kill single spectrum");
+    kill_singspec->setVisible(false);
+    kill_dynspec->setVisible(false);
+
     // -- ustalamy ikony --
     //quit.setIcon(QIcon(":/images/exit.png"));
     // -- dodajemy layout do okna --
@@ -84,8 +75,8 @@ body::body(const char * nazwa)
 
     QObject::connect(kill_gauss, SIGNAL(clicked()), this, SLOT(close_gauss_widget()));
     QObject::connect(kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
+    QObject::connect(kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
     // -- setujemy widgety roznych sekcji --
-    set_single_spectrum_widget();
     set_rms_section_widget();
     set_gauss_widget();
 
@@ -129,50 +120,6 @@ body::body(const char * nazwa)
 
 // -------------------------------------------------------------------------------
 // -- funkcje, ustawiajace widgety (wywolywane na poczatku programu i tylko wtedy)
-
-void body::set_single_spectrum_widget()
-{
-    //single_spectrum_widget.setParent(&window);
-    single_spectrum_widget->setVisible(false);
-    kill_singspec->setVisible(false);
-    // -- tworzymy przycisk - do ubijania ramki --
-    kill_singspec->setText("Kill single spectrum --->");
-    save_plots_on_single_spectrum->setText("Save plots from single spectrum");
-    display_plot_on_single_spectrum->setText("Display plot on single spectrum");
-    set_default_range_button->setText("Set default range");
-    erase_last_graph->setText("Erase last graph");
-    save_all_spectra_to_gnuplot->setText("Save all spectra for gnuplot");
-
-    // -- connectujemy z metodami
-    //QObject::connect(list_of_observations, SIGNAL(activated()), this, SLOT(combo_box_display()));
-    QObject::connect(kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
-    QObject::connect(display_plot_on_single_spectrum, SIGNAL(clicked()), this, SLOT(combo_box_display()));
-    QObject::connect(set_default_range_button, SIGNAL(clicked()), this, SLOT(set_default_range()));
-    QObject::connect(erase_last_graph, SIGNAL(clicked()), this, SLOT(remove_selected_graph()));
-    QObject::connect(save_plots_on_single_spectrum, SIGNAL(clicked()), this, SLOT(save_plots_from_single_spectrum()));
-    QObject::connect(save_all_spectra_to_gnuplot, SIGNAL(clicked()), this, SLOT(save_all_to_gnuplot_slot()));
-
-    // -- dodajemy do grida --
-    grid_single_spectrum_widget->addWidget(&spectrum, 0,0,9,4);
-    grid_single_spectrum_widget->addWidget(list_of_observations, 0,4,1,1);
-    grid_single_spectrum_widget->addWidget(save_plots_on_single_spectrum, 1,4,1,1);
-    grid_single_spectrum_widget->addWidget(display_plot_on_single_spectrum, 2,4,1,1);
-    grid_single_spectrum_widget->addWidget(set_default_range_button, 3,4,1,1);
-    grid_single_spectrum_widget->addWidget(erase_last_graph, 4,4,1,1);
-    grid_single_spectrum_widget->addWidget(save_all_spectra_to_gnuplot, 5,4,1,1);
-
-    grid_single_spectrum_widget->setColumnStretch(0,2);
-    grid_single_spectrum_widget->setColumnStretch(1,2);
-    grid_single_spectrum_widget->setColumnStretch(2,2);
-    grid_single_spectrum_widget->setColumnStretch(3,2);
-
-
-    connect(spectrum.xAxis, SIGNAL(rangeChanged(QCPRange)), spectrum.xAxis2, SLOT(setRange(QCPRange)));
-    connect(spectrum.yAxis, SIGNAL(rangeChanged(QCPRange)), spectrum.yAxis2, SLOT(setRange(QCPRange)));
-    // -- setujemy layout --
-    //single_spectrum_widget.setLayout(grid_single_spectrum_widget);
-
-}
 
 void body::set_rms_section_widget()
 {
@@ -589,147 +536,52 @@ void body::display_single_spectrum()
 {
     // --- zmiana
     // -- obwarowanie warunkami --
-    if (loaded_data == 0)
+    if (!dataTable->loadedData)
     {
         QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
-    if (dynamic_spectrum_opened == 1)
-    {
-        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the DYNAMIC SPECTRUM window"));
-        kill_dynamic_spectrum();
-        //return;
-    }
-
-
-    else if (gauss_section_opened == 1)
-    {
+    if (dynamic_spectrum_opened)
+       kill_dynamic_spectrum();
+    else if (gauss_section_opened)
         close_gauss_widget();
-    }
-
-    else if (rms_section_opened == 1)
-    {
-        //cout << "Plese close the DYNAMIC SPECTRUM window" << endl;
-        //QMessageBox::information(&window, tr("Error!"), tr("Please, close the RMS, Sint & Tsys window"));
+    else if (rms_section_opened)
         close_rms_section_slot();
-        //return;
-    }
-
+    else if (single_spectrum_opened)
+        return;
 
     // -- dodajemy widget do głównego gridu --
-    grid->addWidget(single_spectrum_widget, 0,1,9,5);
-
+    grid->addWidget(ssWidget, 0,1,9,5);
     // -- dodajemy kill singspec do vboxa --
     left_hand_list->appendWidget(kill_dynspec);
-
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,2);
     grid->setColumnStretch(3,2);
     grid->setColumnStretch(4,2);
     grid->setColumnStretch(5,2);
-
-    // -- ustalamy geometrię okna --
-
-
-    // -- updatujemy nasze kochane rzeczy --
-    grid->update();
-    window.show();
-
     // -- zapelniamy wstepnie single spectrum --
-    plot_single_spectrum();
-
+    ssWidget->fillListWithObservations();
     // -- ustawiamy visibility naszego widgetu --
     left_hand_list->appendWidget(kill_singspec);
-    single_spectrum_widget->setVisible(true);
+    ssWidget->setVisible(true);
     kill_singspec->setVisible(true);
-
     // -- ustawiamy boola, informujacego co jest akurat otwarte --
     single_spectrum_opened=1;
-}
-
-// - zapełnia wstępnie wykres w powyższej sekcji -
-void body::plot_single_spectrum()
-{
-    if (single_spectrum_opened == 1)
-        return;
-
-    // setujemy plot
-    spectrum.clearGraphs();
-    n_graphs_on_single_spec = 0;
-    numbers_of_epochs_on_single_spec.clear();
-
-    // przygotowujemy dane
-    unsigned int marker = 0;
-    // wektor z danymi
-    //QVector < double > x(n_chanslst[marker]), y(n_chanslst[marker]);
-    QVector < double > x (dataTable->channelTable[marker].size()), y(dataTable->channelTable[marker].size());
-    // zapelniamy wektor
-    for(unsigned int i = 0; i < dataTable->spectraTableI[marker].size(); i++)
-    {
-        x[i] = dataTable->velocityTable[marker][i];
-        y[i] = dataTable->spectraTableI[marker][i];
-    }
-    // -- dodajemy grafike --
-    spectrum.addGraph();
-    // -- dodajemy do grafiki dane --
-    spectrum.graph(0)->setData(x,y);
-    // -- zarzadzamy labelami --
-    spectrum.xAxis->setLabel("Vel");
-    spectrum.yAxis->setLabel("Flux density (Jy)");
-    // -- zarzadzamy rangeami --
-    //spectrum.xAxis->setRange(*min_element(x.begin(), x.end()), *max_element(x.begin(), x.end()));
-    //spectrum.yAxis->setRange(*min_element(y.begin(), y.end()), *max_element(y.begin(), y.end()));
-    double veldiff = *max_element(x.begin(), x.end()) - *min_element(x.begin(), x.end());
-    spectrum.xAxis->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
-    spectrum.yAxis->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
-    spectrum.xAxis2->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
-    spectrum.yAxis2->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
-    // -- pokazujemy ticki na gornej osi --
-    spectrum.xAxis2->setVisible(true);
-    spectrum.yAxis2->setVisible(true);
-    spectrum.xAxis2->setTickLabels(false);
-    spectrum.yAxis2->setTickLabels(false);
-
-    // -- dodajemy interakcje --
-    spectrum.setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    spectrum.axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-    spectrum.axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
-    spectrum.axisRect()->setRangeZoomAxes(spectrum.xAxis, spectrum.yAxis);
-    spectrum.setSelectionRectMode(QCP::srmZoom);
-
-    // -- ladujemy combo boxa --
-
-    for(int i = 0; i < dataTable->mjdTable.size(); i++)
-    {
-        list_of_observations->addItem(QString::fromStdString(to_string(i+1) + "   " + to_string(dataTable->mjdTable[i])));
-    }
-
-    // -- replotujemy single spectrum --
-    spectrum.replot();
-
-    // -- dwie rzeczy --
-    n_graphs_on_single_spec = 1;
-    numbers_of_epochs_on_single_spec.push_back(marker);
 }
 
 // - zamyka sekcję "single spectrum"
 void body::kill_single_spectrum()
 {
     // - odpinamy od grida -
-    grid->removeWidget(single_spectrum_widget);
+    grid->removeWidget(ssWidget);
     // - odpinamy od vboxa -
     left_hand_list->deleteWidgetFromList(kill_singspec);
-
     // - znikamy -
-    single_spectrum_widget->setVisible(false);
+    ssWidget->setVisible(false);
     kill_singspec->setVisible(false);
     // - ustawiamy widoczność -
     single_spectrum_opened=0;
-    // - clearujemy list_of_obs -
-    list_of_observations->clear();
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
@@ -793,7 +645,6 @@ void body::load_time_series()
         display_dynamic_spectrum();
         geometry_window_set = 1;
     }
-
 }
 
 
@@ -815,10 +666,14 @@ void body::integrate_time_series()
 }
 
 
-
 // -- wyswietla widmo dynamiczne --
 void body::display_dynamic_spectrum()
 {
+    if (!dataTable->loadedData)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
     if (single_spectrum_opened == 1)
         kill_single_spectrum();
     else if (rms_section_opened == 1)
@@ -1068,97 +923,6 @@ void body::calculate_spectral_index()
     closeSPINDSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 
-}
-
-// -- dodaje do wykresu single spectrum wykresy --
-void body::combo_box_display()
-{
-    string buf;
-    QString bufor;
-    int n_of_obs;
-    bufor = list_of_observations->currentText();
-    buf = bufor.toStdString();
-    stringstream ss (buf);
-    ss >> n_of_obs;
-    n_of_obs = n_of_obs - 1;
-    int marker = n_of_obs;
-    last_marker = marker;
-    // -- gromadzimy dane --
-    QVector < double > x(dataTable->channelTable[marker].size()), y(dataTable->channelTable[marker].size());
-    // zapelniamy wektor
-    for(unsigned int i = 0; i < dataTable->spectraTableI[marker].size(); i++)
-    {
-        x[i] = dataTable->velocityTable[marker][i];
-        y[i] = dataTable->spectraTableI[marker][i];
-    }
-    // -- dodajemy do wykresu --
-    spectrum.addGraph();
-    n_graphs_on_single_spec = n_graphs_on_single_spec + 1;
-    // -- dodajemy do grafiki dane --
-    spectrum.graph(n_graphs_on_single_spec-1)->setData(x,y);
-    // -- ustalamy kolor --
-    QPen penis;
-    penis.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-    spectrum.graph(n_graphs_on_single_spec-1)->setPen(penis);
-    // -- replotujemy --
-    spectrum.replot();
-
-    // -- dodajemy do tablicy z indeksami plotowanych obserwacji
-    numbers_of_epochs_on_single_spec.push_back(marker);
-
-
-}
-
-// -- ustala zasięg na wykresie single spectrum --
-void body::set_default_range()
-{
-    QVector < double > x(dataTable->channelTable[last_marker].size()), y(dataTable->channelTable[last_marker].size());
-    // zapelniamy wektor
-    for(unsigned int i = 0; i < dataTable->spectraTableI[last_marker].size(); i++)
-    {
-        x[i] = dataTable->velocityTable[last_marker][i];
-        y[i] = dataTable->spectraTableI[last_marker][i];
-    }
-    // ustalamy range
-    double veldiff = *max_element(x.begin(), x.end()) - *min_element(x.begin(), x.end());
-    spectrum.xAxis->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
-    spectrum.yAxis->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
-    spectrum.xAxis2->setRange(*min_element(x.begin(), x.end()) - 0.05 * veldiff, *max_element(x.begin(), x.end())  + 0.05 * veldiff);
-    spectrum.yAxis2->setRange(*min_element(y.begin(), y.end()) - 0.05 * (*max_element(y.begin(), y.end())), *max_element(y.begin(), y.end())  + 0.05 * (*max_element(y.begin(), y.end())));
-    spectrum.replot();
-
-}
-
-// -- usuwa wybrany plot z single spectrum --
-void body::remove_selected_graph()
-{
-
-    if (n_graphs_on_single_spec > 0)
-    {
-        last_marker = numbers_of_epochs_on_single_spec[numbers_of_epochs_on_single_spec.size()-1];
-        numbers_of_epochs_on_single_spec.pop_back();
-        spectrum.removeGraph(n_graphs_on_single_spec-1);
-        n_graphs_on_single_spec = n_graphs_on_single_spec - 1;
-    }
-    //cout << n_graphs_on_single_spec << endl; //ww
-    spectrum.replot();
-}
-
-// -- zapisuje wykresy z single spectrum do pliku, czytelnego dla gnuplota 00
-void body::save_plots_from_single_spectrum()
-{
-
-    int count = numbers_of_epochs_on_single_spec.size(); // ilosc wybranych widm
-    string message;
-    message = "Saved to ";
-    // -- petla, zapisujaca do plikow --
-    for (int i = 0; i < count; i++)
-    {
-        int epoch = numbers_of_epochs_on_single_spec[i]+1;
-        dataTable->saveSpectrum(epoch);
-        message += dataTable->getFileNameForAsciiSave(epoch) + "\n";
-    }
-    QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
 }
 
 void body::save_all_to_gnuplot_slot()
@@ -2848,6 +2612,7 @@ void body::autorange_plot(QCustomPlot * plot)
 void body::set_dark_mode()
 {
     dynspecWidget->darthMode(!dark_mode_enabled);
+    ssWidget->darthMode(!dark_mode_enabled);
     // pomocnicze prezydenty
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));
@@ -2991,38 +2756,6 @@ void body::set_dark_mode()
         spectrum_on_popup_window.yAxis->setLabelColor(Qt::white);
         spectrum_on_popup_window.yAxis2->setLabelColor(Qt::white);
 
-        // -- spectrum --
-        // - tło -
-        spectrum.setBackground(Qt::black);
-        spectrum.axisRect()->setBackground(Qt::black);
-        // - kwadracik -
-        spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
-        // - zmiana kolorów czcionki -
-        // ticklabele
-        spectrum.xAxis->setTickLabelColor(Qt::white);
-        spectrum.xAxis2->setTickLabelColor(Qt::white);
-        spectrum.yAxis->setTickLabelColor(Qt::white);
-        spectrum.yAxis2->setTickLabelColor(Qt::white);
-        // subtick
-        spectrum.xAxis->setSubTickPen(duda);
-        spectrum.xAxis2->setSubTickPen(duda);
-        spectrum.yAxis->setSubTickPen(duda);
-        spectrum.yAxis2->setSubTickPen(duda);
-        // tick
-        spectrum.xAxis->setTickPen(duda);
-        spectrum.xAxis2->setTickPen(duda);
-        spectrum.yAxis->setTickPen(duda);
-        spectrum.yAxis2->setTickPen(duda);
-        // label
-        spectrum.xAxis->setLabelColor(Qt::white);
-        spectrum.xAxis2->setLabelColor(Qt::white);
-        spectrum.yAxis->setLabelColor(Qt::white);
-        spectrum.yAxis2->setLabelColor(Qt::white);
-
-
         // -- sekcja gauss --
         //spectrum_w_gauss->xaxis->
 
@@ -3106,7 +2839,6 @@ void body::set_dark_mode()
 
 
         // -- replotujemy --
-        spectrum.replot();
         rms_vs_time.replot();
         tsys_vs_time.replot();
         int_vs_time.replot();
@@ -3249,40 +2981,7 @@ void body::set_dark_mode()
         spectrum_on_popup_window.yAxis->setLabelColor(Qt::black);
         spectrum_on_popup_window.yAxis2->setLabelColor(Qt::black);
 
-        // -- spectrum --
-        // - tło -
-        spectrum.setBackground(Qt::white);
-        spectrum.axisRect()->setBackground(Qt::white);
-        // - kwadracik -
-        spectrum.axisRect()->axis(QCPAxis::atTop)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atLeft)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atBottom)->setBasePen(duda);
-        spectrum.axisRect()->axis(QCPAxis::atRight)->setBasePen(duda);
-        // - zmiana kolorów czcionki -
-        // ticklabele
-        spectrum.xAxis->setTickLabelColor(Qt::black);
-        spectrum.xAxis2->setTickLabelColor(Qt::black);
-        spectrum.yAxis->setTickLabelColor(Qt::black);
-        spectrum.yAxis2->setTickLabelColor(Qt::black);
-        // subtick
-        spectrum.xAxis->setSubTickPen(duda);
-        spectrum.xAxis2->setSubTickPen(duda);
-        spectrum.yAxis->setSubTickPen(duda);
-        spectrum.yAxis2->setSubTickPen(duda);
-        // tick
-        spectrum.xAxis->setTickPen(duda);
-        spectrum.xAxis2->setTickPen(duda);
-        spectrum.yAxis->setTickPen(duda);
-        spectrum.yAxis2->setTickPen(duda);
-        // label
-        spectrum.xAxis->setLabelColor(Qt::black);
-        spectrum.xAxis2->setLabelColor(Qt::black);
-        spectrum.yAxis->setLabelColor(Qt::black);
-        spectrum.yAxis2->setLabelColor(Qt::black);
-
-
         // -- sekcja gauss --
-        //spectrum_w_gauss->xaxis->
 
         // -- single dynamic spectrum --
         // - tło -
@@ -3362,7 +3061,6 @@ void body::set_dark_mode()
 
 
         // -- replotujemy --
-        spectrum.replot();
         rms_vs_time.replot();
         tsys_vs_time.replot();
         int_vs_time.replot();
@@ -3874,8 +3572,8 @@ void body::openIntegrateSection()
     // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
     if(dynamic_spectrum_opened == 1)
     {
-        intWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        intWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+        intWidget->startingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->minRangeVelIndex+1)));
+        intWidget->endingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->maxRangeVelIndex+1)));
     }
 
     // - ustawiamy boola, informującego o otwarciu sekcji -
@@ -3911,8 +3609,8 @@ void body::openAOVSection()
     // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
     if(dynamic_spectrum_opened == 1)
     {
-        averOverVelocityWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        averOverVelocityWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
+        averOverVelocityWidget->startingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->minRangeVelIndex+1)));
+        averOverVelocityWidget->endingChannelInt->setText((QString::fromStdString(to_string(dynspecWidget->maxRangeVelIndex+1))));
     }
 
     // - ustawiamy boola, informującego o otwarciu sekcji -
@@ -3950,8 +3648,8 @@ void body::openAOTSection()
     // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
     if(dynamic_spectrum_opened == 1)
     {
-        averOverTimeWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_obs_number+1)));
-        averOverTimeWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_obs_number+1))));
+        averOverTimeWidget->startingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->minObsNumber+1)));
+        averOverTimeWidget->endingChannelInt->setText((QString::fromStdString(to_string(dynspecWidget->maxObsNumber+1))));
     }
 
     // ustalamy boola
@@ -3991,8 +3689,8 @@ void body::openSPINDSection()
     // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
     if(dynamic_spectrum_opened == 1)
     {
-        SpectralIndexWidget->startingChannelInt->setText(QString::fromStdString(to_string(min_obs_number+1)));
-        SpectralIndexWidget->endingChannelInt->setText((QString::fromStdString(to_string(max_obs_number+1))));
+        SpectralIndexWidget->startingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->minObsNumber+1)));
+        SpectralIndexWidget->endingChannelInt->setText((QString::fromStdString(to_string(dynspecWidget->maxObsNumber+1))));
     }
 
     // - przypinamy do vboxa -
@@ -4031,10 +3729,10 @@ void body::openWDSection()
     // dla otwarteg owidma dynczmicznego - zapełniamy text edity
     if(dynamic_spectrum_opened== 1)
     {
-        exDynspWidget->startChannelTextEd->setText(QString::fromStdString(to_string(min_range_vel_index+1)));
-        exDynspWidget->endChannelTextEd->setText((QString::fromStdString(to_string(max_range_vel_index+1))));
-        exDynspWidget->startEpochTextEd->setText(QString::fromStdString(to_string(min_obs_number+1)));
-        exDynspWidget->endEpochTextEd->setText((QString::fromStdString(to_string(max_obs_number+1))));
+        exDynspWidget->startChannelTextEd->setText(QString::fromStdString(to_string(dynspecWidget->minRangeVelIndex+1)));
+        exDynspWidget->endChannelTextEd->setText(QString::fromStdString(to_string(dynspecWidget->maxRangeVelIndex+1)));
+        exDynspWidget->startEpochTextEd->setText(QString::fromStdString(to_string(dynspecWidget->minObsNumber+1)));
+        exDynspWidget->endEpochTextEd->setText(QString::fromStdString(to_string(dynspecWidget->maxObsNumber+1)));
     }
 
     // przypinamy do vboxa

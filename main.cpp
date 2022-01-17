@@ -9,10 +9,11 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <CCfits/CCfits>
-
+#include <ctime>
 using namespace CCfits;
 int main(int argc, char *argv[])
 {
+    srand(time(NULL));
     FITS::setVerboseMode(true);
     // -- zaczynamy program --
     QApplication program (argc, argv);

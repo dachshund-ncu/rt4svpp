@@ -21,6 +21,7 @@
 #include "UI/export_dynamic_spectrum_widget.h"
 #include "UI/calsection.h"
 #include "UI/heat_map_widget.h"
+#include "UI/single_spec_widget.h"
 using namespace std;
 
 class body : public QObject
@@ -46,6 +47,8 @@ public:
     // -- do widma dynamicznego --
     // dostaje dodatkowy wskaźnik na checkbox do isotime, żeby móc czytać jaki jest jego stan
     heat_map_widget * dynspecWidget = new heat_map_widget(dataTable, left_hand_list->IsotimeInclude);
+    // -- do single spectrum --
+    single_spec_widget * ssWidget = new single_spec_widget(dataTable);
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
@@ -206,20 +209,12 @@ public:
     // -- glowne widgety --
     QPushButton * kill_dynspec = new QPushButton(dynspecWidget);
 
-
-    QWidget * single_spectrum_widget = new QWidget(&window);
     QWidget * rms_section_widget = new QWidget(&window);
 
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
     QPushButton * kill_singspec = new QPushButton(&window);
-
-    QPushButton * save_plots_on_single_spectrum = new QPushButton(single_spectrum_widget);
-    QPushButton * display_plot_on_single_spectrum = new QPushButton(single_spectrum_widget);
-    QPushButton * set_default_range_button = new QPushButton(single_spectrum_widget);
-    QPushButton * erase_last_graph = new QPushButton(single_spectrum_widget);
-    QPushButton * save_all_spectra_to_gnuplot = new QPushButton(single_spectrum_widget);
 
     QStringList AVRNAMES_from_load;
 
@@ -309,17 +304,11 @@ public:
 
     // -- ISTOTNE - widgety do umieszczania wykresow --
     // - gridy -
-    QGridLayout * grid_single_spectrum_widget = new QGridLayout(single_spectrum_widget);
     QGridLayout * grid_rms_section_widget = new QGridLayout(rms_section_widget);
 
     // bole
     bool geometry_window_set = 0;
     // -- ploty --
-    QCustomPlot spectrum;
-
-    QComboBox * list_of_observations = new QComboBox();
-
-
     bool loaded_from_listfile = 0;
 
 
@@ -382,24 +371,17 @@ public:
 
 public slots:
     // -- METODY - do przyciskow --
-    void display_single_spectrum();
+    // -- ladowanie danych --
     void load_time_series();
+    void reload_slot();
+    // -- single widmo --
+    void display_single_spectrum();
     void kill_single_spectrum();
-
+    // -- widmo dynamiczne --
     void display_dynamic_spectrum();
-
-    void set_single_spectrum_widget();
-    void plot_single_spectrum();
-
     void kill_dynamic_spectrum();
 
-    void combo_box_display();
-    void set_default_range();
-    void remove_selected_graph();
-    void save_plots_from_single_spectrum();
-
-    void reload_slot();
-
+    // -- pozostale --
     void set_rms_section_widget();
     void open_rms_section_slot();
     void close_rms_section_slot();
