@@ -22,7 +22,8 @@ SOURCES += \
     UI/export_dynamic_spectrum_widget.cpp \
     UI/calsection.cpp \
     UI/heat_map_widget.cpp \
-    UI/single_spec_widget.cpp
+    UI/single_spec_widget.cpp \
+    UI/rms_sec_widget.cpp
 
 HEADERS += \
     body.h \
@@ -33,7 +34,8 @@ HEADERS += \
     UI/export_dynamic_spectrum_widget.h \
     UI/calsection.h \
     UI/heat_map_widget.h \
-    UI/single_spec_widget.h
+    UI/single_spec_widget.h \
+    UI/rms_sec_widget.h
 
 RESOURCES += \
     resources.qrc

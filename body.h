@@ -22,6 +22,7 @@
 #include "UI/calsection.h"
 #include "UI/heat_map_widget.h"
 #include "UI/single_spec_widget.h"
+#include "UI/rms_sec_widget.h"
 using namespace std;
 
 class body : public QObject
@@ -49,6 +50,8 @@ public:
     heat_map_widget * dynspecWidget = new heat_map_widget(dataTable, left_hand_list->IsotimeInclude);
     // -- do single spectrum --
     single_spec_widget * ssWidget = new single_spec_widget(dataTable);
+    // -- do RMS section --
+    Rms_sec_widget * rms_sec_w = new Rms_sec_widget(dataTable);
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
