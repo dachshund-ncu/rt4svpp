@@ -42,9 +42,20 @@ public:
     // -- text edity --
     QTextEdit * RmsIntStart = new QTextEdit(this);
     QTextEdit * RmsIntEnd = new QTextEdit(this);
+    // -- grid --
+    QGridLayout * grid = new QGridLayout(this);
+    // -- labele --
+    QLabel * stokesParams = new QLabel(this);
+    QLabel * intParamsLabel = new QLabel(this);
+    QLabel * exportingSecLabel = new QLabel(this);
+    QLabel * graphParamsLabel = new QLabel(this);
     // -----------------------------------------------------
     // -- show Points --
-
+private:
+    void setUpButtons();
+    void setUpLabels();
+    void setUpPlottables();
+    void placeOnGrid();
 };
 
 #endif // RMS_SEC_WIDGET_H
