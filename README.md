@@ -41,6 +41,17 @@ CCFits and cfitsio should be installed, according to the instructions provided b
 When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "rt4sv++".
 It is good to type "make clean" after compilation is done.
 
+Sometimes it happens, that compilation is succesful, but the binary won't start - it is due linker being not able to find shared libraries. You can manually add search library to the linker by creating a new .conf file in /etc/ld.so.conf.d directory with one line:
+
+/usr/local
+
+then execude command:
+
+sudo ldconfig
+
+
+it should help
+
 -- Known problems --
 
 1. "My program does not want to compile"
