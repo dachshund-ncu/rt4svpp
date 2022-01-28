@@ -173,6 +173,7 @@ private:
     void saveChi2RedToFile(int begin_epoch, int end_epoch, double relativeError, std::vector < std::vector < double > > &Chi2RedContainer);
     // mean
     double meanOfChannel(int channel, int begin_epoch, int end_epoch, std::vector < std::vector < double > > & poltab);
+    double mean(std::vector < double > tab);
     // ----------------------
     // -- rotate --
     void rotate1Pol(std::vector < std::vector  < double > > & poltab, int epoch, int nChans);

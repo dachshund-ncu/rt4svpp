@@ -102,15 +102,21 @@ double spectral_container::fiSpectralIndex1channel(int channel, int begin_epoch,
         N = N + 1.0;
 
     }
+
     double sum_to_mean = meanOfChannel(channel, begin_epoch, end_epoch, poltab);
+    // -- zabezpieczenie przed słabymi średnimi --
+    if (3.0 * mean(errors) > sum_to_mean )
+        return 0.0;
+    // -------------------------------------------
+
     // obliczamy FI
-    double FI;
-    if ( (begin_epoch - end_epoch) == 0 || N <= 1.0 || sum1 == 0.0 || sum2 == 0.0)
+    double FI; // zwracane FI
+    if ( (begin_epoch - end_epoch) == 0 || N <= 1.0 || sum1 == 0.0 || sum2 == 0.0) // kilka skrajnych warunków, które skutkują błędami
         FI = 0.0;
     else
-        FI = sqrt(abs((((sum1 - sum2)/(N-1.0)) - 1.0) * N / sum3)) * 1.0 / sum_to_mean;
+        FI = sqrt(abs((((sum1 - sum2)/(N-1.0)) - 1.0) * N / sum3)) * 1.0 / sum_to_mean; // właściwe obliczenia
 
-    if(FI < 0.0)
+    if(FI < 0.0) // nie może być mniejsze od 0!
         FI = 0.0;
 
     return FI;
@@ -334,3 +340,12 @@ double spectral_container::meanOfChannel(int channel, int begin_epoch, int end_e
     return mean;
 }
 
+double spectral_container::mean(std::vector < double > tab)
+{
+    double suma = 0.0;
+    for(auto &i : tab)
+    {
+        suma += i;
+    }
+    return suma / tab.size();
+}
