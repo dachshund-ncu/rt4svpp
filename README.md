@@ -7,7 +7,7 @@ Release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeploy
 
 
 
--- Some major comments --
+'''Some major comments'''
 
 This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless for you.
 
