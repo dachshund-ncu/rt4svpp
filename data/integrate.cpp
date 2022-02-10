@@ -53,7 +53,7 @@ double spectral_container::integrateSingleEpoch(int min_channel, int max_channel
         max_channel = (int) poltab.size();
 
     // tutaj będzie się dziać cała całkowa magia
-    double suma; // suma całki
+    double suma = 0.0; // suma całki
     double h = abs(veltab[1] - veltab[0]);
     // pętla, licząca całkę
     for(int i = min_channel-1; i < max_channel; i++)

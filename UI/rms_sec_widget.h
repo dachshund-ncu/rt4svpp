@@ -44,11 +44,14 @@ public:
     QTextEdit * RmsIntEnd = new QTextEdit(this);
     // -- grid --
     QGridLayout * grid = new QGridLayout(this);
+    QVBoxLayout * exportVbox = new QVBoxLayout();
     // -- labele --
     QLabel * stokesParams = new QLabel(this);
     QLabel * intParamsLabel = new QLabel(this);
     QLabel * exportingSecLabel = new QLabel(this);
     QLabel * graphParamsLabel = new QLabel(this);
+    QLabel * startIntegrateLabel = new QLabel(this);
+    QLabel * endIntegrateLabel = new QLabel(this);
     // -----------------------------------------------------
     // -- show Points --
 private:
