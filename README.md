@@ -7,20 +7,20 @@ Release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeploy
 
 
 
-'''Some major comments'''
+### Some major comments ###
 
 This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless for you.
 
--- Usage --
+## Usage ##
 
 Just download suitable release and enjoy. .Deb release is now static and does not require depedencies. Only make sure, you use at least something based on ubuntu 18.04
 
 If you want to build it instead...
 
 
--- Compilation on Linux systems --
+## Compilation on Linux systems ##
 
-- Needed Packages -
+### Needed Packages ###
 
 g++
 
@@ -29,13 +29,23 @@ qt5-default
 CCFits and cfitsio libraries (https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
 
 
-- How to install? -
+### How to install? ###
 
 sudo apt install g++
 
 sudo apt install qt5-default
 
 CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local"
+< cfitsio >:
+1. untar the files
+2. in the main untared directory run ./configure --prefix=/usr/local/
+3. run make
+4. run sudo make install
+< CCfits >
+1. unter the files
+2. in the main untared directory run ./configure
+3. run make
+4. run make install
 
 
 When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "rt4sv++".
@@ -52,9 +62,9 @@ sudo ldconfig
 
 it should help
 
--- Known problems --
+## Known problems ##
 
-1. "My program does not want to compile"
+### "My program does not want to compile" ###
 
 Check version of your g++ compiler (type "g++ --version" in command line). If it is not in at least version 8, try to install it (sudo apt install g++-8). Then, change three lines in "Makefile":
 
@@ -80,7 +90,7 @@ LINK          = g++-8
 Compilation should run without problems now.
 
 
-2. "I use old ubuntu/debian and i can not install g++-8"
+### "I use old ubuntu/debian and i can not install g++-8" ###
 
 My advice: update your system. But, if you REALLY have to use it, try this solution:
 
@@ -116,7 +126,7 @@ type "make"
 
 It should now run on your old system
 
-3. I use fedora/red hat/arch/manjaro
+### I use fedora/red hat/arch/manjaro ###
 
 Just don't use them 
 
@@ -124,7 +134,7 @@ Just joking.
 
 I do not use system-specific libraries and commands inside rt4sv++, so if you compile it for these systems - it should perform fine.
 
-4. Will this run on Windows?
+### Will this run on Windows? ###
 
 Working on Windows with this program seems a bit non-natural to me - but since running it does not require terminal window, it can be done - you just need to compile it correctly. Best way is to download qt tools from qt site and use them to compile. Also remember, that you'll probably need to copy some dll files to executable directory to open it outside qtCreator.
 Also there is no point of building windows version, since it is also in the "Release" section now.
