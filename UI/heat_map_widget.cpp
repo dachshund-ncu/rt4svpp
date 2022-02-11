@@ -580,6 +580,8 @@ std::vector < std::vector < double > > * heat_map_widget::getPoltab()
         return &dataTable->spectraTableLHC;
     else if (polRHC)
         return  &dataTable->spectraTableRHC;
+    else
+        return &dataTable->spectraTableI;
 }
 
 std::vector < double > * heat_map_widget::getErrtab()
@@ -592,6 +594,8 @@ std::vector < double > * heat_map_widget::getErrtab()
         return &dataTable->spectraTableLHCERR;
     else if (polRHC)
         return  &dataTable->spectraTableRHCERR;
+    else
+        return &dataTable->spectraTableIERR;
 }
 
 void heat_map_widget::setMinVelOnHeatMap()

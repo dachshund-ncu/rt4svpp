@@ -220,13 +220,13 @@ void body::set_rms_section_widget()
 
 
     // cross - hairy
-    QObject::connect(&rms_vs_time, SIGNAL(mouseMove(QMouseEvent *)), this, SLOT(cross_hair_rms_vs_time(QMouseEvent *)));
-    QObject::connect(&tsys_vs_time, SIGNAL(mouseMove(QMouseEvent *)), this, SLOT(cross_hair_tsys_vs_time(QMouseEvent *)));
-    QObject::connect(&int_vs_time, SIGNAL(mouseMove(QMouseEvent *)), this, SLOT(cross_hair_tint_vs_time(QMouseEvent *)));
+    QObject::connect(&rms_vs_time, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cross_hair_rms_vs_time(QMouseEvent*)));
+    QObject::connect(&tsys_vs_time, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cross_hair_tsys_vs_time(QMouseEvent*)));
+    QObject::connect(&int_vs_time, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cross_hair_tint_vs_time(QMouseEvent*)));
     // selekcja z wykresow
-    QObject::connect(&rms_vs_time, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(show_spectrum_on_select_rms(QMouseEvent * )));
-    QObject::connect(&tsys_vs_time, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(show_spectrum_on_select_tsys(QMouseEvent * )));
-    QObject::connect(&int_vs_time, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(show_spectrum_on_select_tint(QMouseEvent * )));
+    QObject::connect(&rms_vs_time, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(show_spectrum_on_select_rms(QMouseEvent*)));
+    QObject::connect(&tsys_vs_time, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(show_spectrum_on_select_tsys(QMouseEvent*)));
+    QObject::connect(&int_vs_time, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(show_spectrum_on_select_tint(QMouseEvent*)));
 
     grid_rms_section_widget->setColumnStretch(0,2);
     grid_rms_section_widget->setColumnStretch(1,2);

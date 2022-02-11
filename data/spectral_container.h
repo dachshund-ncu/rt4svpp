@@ -88,6 +88,7 @@ public:
     void loadDataFromList(QStringList qtListaPlikow);
     // -- liczy całkę z wszystkich polaryzacji i zapisuje do pliku --
     void integrate4Pols(int min_channel, int max_channel, bool isotimeInclude);
+    std::vector < std::vector < double > > getIntegrate(int min_channel, int max_channel);
     // pomocnicze metody publiczne
     std::vector < double > integratePol(int min_channel, int max_channel, std::vector < std::vector < double > > & veltab, std::vector < std::vector < double > > &poltab );
     std::vector < double > integratePolErr(std::vector < std::vector < double > > & veltab, std::vector < double > & errtab );

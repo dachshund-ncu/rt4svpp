@@ -21,8 +21,6 @@ public:
     QCheckBox * isotime = new QCheckBox();
     // konstruktor
     heat_map_widget(spectral_container * dataTable, QCheckBox * isotime);
-    // destruktor
-    virtual ~heat_map_widget() {}
 
     // główne miejsca
     // grid

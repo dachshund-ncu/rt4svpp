@@ -8,6 +8,7 @@
 
 class Rms_sec_widget : public QWidget
 {
+    Q_OBJECT
 public:
     spectral_container * dataTable;
     Rms_sec_widget(spectral_container * dataTable);
@@ -52,6 +53,8 @@ public:
     QLabel * graphParamsLabel = new QLabel(this);
     QLabel * startIntegrateLabel = new QLabel(this);
     QLabel * endIntegrateLabel = new QLabel(this);
+    // boole
+    bool selectable = false;
     // -----------------------------------------------------
     // -- show Points --
 private:
@@ -59,6 +62,19 @@ private:
     void setUpLabels();
     void setUpPlottables();
     void placeOnGrid();
+    void connectElementsToSlots();
+    void replotGraphs();
+    void autoscaleGraph(QCustomPlot * plot);
+    std::vector < std::vector < double > > getIntegrateFromDataTable();
+    int getChannel(QTextEdit * pole);
+private slots:
+    void changeInteractions();
+    void showPointsSlot();
+    void showLinesSlot();
+    void showIVLR();
+    void switchSelect();
+    void fillWithData();
+
 };
 
 #endif // RMS_SEC_WIDGET_H

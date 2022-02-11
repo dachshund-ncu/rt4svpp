@@ -8,6 +8,7 @@ Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
     setUpLabels();
     setUpPlottables();
     placeOnGrid();
+    connectElementsToSlots();
     // -- dajemy nowe rzeczy do roboty --
     this->setGeometry(300, 300, 1280, 720);
     this->setVisible(true);
@@ -46,6 +47,9 @@ void Rms_sec_widget::setUpButtons()
     VOnRms->setChecked(false);
     LHCOnRms->setChecked(false);
     RHCOnRms->setChecked(false);
+    rectZoom->setChecked(true);
+    showPoints->setChecked(true);
+
 
 }
 
@@ -69,6 +73,10 @@ void Rms_sec_widget::setUpLabels()
 
 void Rms_sec_widget::setUpPlottables()
 {
+    // -- clearujemy wszystko --
+    RmsVsTime->clearItems();
+    intVsTime->clearItems();
+    tsysVsTime->clearItems();
     // -- robimy setup --
     // --- pens ---
     QPen penLHC(Qt::red);
@@ -153,21 +161,21 @@ void Rms_sec_widget::setUpPlottables()
     tsysVsTime->xAxis->setLabel("MJD");
     tsysVsTime->yAxis->setLabel("Tsys (K)");
     // -- interakcje --
-    RmsVsTime->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    RmsVsTime->setInteractions(QCP::iRangeZoom);
     RmsVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
     RmsVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
     RmsVsTime->axisRect()->setRangeZoomAxes(RmsVsTime->xAxis, RmsVsTime->yAxis);
     RmsVsTime->setSelectionRectMode(QCP::srmZoom);
     RmsVsTime->setCursor(QCursor(Qt::CrossCursor));
 
-    intVsTime->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    intVsTime->setInteractions(QCP::iRangeZoom);
     intVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
     intVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
     intVsTime->axisRect()->setRangeZoomAxes(intVsTime->xAxis, intVsTime->yAxis);
     intVsTime->setSelectionRectMode(QCP::srmZoom);
     intVsTime->setCursor(QCursor(Qt::CrossCursor));
 
-    tsysVsTime->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    tsysVsTime->setInteractions(QCP::iRangeZoom);
     tsysVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
     tsysVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
     tsysVsTime->axisRect()->setRangeZoomAxes(tsysVsTime->xAxis, tsysVsTime->yAxis);
@@ -238,4 +246,223 @@ void Rms_sec_widget::placeOnGrid()
         grid->setRowStretch(i,1);
     for(int i = 0; i < grid->columnCount(); i++)
         grid->setColumnStretch(i,1);
+}
+
+void Rms_sec_widget::connectElementsToSlots()
+{
+    QObject::connect(rectZoom, SIGNAL(clicked()), this, SLOT(changeInteractions()));
+
+    QObject::connect(IOnRms, SIGNAL(clicked()), this, SLOT(showIVLR()));
+    QObject::connect(VOnRms, SIGNAL(clicked()), this, SLOT(showIVLR()));
+    QObject::connect(LHCOnRms, SIGNAL(clicked()), this, SLOT(showIVLR()));
+    QObject::connect(RHCOnRms, SIGNAL(clicked()), this, SLOT(showIVLR()));
+
+    QObject::connect(showPoints, SIGNAL(clicked()), this, SLOT(showPointsSlot()));
+    QObject::connect(showLines, SIGNAL(clicked()), this, SLOT(showLinesSlot()));
+
+    QObject::connect(selectionOfPoint, SIGNAL(clicked()), this, SLOT(switchSelect()));
+
+    // TMP
+    QObject::connect(showSelectedSpectrum, SIGNAL(clicked()), this, SLOT(fillWithData()));
+}
+
+void Rms_sec_widget::changeInteractions()
+{
+    if(rectZoom->isChecked())
+    {
+        RmsVsTime->setInteractions(QCP::iRangeZoom);
+        RmsVsTime->setSelectionRectMode(QCP::srmZoom);
+        RmsVsTime->setCursor(QCursor(Qt::CrossCursor));
+        tsysVsTime->setInteractions(QCP::iRangeZoom);
+        tsysVsTime->setSelectionRectMode(QCP::srmZoom);
+        tsysVsTime->setCursor(QCursor(Qt::CrossCursor));
+        intVsTime->setInteractions(QCP::iRangeZoom);
+        intVsTime->setSelectionRectMode(QCP::srmZoom);
+        intVsTime->setCursor(QCursor(Qt::CrossCursor));
+    }
+    else
+    {
+        RmsVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        RmsVsTime->setSelectionRectMode(QCP::srmNone);
+        RmsVsTime->setCursor(QCursor(Qt::ArrowCursor));
+        tsysVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        tsysVsTime->setSelectionRectMode(QCP::srmNone);
+        tsysVsTime->setCursor(QCursor(Qt::ArrowCursor));
+        intVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        intVsTime->setSelectionRectMode(QCP::srmNone);
+        intVsTime->setCursor(QCursor(Qt::ArrowCursor));
+    }
+}
+
+void Rms_sec_widget::showPointsSlot()
+{
+    QCPScatterStyle style;
+    if(!showPoints->isChecked())
+    {
+        style.setShape(QCPScatterStyle::ssNone);
+    }
+    else
+    {
+        style.setShape(QCPScatterStyle::ssDisc);
+        style.setSize(4);
+    }
+
+    for(int i =0; i < 4; i++)
+    {
+        RmsVsTime->graph(i)->setScatterStyle(style);
+        intVsTime->graph(i)->setScatterStyle(style);
+    }
+    tsysVsTime->graph(0)->setScatterStyle(style);
+    replotGraphs();
+}
+
+void Rms_sec_widget::showLinesSlot()
+{
+    if (!showLines->isChecked())
+    {
+        for(int i =0; i < 4; i++)
+        {
+            RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
+            intVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
+        }
+        tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsNone);
+    }
+    else
+    {
+        for(int i =0; i < 4; i++)
+        {
+            RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsLine);
+            intVsTime->graph(i)->setLineStyle(QCPGraph::lsLine);
+        }
+        tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsLine);
+    }
+    replotGraphs();
+}
+
+void Rms_sec_widget::showIVLR()
+{
+    bool vis[4] = {false, false, false, false};
+    if(IOnRms->isChecked())
+        vis[0] = true;
+    if(VOnRms->isChecked())
+        vis[1] = true;
+    if(LHCOnRms->isChecked())
+        vis[2] = true;
+    if(RHCOnRms->isChecked())
+        vis[3] = true;
+    for(int i = 0; i < 4; i++)
+    {
+        RmsVsTime->graph(i)->setVisible(vis[i]);
+        intVsTime->graph(i)->setVisible(vis[i]);
+    }
+    replotGraphs();
+}
+
+void Rms_sec_widget::switchSelect()
+{
+    if(selectionOfPoint->isChecked())
+    {
+        selectable = true;
+    }
+    else
+    {
+        selectable = false;
+    }
+}
+
+void Rms_sec_widget::fillWithData()
+{
+
+    // -- gdy nie załadowano danych --
+    if (!dataTable->loadedData)
+        return;
+
+    std::cout << "filling" << std::endl;
+    // -- zaczynamy pisać --
+    // - w stylue c: deklarujemy kontenery -
+    unsigned long int size = dataTable->spectraTableIERR.size();
+    QVector < double > mjdTab(size), iRms(size), vRms(size), lhcRms(size), rhcRms(size), tsys(size), sintI(size), sintV(size), sintLhc(size), sintRhc(size);
+    std::vector < std::vector < double > > calki = getIntegrateFromDataTable();
+    // - zapełniamy wektory -
+    for(unsigned long int i = 0; i < size; i++)
+    {
+        // --
+        mjdTab[i] = dataTable->mjdTable[i];
+        // --
+        iRms[i] = dataTable->spectraTableIERR[i];
+        vRms[i] = dataTable->spectraTableVERR[i];
+        lhcRms[i] = dataTable->spectraTableLHCERR[i];
+        rhcRms[i] = dataTable->spectraTableRHCERR[i];
+        // --
+        tsys[i] = dataTable->tsysTable[i];
+        // --
+        sintI[i] = calki[0][i];
+        sintV[i] = calki[1][i];
+        sintLhc[i] = calki[2][i];
+        sintRhc[i] = calki[3][i];
+
+    }
+    // -- dodajemy do graphów --
+    // - RMS -
+    RmsVsTime->graph(0)->setData(mjdTab, iRms);
+    RmsVsTime->graph(1)->setData(mjdTab, vRms);
+    RmsVsTime->graph(2)->setData(mjdTab, lhcRms);
+    RmsVsTime->graph(3)->setData(mjdTab, rhcRms);
+    // - tsys -
+    tsysVsTime->graph(0)->setData(mjdTab, tsys);
+    // - INT -
+    intVsTime->graph(0)->setData(mjdTab, sintI);
+    intVsTime->graph(1)->setData(mjdTab, sintV);
+    intVsTime->graph(2)->setData(mjdTab, sintLhc);
+    intVsTime->graph(3)->setData(mjdTab, sintRhc);
+
+    autoscaleGraph(RmsVsTime);
+    autoscaleGraph(tsysVsTime);
+    autoscaleGraph(intVsTime);
+    replotGraphs();
+}
+
+void Rms_sec_widget::replotGraphs()
+{
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::autoscaleGraph(QCustomPlot * plot)
+{
+    plot->rescaleAxes();
+    double max_x, min_x, max_y, min_y;
+    max_x = plot->xAxis->range().upper;
+    min_x = plot->xAxis->range().lower;
+    max_y = plot->yAxis->range().upper;
+    min_y = plot->yAxis->range().lower;
+    double diffrence_x = max_x - min_x;
+    double diffrence_y = max_y - min_y;
+    plot->xAxis->setRange(min_x - (0.05 * diffrence_x), max_x + (0.05 * diffrence_x));
+    plot->yAxis->setRange(min_y - (0.05 * diffrence_y), max_y + (0.05 * diffrence_y));
+}
+
+std::vector < std::vector < double > > Rms_sec_widget::getIntegrateFromDataTable()
+{
+    int min = getChannel(RmsIntStart);
+    int max = getChannel(RmsIntEnd);
+    return dataTable->getIntegrate(min,max);
+}
+
+int Rms_sec_widget::getChannel(QTextEdit * pole)
+{
+    QString numberInString = pole->toPlainText();
+    if(numberInString == "")
+        return 0;
+
+    try
+    {
+        int number = std::stoi(numberInString.toStdString());
+        return number;
+    }
+    catch (...)
+    {
+        return 0;
+    }
 }

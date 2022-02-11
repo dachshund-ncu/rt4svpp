@@ -121,3 +121,14 @@ std::string spectral_container::getIntegrationFileName(int min_channel, int max_
     std::string integration_file_name = saveDirectory + "/" + nameOfSource + "_integrated_from_" + std::to_string(min_channel) + "_to_" + std::to_string(max_channel) + ".dat";
     return integration_file_name;
 }
+
+std::vector < std::vector < double > > spectral_container::getIntegrate(int min_channel, int max_channel)
+{
+    std::vector < std::vector < double > > integrationResults;
+    // wyniki integracji
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableI));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableV));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableLHC));
+    integrationResults.push_back(integratePol(min_channel, max_channel, velocityTable, spectraTableRHC));
+    return integrationResults;
+}
