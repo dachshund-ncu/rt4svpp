@@ -74,9 +74,9 @@ void Rms_sec_widget::setUpLabels()
 void Rms_sec_widget::setUpPlottables()
 {
     // -- clearujemy wszystko --
-    RmsVsTime->clearItems();
-    intVsTime->clearItems();
-    tsysVsTime->clearItems();
+    //RmsVsTime->clearItems();
+    //intVsTime->clearItems();
+    //tsysVsTime->clearItems();
     // -- robimy setup --
     // --- pens ---
     QPen penLHC(Qt::red);
@@ -204,6 +204,20 @@ void Rms_sec_widget::setUpPlottables()
     RmsVsTime->legend->setFont(f);
     intVsTime->legend->setVisible(true);
     intVsTime->legend->setFont(f);
+
+    // -- connecting the axis --
+    connect(RmsVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), RmsVsTime->xAxis2, SLOT(setRange(QCPRange)) );
+    connect(RmsVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), RmsVsTime->yAxis2, SLOT(setRange(QCPRange)) );
+    connect(tsysVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), tsysVsTime->xAxis2, SLOT(setRange(QCPRange)) );
+    connect(tsysVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), tsysVsTime->yAxis2, SLOT(setRange(QCPRange)) );
+    connect(intVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->xAxis2, SLOT(setRange(QCPRange)) );
+    connect(intVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->yAxis2, SLOT(setRange(QCPRange)) );
+
+    // -- connecting crosshairs --
+    QObject::connect(RmsVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairRmsVsTime(QMouseEvent*)));
+    QObject::connect(tsysVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairTsysVsTime(QMouseEvent*)));
+    QObject::connect(intVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairTintVsTime(QMouseEvent*)));
+
 }
 
 void Rms_sec_widget::placeOnGrid()
@@ -261,6 +275,13 @@ void Rms_sec_widget::connectElementsToSlots()
     QObject::connect(showLines, SIGNAL(clicked()), this, SLOT(showLinesSlot()));
 
     QObject::connect(selectionOfPoint, SIGNAL(clicked()), this, SLOT(switchSelect()));
+
+    QObject::connect(exportRmsVsTme, SIGNAL(clicked()), this, SLOT(exportRmsVsTimeSlot()));
+    QObject::connect(exportTintVsTme, SIGNAL(clicked()), this, SLOT(exportTintVsTimeSlot()));
+    QObject::connect(exportTsysVsTme, SIGNAL(clicked()), this, SLOT(exportTsysVsTimeSlot()));
+    QObject::connect(exportAllVSTme, SIGNAL(clicked()), this, SLOT(exportAllAboveSlot()));
+
+    QObject::connect(recalculateIntegration, SIGNAL(clicked()), this, SLOT(recalculateIntegrationSlot()) );
 
     // TMP
     QObject::connect(showSelectedSpectrum, SIGNAL(clicked()), this, SLOT(fillWithData()));
@@ -377,12 +398,10 @@ void Rms_sec_widget::fillWithData()
     if (!dataTable->loadedData)
         return;
 
-    std::cout << "filling" << std::endl;
     // -- zaczynamy pisać --
     // - w stylue c: deklarujemy kontenery -
     unsigned long int size = dataTable->spectraTableIERR.size();
-    QVector < double > mjdTab(size), iRms(size), vRms(size), lhcRms(size), rhcRms(size), tsys(size), sintI(size), sintV(size), sintLhc(size), sintRhc(size);
-    std::vector < std::vector < double > > calki = getIntegrateFromDataTable();
+    QVector < double > mjdTab(size), iRms(size), vRms(size), lhcRms(size), rhcRms(size), tsys(size);
     // - zapełniamy wektory -
     for(unsigned long int i = 0; i < size; i++)
     {
@@ -395,13 +414,8 @@ void Rms_sec_widget::fillWithData()
         rhcRms[i] = dataTable->spectraTableRHCERR[i];
         // --
         tsys[i] = dataTable->tsysTable[i];
-        // --
-        sintI[i] = calki[0][i];
-        sintV[i] = calki[1][i];
-        sintLhc[i] = calki[2][i];
-        sintRhc[i] = calki[3][i];
-
     }
+    recalculateIntegrationSlot();
     // -- dodajemy do graphów --
     // - RMS -
     RmsVsTime->graph(0)->setData(mjdTab, iRms);
@@ -410,15 +424,9 @@ void Rms_sec_widget::fillWithData()
     RmsVsTime->graph(3)->setData(mjdTab, rhcRms);
     // - tsys -
     tsysVsTime->graph(0)->setData(mjdTab, tsys);
-    // - INT -
-    intVsTime->graph(0)->setData(mjdTab, sintI);
-    intVsTime->graph(1)->setData(mjdTab, sintV);
-    intVsTime->graph(2)->setData(mjdTab, sintLhc);
-    intVsTime->graph(3)->setData(mjdTab, sintRhc);
-
+    // - skalowanie wykresów -
     autoscaleGraph(RmsVsTime);
     autoscaleGraph(tsysVsTime);
-    autoscaleGraph(intVsTime);
     replotGraphs();
 }
 
@@ -447,6 +455,16 @@ std::vector < std::vector < double > > Rms_sec_widget::getIntegrateFromDataTable
 {
     int min = getChannel(RmsIntStart);
     int max = getChannel(RmsIntEnd);
+    if(min < 1)
+    {
+        min = 1;
+        RmsIntStart->setText("1");
+    }
+    if (max > (int) dataTable->spectraTableI[0].size())
+    {
+        max = (int) dataTable->spectraTableI[0].size();
+        RmsIntEnd->setText( std::to_string((int) dataTable->spectraTableI[0].size()).c_str() );
+    }
     return dataTable->getIntegrate(min,max);
 }
 
@@ -465,4 +483,293 @@ int Rms_sec_widget::getChannel(QTextEdit * pole)
     {
         return 0;
     }
+}
+
+void Rms_sec_widget::setDarkMode()
+{
+    // -- wykresy, tła --
+    QPen spinesPen(Qt::white);
+    QPen background(Qt::black);
+    colorCanvas(background, spinesPen);
+    // -- dane --
+    QPen dataPen(QColor(135,206,250));
+    RmsVsTime->graph(0)->setPen(dataPen);
+    RmsVsTime->graph(1)->setPen(QPen(Qt::white));
+    intVsTime->graph(0)->setPen(dataPen);
+    intVsTime->graph(1)->setPen(QPen(Qt::white));
+    tsysVsTime->graph(0)->setPen(dataPen);
+    // -- crosshair --
+    QPen crossPen(Qt::white);
+    crossPen.setStyle(Qt::DashLine);
+    setCrosshairPen(crossPen);
+    rmsCshLabel->setColor(Qt::white);
+    tsysCshLabel->setColor(Qt::white);
+    tintCshLabel->setColor(Qt::white);
+    // --------------
+    // replotujemy
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::setLightMode()
+{
+    QPen spinesPen(Qt::black);
+    QPen background(Qt::white);
+    colorCanvas(background, spinesPen);
+    QPen dataPen(QColor(0,0,255));
+    RmsVsTime->graph(0)->setPen(dataPen);
+    RmsVsTime->graph(1)->setPen(QPen(Qt::black));
+    intVsTime->graph(0)->setPen(dataPen);
+    intVsTime->graph(1)->setPen(QPen(Qt::black));
+    tsysVsTime->graph(0)->setPen(dataPen);
+    // -- crosshair --
+    QPen crossPen(Qt::black);
+    crossPen.setStyle(Qt::DashLine);
+    setCrosshairPen(crossPen);
+    rmsCshLabel->setColor(Qt::black);
+    tsysCshLabel->setColor(Qt::black);
+    tintCshLabel->setColor(Qt::black);
+    // --------------
+    // replotujemy
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::colorCanvas(QPen background, QPen spines)
+{
+    // -- tło --
+    RmsVsTime->setBackground(background.color());
+    RmsVsTime->axisRect()->setBackground(background.color());
+    // -- spines --
+    colorSpines(RmsVsTime, spines);
+    // ---------------------------------
+    // -- tło --
+    tsysVsTime->setBackground(background.color());
+    tsysVsTime->axisRect()->setBackground(background.color());
+    // -- spines --
+    colorSpines(tsysVsTime, spines);
+    // ---------------------------------
+    // -- tło --
+    intVsTime->setBackground(background.color());
+    intVsTime->axisRect()->setBackground(background.color());
+    // -- spines --
+    colorSpines(intVsTime, spines);
+}
+
+void Rms_sec_widget::colorSpines(QCustomPlot *plot, QPen pendulum)
+{
+    plot->axisRect()->axis(QCPAxis::atTop)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atLeft)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atBottom)->setBasePen(pendulum);
+    plot->axisRect()->axis(QCPAxis::atRight)->setBasePen(pendulum);
+    // - zmiana kolorów czcionki -
+    // ticklabele
+    plot->xAxis->setTickLabelColor(pendulum.color());
+    plot->xAxis2->setTickLabelColor(pendulum.color());
+    plot->yAxis->setTickLabelColor(pendulum.color());
+    plot->yAxis2->setTickLabelColor(pendulum.color());
+    // subtick
+    plot->xAxis->setSubTickPen(pendulum);
+    plot->xAxis2->setSubTickPen(pendulum);
+    plot->yAxis->setSubTickPen(pendulum);
+    plot->yAxis2->setSubTickPen(pendulum);
+    // tick
+    plot->xAxis->setTickPen(pendulum);
+    plot->xAxis2->setTickPen(pendulum);
+    plot->yAxis->setTickPen(pendulum);
+    plot->yAxis2->setTickPen(pendulum);
+    // label
+    plot->xAxis->setLabelColor(pendulum.color());
+    plot->xAxis2->setLabelColor(pendulum.color());
+    plot->yAxis->setLabelColor(pendulum.color());
+    plot->yAxis2->setLabelColor(pendulum.color());
+}
+
+void Rms_sec_widget::darthMode(bool darthModeEnabled)
+{
+    if(darthModeEnabled)
+        setDarkMode();
+    else
+        setLightMode();
+}
+
+void Rms_sec_widget::crossHairRmsVsTime(QMouseEvent* event)
+{
+    // setting visibilities
+    RmsXAxisLine->setVisible(true);
+    RmsYAxisLine->setVisible(true);
+    tsysXAxisLine->setVisible(false);
+    tsysYAxisLine->setVisible(false);
+    tintXAxisLine->setVisible(false);
+    tintYAxisLine->setVisible(false);
+    // ----
+    rmsCshLabel->setVisible(true);
+    tsysCshLabel->setVisible(false);
+    tintCshLabel->setVisible(false);
+    // ----
+
+    // -- pozycja --
+    double x,y;
+    x = RmsVsTime->xAxis->pixelToCoord(event->pos().x());
+    y = RmsVsTime->yAxis->pixelToCoord(event->pos().y());
+    RmsXAxisLine->start->setCoords(x, -QCPRange::maxRange);
+    RmsXAxisLine->end->setCoords(x, QCPRange::maxRange);
+    RmsYAxisLine->start->setCoords(-QCPRange::maxRange,y);
+    RmsYAxisLine->end->setCoords(QCPRange::maxRange,y);
+
+    // -- label --
+    rmsCshLabel->position->setCoords(x,y);
+    rmsCshLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignLeft);
+    string tekst;
+    tekst = "X: " + std::to_string(x) + "\n" + "Y: " + std::to_string(y) + "\n\n";
+    rmsCshLabel->setText(tekst.c_str());
+
+    // -- reploty --
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::crossHairTsysVsTime(QMouseEvent* event)
+{
+    // setting visibilities
+    RmsXAxisLine->setVisible(false);
+    RmsYAxisLine->setVisible(false);
+    tsysXAxisLine->setVisible(true);
+    tsysYAxisLine->setVisible(true);
+    tintXAxisLine->setVisible(false);
+    tintYAxisLine->setVisible(false);
+    // ----
+    rmsCshLabel->setVisible(false);
+    tsysCshLabel->setVisible(true);
+    tintCshLabel->setVisible(false);
+    // ----
+
+    // -- pozycja --
+    double x,y;
+    x = tsysVsTime->xAxis->pixelToCoord(event->pos().x());
+    y = tsysVsTime->yAxis->pixelToCoord(event->pos().y());
+    tsysXAxisLine->start->setCoords(x, -QCPRange::maxRange);
+    tsysXAxisLine->end->setCoords(x, QCPRange::maxRange);
+    tsysYAxisLine->start->setCoords(-QCPRange::maxRange,y);
+    tsysYAxisLine->end->setCoords(QCPRange::maxRange,y);
+
+    // -- label --
+    tsysCshLabel->position->setCoords(x,y);
+    tsysCshLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignLeft);
+    string tekst;
+    tekst = "X: " + std::to_string(x) + "\n" + "Y: " + std::to_string(y) + "\n\n";
+    tsysCshLabel->setText(tekst.c_str());
+
+    // -- reploty --
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::crossHairTintVsTime(QMouseEvent* event)
+{
+    // setting visibilities
+    RmsXAxisLine->setVisible(false);
+    RmsYAxisLine->setVisible(false);
+    tsysXAxisLine->setVisible(false);
+    tsysYAxisLine->setVisible(false);
+    tintXAxisLine->setVisible(true);
+    tintYAxisLine->setVisible(true);
+    // ----
+    rmsCshLabel->setVisible(false);
+    tsysCshLabel->setVisible(false);
+    tintCshLabel->setVisible(true);
+    // ----
+
+    // -- pozycja --
+    double x,y;
+    x = intVsTime->xAxis->pixelToCoord(event->pos().x());
+    y = intVsTime->yAxis->pixelToCoord(event->pos().y());
+    tintXAxisLine->start->setCoords(x, -QCPRange::maxRange);
+    tintXAxisLine->end->setCoords(x, QCPRange::maxRange);
+    tintYAxisLine->start->setCoords(-QCPRange::maxRange,y);
+    tintYAxisLine->end->setCoords(QCPRange::maxRange,y);
+
+    // -- label --
+    tintCshLabel->position->setCoords(x,y);
+    tintCshLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignLeft);
+    string tekst;
+    tekst = "X: " + std::to_string(x) + "\n" + "Y: " + std::to_string(y) + "\n\n";
+    tintCshLabel->setText(tekst.c_str());
+
+    // -- reploty --
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
+}
+
+void Rms_sec_widget::setCrosshairPen(QPen pen)
+{
+    // -- axis linesy --
+    RmsXAxisLine->setPen(pen);
+    RmsYAxisLine->setPen(pen);
+    tsysXAxisLine->setPen(pen);
+    tsysYAxisLine->setPen(pen);
+    tintXAxisLine->setPen(pen);
+    tintYAxisLine->setPen(pen);
+}
+
+void Rms_sec_widget::exportRmsVsTimeSlot()
+{
+    dataTable->exportRmsData();
+    string message = "Saved Rms vs Time to\n" + dataTable->getFileNameForExportedRms();
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void Rms_sec_widget::exportTintVsTimeSlot()
+{
+    dataTable->exportTsysData();
+    string message = "Saved Tsys vs Time to\n" + dataTable->getFileNameForExportedTsys();
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void Rms_sec_widget::exportTsysVsTimeSlot()
+{
+    int min = getChannel(RmsIntStart);
+    int max = getChannel(RmsIntEnd);
+    dataTable->integrate4Pols(min, max, 0);
+    // --- wiadomość końcowa ---
+    string message = "";
+    message = "Integrated over channels " + std::to_string(min) + " -> " + std::to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void Rms_sec_widget::exportAllAboveSlot()
+{
+    exportRmsVsTimeSlot();
+    exportTsysVsTimeSlot();
+    exportTintVsTimeSlot();
+}
+
+void Rms_sec_widget::recalculateIntegrationSlot()
+{
+    std::vector < std::vector < double > > calki = getIntegrateFromDataTable();
+    unsigned long int size = dataTable->spectraTableIERR.size();
+    QVector < double > mjdTab(size), sintI(size), sintV(size), sintLhc(size), sintRhc(size);
+    // - zapełniamy wektory -
+    for(unsigned long int i = 0; i < size; i++)
+    {
+        // --
+        mjdTab[i] = dataTable->mjdTable[i];
+        // --
+        sintI[i] = calki[0][i];
+        sintV[i] = calki[1][i];
+        sintLhc[i] = calki[2][i];
+        sintRhc[i] = calki[3][i];
+    }
+    // - INT -
+    intVsTime->graph(0)->setData(mjdTab, sintI);
+    intVsTime->graph(1)->setData(mjdTab, sintV);
+    intVsTime->graph(2)->setData(mjdTab, sintLhc);
+    intVsTime->graph(3)->setData(mjdTab, sintRhc);
+    autoscaleGraph(intVsTime);
+    intVsTime->replot();
 }

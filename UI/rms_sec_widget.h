@@ -1,6 +1,9 @@
 #ifndef RMS_SEC_WIDGET_H
 #define RMS_SEC_WIDGET_H
-
+/*
+ * Widget, przechowujący interfejs RMS_section
+ * na którym wyświetlane są dane, dotyczące T_sys, RMS i integrated_flux_density
+ */
 #include <QObject>
 #include <QWidget>
 #include "libs/qcustomplot.h"
@@ -31,6 +34,9 @@ public:
     QCPItemLine * tsysYAxisLine = new QCPItemLine(tsysVsTime);
     QCPItemLine * tintXAxisLine = new QCPItemLine(intVsTime);
     QCPItemLine * tintYAxisLine = new QCPItemLine(intVsTime);
+    QCPItemText * rmsCshLabel = new QCPItemText(RmsVsTime);
+    QCPItemText * tsysCshLabel = new QCPItemText(tsysVsTime);
+    QCPItemText * tintCshLabel = new QCPItemText(intVsTime);
     // -- checkboxy --
     QCheckBox * IOnRms = new QCheckBox("I", this);
     QCheckBox * VOnRms = new QCheckBox("V", this);
@@ -67,6 +73,12 @@ private:
     void autoscaleGraph(QCustomPlot * plot);
     std::vector < std::vector < double > > getIntegrateFromDataTable();
     int getChannel(QTextEdit * pole);
+    void colorCanvas(QPen background, QPen spines);
+    void colorSpines(QCustomPlot *plot, QPen pendulum);
+    void setDarkMode();
+    void setLightMode();
+    void setCrosshairPen(QPen pen);
+
 private slots:
     void changeInteractions();
     void showPointsSlot();
@@ -74,6 +86,22 @@ private slots:
     void showIVLR();
     void switchSelect();
     void fillWithData();
+    // cross-hair
+    void crossHairRmsVsTime(QMouseEvent* event);
+    void crossHairTsysVsTime(QMouseEvent* event);
+    void crossHairTintVsTime(QMouseEvent* event);
+    // selekcja na wykresie
+//    void showSpectrumOnSelectRms(QMouseEvent* event);
+//    void showSpectrumOnSelectTsys(QMouseEvent* event);
+//    void showSoectrumOnSelextTint(QMouseEvent* event);
+    // export danych
+    void exportRmsVsTimeSlot();
+    void exportTsysVsTimeSlot();
+    void exportTintVsTimeSlot();
+    void exportAllAboveSlot();
+    void recalculateIntegrationSlot();
+public:
+    void darthMode(bool darthModeEnabled);
 
 };
 

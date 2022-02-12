@@ -54,8 +54,6 @@ public:
 
     bool setctionOpened = 0;
 
-
-
 public:
     void appendWidget(QWidget * widget);
     void deleteWidgetFromList(QWidget * widget);

@@ -121,6 +121,12 @@ public:
     // - kalibrowanie -
     void calibrateEpoch(int epochNr, bool direction=true);
     void calibrateAll(bool direction = true);
+    // -- dajemy metody eksportujące --
+    void exportRmsData();
+    void exportTsysData();
+    std::string getFileNameForExportedRms();
+    std::string getFileNameForExportedTsys();
+
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -190,6 +196,7 @@ private:
     std::vector < std::vector < double > > findBeforeAndAfterEpochs(std::vector < double > caltabEpochs, std::vector < double > caltabCoeffs, double MJD);
     double interpolateCAL(double beginEpoch, double beginCoeff, double endEpoch, double endCoeff, double MJD);
     double calibrateEpoch(double calCoeff, double epochNR);
+    // ---------------
 
 };
 

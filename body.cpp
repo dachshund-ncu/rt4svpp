@@ -2613,6 +2613,7 @@ void body::set_dark_mode()
 {
     dynspecWidget->darthMode(!dark_mode_enabled);
     ssWidget->darthMode(!dark_mode_enabled);
+    rms_sec_w->darthMode(!dark_mode_enabled);
     // pomocnicze prezydenty
     QPen graph_dark;
     graph_dark.setColor(QColor(135,206,250));

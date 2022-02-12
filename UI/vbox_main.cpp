@@ -49,6 +49,7 @@ void vbox_mainw::makeProperSizeForButtons()
 void vbox_mainw::makeProperLabelsForButtons()
 {
     LoadAVRFiles->setText("A");
+    LoadAVRFiles->setToolTip("Load AVR files");
     LoadFITSFiles->setText("R");
     Reload->setText("R");
 
