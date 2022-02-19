@@ -59,6 +59,8 @@ public:
     QLabel * graphParamsLabel = new QLabel(this);
     QLabel * startIntegrateLabel = new QLabel(this);
     QLabel * endIntegrateLabel = new QLabel(this);
+    // -- dekorator --
+    QCPSelectionDecorator * dekorator = new QCPSelectionDecorator();
     // boole
     bool selectable = false;
     // -----------------------------------------------------
@@ -100,6 +102,7 @@ private slots:
     void exportTintVsTimeSlot();
     void exportAllAboveSlot();
     void recalculateIntegrationSlot();
+    void setSelectionsOnRms();
 public:
     void darthMode(bool darthModeEnabled);
 

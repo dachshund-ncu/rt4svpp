@@ -78,80 +78,27 @@ void Rms_sec_widget::setUpPlottables()
     //intVsTime->clearItems();
     //tsysVsTime->clearItems();
     // -- robimy setup --
-    // --- pens ---
-    QPen penLHC(Qt::red);
-    QPen penRHC(Qt::green);
-    QPen penV (Qt::black); // Qt::white used in case of dark mode
-    QPen penI (QColor(0,0,255)); // QColor(135,206,250)) used in case of dark mode
-    QPen pensForGraphs[4] = {penI, penV, penLHC, penRHC};
-    std::string names[4] = {"I", "V", "LHC", "RHC"};
-    // -- dodajemy graphy z polaryzacjami --
-    for(int i = 0; i < 4; i++)
-    {
-        // -- adding graphs --
-        RmsVsTime->addGraph();
-        intVsTime->addGraph();
-        // -- setting properties --
-        RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
-        RmsVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
-        intVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
-        intVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
-        // -- setting pens --
-        RmsVsTime->graph(i)->setPen(pensForGraphs[i]);
-        intVsTime->graph(i)->setPen(pensForGraphs[i]);
-        // -- setting visibilities --
-        if (i != 0)
-        {
-            RmsVsTime->graph(i)->setVisible(false);
-            intVsTime->graph(i)->setVisible(false);
-        }
-        // -- setting names --
-        RmsVsTime->graph(i)->setName(names[i].c_str());
-        intVsTime->graph(i)->setName(names[i].c_str());
-        // ---------------------------
-    }
-    // -- setup tsys vs time --
-    tsysVsTime->addGraph();
-    tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsNone);
-    tsysVsTime->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
-    tsysVsTime->graph(0)->setPen(pensForGraphs[0]);
+    // -- interakcje --
+    RmsVsTime->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
+    RmsVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    RmsVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    RmsVsTime->axisRect()->setRangeZoomAxes(RmsVsTime->xAxis, RmsVsTime->yAxis);
+    RmsVsTime->setSelectionRectMode(QCP::srmZoom);
+    RmsVsTime->setCursor(QCursor(Qt::CrossCursor));
 
-    // -- dodajemy graphy z kółeczkami zaznaczenia --
-    for(int i = 0; i < 4; i++)
-    {
-        RmsVsTime->addGraph();
-        intVsTime->addGraph();
-        // --
-        if (i != 2)
-        {
-            RmsVsTime->graph(4+i)->setPen(QPen(Qt::red));
-            intVsTime->graph(4+i)->setPen(QPen(Qt::red));
-        }
-        else
-        {
-            RmsVsTime->graph(4+i)->setPen(QPen(Qt::blue));
-            intVsTime->graph(4+i)->setPen(QPen(Qt::blue));
-        }
-        // --
-        RmsVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
-        intVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
-        // --
-        RmsVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-        intVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-        // --
-        RmsVsTime->graph(4+i)->setVisible(false);
-        intVsTime->graph(4+i)->setVisible(false);
-        // --
-        RmsVsTime->graph(4+i)->removeFromLegend();
-        intVsTime->graph(4+i)->removeFromLegend();
-    }
-    tsysVsTime->addGraph();
-    tsysVsTime->graph(1)->setLineStyle(QCPGraph::lsNone);
-    tsysVsTime->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-    tsysVsTime->graph(1)->setPen(QPen(Qt::red));
-    tsysVsTime->graph(1)->setVisible(false);
-    tsysVsTime->graph(1)->removeFromLegend();
+    intVsTime->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
+    intVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    intVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    intVsTime->axisRect()->setRangeZoomAxes(intVsTime->xAxis, intVsTime->yAxis);
+    intVsTime->setSelectionRectMode(QCP::srmZoom);
+    intVsTime->setCursor(QCursor(Qt::CrossCursor));
 
+    tsysVsTime->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
+    tsysVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    tsysVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    tsysVsTime->axisRect()->setRangeZoomAxes(tsysVsTime->xAxis, tsysVsTime->yAxis);
+    tsysVsTime->setSelectionRectMode(QCP::srmZoom);
+    tsysVsTime->setCursor(QCursor(Qt::CrossCursor));
 
     // -- labele --
     RmsVsTime->xAxis->setLabel("MJD");
@@ -160,27 +107,6 @@ void Rms_sec_widget::setUpPlottables()
     intVsTime->yAxis->setLabel("Integrated amplitude");
     tsysVsTime->xAxis->setLabel("MJD");
     tsysVsTime->yAxis->setLabel("Tsys (K)");
-    // -- interakcje --
-    RmsVsTime->setInteractions(QCP::iRangeZoom);
-    RmsVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-    RmsVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
-    RmsVsTime->axisRect()->setRangeZoomAxes(RmsVsTime->xAxis, RmsVsTime->yAxis);
-    RmsVsTime->setSelectionRectMode(QCP::srmZoom);
-    RmsVsTime->setCursor(QCursor(Qt::CrossCursor));
-
-    intVsTime->setInteractions(QCP::iRangeZoom);
-    intVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-    intVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
-    intVsTime->axisRect()->setRangeZoomAxes(intVsTime->xAxis, intVsTime->yAxis);
-    intVsTime->setSelectionRectMode(QCP::srmZoom);
-    intVsTime->setCursor(QCursor(Qt::CrossCursor));
-
-    tsysVsTime->setInteractions(QCP::iRangeZoom);
-    tsysVsTime->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-    tsysVsTime->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
-    tsysVsTime->axisRect()->setRangeZoomAxes(tsysVsTime->xAxis, tsysVsTime->yAxis);
-    tsysVsTime->setSelectionRectMode(QCP::srmZoom);
-    tsysVsTime->setCursor(QCursor(Qt::CrossCursor));
 
     // -- xaxis2 i yaxis2 --
     RmsVsTime->xAxis2->setVisible(true);
@@ -213,10 +139,115 @@ void Rms_sec_widget::setUpPlottables()
     connect(intVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->xAxis2, SLOT(setRange(QCPRange)) );
     connect(intVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->yAxis2, SLOT(setRange(QCPRange)) );
 
+
+
     // -- connecting crosshairs --
     QObject::connect(RmsVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairRmsVsTime(QMouseEvent*)));
     QObject::connect(tsysVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairTsysVsTime(QMouseEvent*)));
     QObject::connect(intVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairTintVsTime(QMouseEvent*)));
+
+    // --- pens ---
+    QPen penLHC(Qt::red);
+    QPen penRHC(Qt::green);
+    QPen penV (Qt::black); // Qt::white used in case of dark mode
+    QPen penI (QColor(0,0,255)); // QColor(135,206,250)) used in case of dark mode
+    QPen pensForGraphs[4] = {penI, penV, penLHC, penRHC};
+    std::string names[4] = {"I", "V", "LHC", "RHC"};
+    // -- selection decorator --
+    dekorator->setPen(QPen(Qt::magenta));
+    //dekorator->setUsedScatterProperties(QCPScatterStyle::ScatterProperty::spSize);
+    dekorator->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 8),  QCPScatterStyle::ScatterProperty::spSize);
+
+    // -- dodajemy graphy z polaryzacjami --
+    for(int i = 0; i < 4; i++)
+    {
+        // -- adding graphs --
+        RmsVsTime->addGraph();
+        intVsTime->addGraph();
+        // -- setting properties --
+        RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
+        RmsVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        intVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
+        intVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        // -- selected pens --
+        QCPSelectionDecorator * dekRMS = new QCPSelectionDecorator();
+        dekRMS->copyFrom(dekorator);
+        QCPSelectionDecorator * dekINT = new QCPSelectionDecorator();
+        dekINT->copyFrom(dekorator);
+        RmsVsTime->graph(i)->setSelectionDecorator(dekRMS);
+        intVsTime->graph(i)->setSelectionDecorator(dekINT);
+        // -- setting pens --
+        RmsVsTime->graph(i)->setPen(pensForGraphs[i]);
+        intVsTime->graph(i)->setPen(pensForGraphs[i]);
+        // -- setting visibilities --
+        if (i != 0)
+        {
+            RmsVsTime->graph(i)->setVisible(false);
+            intVsTime->graph(i)->setVisible(false);
+        }
+        // -- setting names --
+        RmsVsTime->graph(i)->setName(names[i].c_str());
+        intVsTime->graph(i)->setName(names[i].c_str());
+        // ---------------------------
+        // -- selection --
+        RmsVsTime->graph(i)->setSelectable(QCP::stSingleData);
+        intVsTime->graph(i)->setSelectable(QCP::stSingleData);
+
+    }
+    // -- setup tsys vs time --
+    tsysVsTime->addGraph();
+    tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsNone);
+    tsysVsTime->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+    tsysVsTime->graph(0)->setPen(pensForGraphs[0]);
+    tsysVsTime->graph(0)->setSelectable(QCP::stSingleData);
+    QCPSelectionDecorator * dekTSYS = new QCPSelectionDecorator();
+    dekTSYS->copyFrom(dekorator);
+    tsysVsTime->graph(0)->setSelectionDecorator(dekTSYS);
+
+
+    // -- dodajemy graphy z kółeczkami zaznaczenia --
+    for(int i = 0; i < 4; i++)
+    {
+        RmsVsTime->addGraph();
+        intVsTime->addGraph();
+        // --
+        if (i != 2)
+        {
+            RmsVsTime->graph(4+i)->setPen(QPen(Qt::red));
+            intVsTime->graph(4+i)->setPen(QPen(Qt::red));
+        }
+        else
+        {
+            RmsVsTime->graph(4+i)->setPen(QPen(Qt::blue));
+            intVsTime->graph(4+i)->setPen(QPen(Qt::blue));
+        }
+        // --
+        RmsVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
+        intVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
+        // --
+        RmsVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+        intVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+        // --
+        RmsVsTime->graph(4+i)->setVisible(false);
+        intVsTime->graph(4+i)->setVisible(false);
+        // --
+        RmsVsTime->graph(4+i)->removeFromLegend();
+        intVsTime->graph(4+i)->removeFromLegend();
+        // --
+        RmsVsTime->graph(4+i)->setSelectable(QCP::stNone);
+        intVsTime->graph(4+i)->setSelectable(QCP::stNone);
+    }
+    tsysVsTime->addGraph();
+    tsysVsTime->graph(1)->setLineStyle(QCPGraph::lsNone);
+    tsysVsTime->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
+    tsysVsTime->graph(1)->setPen(QPen(Qt::red));
+    tsysVsTime->graph(1)->setVisible(false);
+    tsysVsTime->graph(1)->removeFromLegend();
+    tsysVsTime->graph(1)->setSelectable(QCP::stNone);
+
+    connect(RmsVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
+    connect(tsysVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
+    connect(intVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
 
 }
 
@@ -291,25 +322,25 @@ void Rms_sec_widget::changeInteractions()
 {
     if(rectZoom->isChecked())
     {
-        RmsVsTime->setInteractions(QCP::iRangeZoom);
+        RmsVsTime->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables);
         RmsVsTime->setSelectionRectMode(QCP::srmZoom);
         RmsVsTime->setCursor(QCursor(Qt::CrossCursor));
-        tsysVsTime->setInteractions(QCP::iRangeZoom);
+        tsysVsTime->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
         tsysVsTime->setSelectionRectMode(QCP::srmZoom);
         tsysVsTime->setCursor(QCursor(Qt::CrossCursor));
-        intVsTime->setInteractions(QCP::iRangeZoom);
+        intVsTime->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
         intVsTime->setSelectionRectMode(QCP::srmZoom);
         intVsTime->setCursor(QCursor(Qt::CrossCursor));
     }
     else
     {
-        RmsVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        RmsVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom| QCP::iSelectPlottables);
         RmsVsTime->setSelectionRectMode(QCP::srmNone);
         RmsVsTime->setCursor(QCursor(Qt::ArrowCursor));
-        tsysVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        tsysVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom| QCP::iSelectPlottables);
         tsysVsTime->setSelectionRectMode(QCP::srmNone);
         tsysVsTime->setCursor(QCursor(Qt::ArrowCursor));
-        intVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+        intVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom| QCP::iSelectPlottables);
         intVsTime->setSelectionRectMode(QCP::srmNone);
         intVsTime->setCursor(QCursor(Qt::ArrowCursor));
     }
@@ -772,4 +803,30 @@ void Rms_sec_widget::recalculateIntegrationSlot()
     intVsTime->graph(3)->setData(mjdTab, sintRhc);
     autoscaleGraph(intVsTime);
     intVsTime->replot();
+}
+
+void Rms_sec_widget::setSelectionsOnRms()
+{
+  if(RmsVsTime->selectedGraphs().size() == 0)
+  {
+      QCPDataSelection selection;
+      for(int i = 0; i < 4; i++)
+          {
+              RmsVsTime->graph(i)->setSelection(selection);
+              intVsTime->graph(i)->setSelection(selection);
+          }
+          tsysVsTime->graph(0)->setSelection(selection);
+      replotGraphs();
+      return;
+  }
+  QCPDataSelection selection = RmsVsTime->selectedGraphs().constFirst()->selection();
+  int index = selection.dataRanges().constFirst().begin();
+
+  for(int i = 0; i < 4; i++)
+  {
+      RmsVsTime->graph(i)->setSelection(selection);
+      intVsTime->graph(i)->setSelection(selection);
+  }
+  tsysVsTime->graph(0)->setSelection(selection);
+  replotGraphs();
 }
