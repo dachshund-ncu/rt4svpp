@@ -212,8 +212,6 @@ public:
     // -- glowne widgety --
     QPushButton * kill_dynspec = new QPushButton(dynspecWidget);
 
-    QWidget * rms_section_widget = new QWidget(&window);
-
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
@@ -224,90 +222,11 @@ public:
     // -- do robienia sekcji rms vs czas --
     // - buttony -
     QPushButton * kill_rms_section = new QPushButton(&window);
-    QPushButton * recalculate_integration = new QPushButton(rms_section_widget);
-    QPushButton * export_rms_vs_tme = new QPushButton(rms_section_widget);
-    QPushButton * export_tint_vs_tme = new QPushButton(rms_section_widget);
-    QPushButton * export_tsys_vs_tme = new QPushButton(rms_section_widget);
-    QPushButton * export_all_vs_tme = new QPushButton(rms_section_widget);
-    QPushButton * show_selected_spectrum = new QPushButton(rms_section_widget);
-
-
-    // - wykresy -
-    QCustomPlot rms_vs_time;
-    QCustomPlot tsys_vs_time;
-    QCustomPlot int_vs_time;
-    // -- do crosshair --
-    QCPItemLine * rms_x_axis_line = new QCPItemLine(&rms_vs_time);
-    QCPItemLine * rms_y_axis_line = new QCPItemLine(&rms_vs_time);
-    QCPItemLine * tint_x_axis_line = new QCPItemLine(&int_vs_time);
-    QCPItemLine * tint_y_axis_line = new QCPItemLine(&int_vs_time);
-    QCPItemLine * tsys_x_axis_line = new QCPItemLine(&tsys_vs_time);
-    QCPItemLine * tsys_y_axis_line = new QCPItemLine(&tsys_vs_time);
-    // labele
-    QCPItemText * rms_csh_label = new QCPItemText(&rms_vs_time);
-    QCPItemText * tint_csh_label = new QCPItemText(&int_vs_time);
-    QCPItemText * tsys_csh_label = new QCPItemText(&tsys_vs_time);
-    // - checkboxy -
-    //QCheckBox *include_pytime = new QCheckBox ("Include time in isoformat", &window);
-    QCheckBox * I_on_rms = new QCheckBox ("I", &window);
-    QCheckBox * V_on_rms = new QCheckBox ("V", &window);
-    QCheckBox * LHC_on_rms = new QCheckBox ("LHC", &window);
-    QCheckBox * RHC_on_rms = new QCheckBox ("RHC", &window);
-    QCheckBox * show_pts = new QCheckBox ("Show points", &window);
-    QCheckBox * show_lns = new QCheckBox ("Show lines", &window);
-    QCheckBox * rect_zoom = new QCheckBox ("Rectangle zoom", &window);
-    QCheckBox * selection_of_point = new QCheckBox ("Select", &window);
-    //QCheckBox  I_on_rms;
-    //QCheckBox  V_on_rms;
-    //QCheckBox  LHC_on_rms;
-    //QCheckBox  RHC_on_rms;
-
-
-    // - text edity -
-    QTextEdit rms_int_start;
-    QTextEdit rms_int_end;
-    QLabel rms_int_start_label;
-    QLabel rms_int_end_label;
-    QLabel rms_vs_time_label;
-    QLabel tsys_vs_time_label;
-    QLabel int_vs_time_label;
-    QLabel * stokes_parameters = new QLabel(rms_section_widget);
-    QLabel * integration_parameters_label = new QLabel(rms_section_widget);
-    QLabel * exporting_rms_section_label = new QLabel(rms_section_widget);
-    QLabel * graph_params_label = new QLabel(rms_section_widget);
-
-    // -inty - do przechowywania channelow -
-    int min_rms_int_channel = 500;
-    int max_rms_int_channel = 1500;
-    // - layouty -
-    QVBoxLayout * preferences_on_rms = new QVBoxLayout();
-    QHBoxLayout * checkboxes_of_pol = new QHBoxLayout();
-    QHBoxLayout * start_chan = new QHBoxLayout();
-    QHBoxLayout * end_chan = new QHBoxLayout();
-    QHBoxLayout * show_ptslns = new QHBoxLayout();
-    QHBoxLayout * selection_modes = new QHBoxLayout();
-    QVBoxLayout * exporting_on_rms = new QVBoxLayout();
-
     // - kontnery -
     vector < double > I_sint, V_sint, LHC_sint, RHC_sint, I_sint_e, V_sint_e, LHC_sint_e, RHC_sint_e;
 
     // boole
     bool rms_section_opened = 0;
-
-    // do dodatkowego okna z widmem
-    QWidget * popup_window = new QWidget();// = new QWidget(&window); // okno
-    QGridLayout  * grid_of_popup_window = new QGridLayout(popup_window); // siatka
-    QCustomPlot spectrum_on_popup_window;
-    QPushButton * flag_on_popup_window = new QPushButton(popup_window);
-    QPushButton * close_popup_window = new QPushButton(popup_window);
-    QLabel * label_on_popup_window = new QLabel(popup_window);
-    bool popup_window_opened = 0;
-
-
-
-    // -- ISTOTNE - widgety do umieszczania wykresow --
-    // - gridy -
-    QGridLayout * grid_rms_section_widget = new QGridLayout(rms_section_widget);
 
     // bole
     bool geometry_window_set = 0;
@@ -383,33 +302,12 @@ public slots:
     // -- widmo dynamiczne --
     void display_dynamic_spectrum();
     void kill_dynamic_spectrum();
-
-    // -- pozostale --
-    void set_rms_section_widget();
+    // -- rms_section --
     void open_rms_section_slot();
     void close_rms_section_slot();
-    void I_on_rms_checkbox_checked_slot();
-    void V_on_rms_checkbox_checked_slot();
-    void LHC_on_rms_checkbox_checked_slot();
-    void RHC_on_rms_checkbox_checked_slot();
-    void recalculate_integration_on_rms_slot();
-    void show_points_or_lines();
-    void exp_sint_vs_time();
-    void exp_rms_vs_time();
-    void exp_tsys_vs_time();
-    void exp_all();
-    void cross_hair_rms_vs_time(QMouseEvent * event);
-    void cross_hair_tsys_vs_time(QMouseEvent * event);
-    void cross_hair_tint_vs_time(QMouseEvent * event);
-    void set_unset_rect_zoom();
-    void show_spectrum_on_select_rms(QMouseEvent * event);
-    void show_spectrum_on_select_tint(QMouseEvent * event);
-    void show_spectrum_on_select_tsys(QMouseEvent * event);
-    void selection_point_on_rms_slot_for_graph_visibility();
-    void open_popup_window();
-    void close_popup_window_slot();
+
     void save_all_to_gnuplot_slot();
-    void autorange_plot(QCustomPlot * plot);
+    //void autorange_plot(QCustomPlot * plot);
 
     void set_dark_mode();
 

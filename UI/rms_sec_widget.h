@@ -23,6 +23,7 @@ public:
     QPushButton * exportTsysVsTme = new QPushButton(this);
     QPushButton * exportAllVSTme = new QPushButton(this);
     QPushButton * showSelectedSpectrum = new QPushButton(this);
+    QPushButton * autoscaleGraphs = new QPushButton(this);
     // -- wykresy --
     QCustomPlot * RmsVsTime = new QCustomPlot(this);
     QCustomPlot * tsysVsTime = new QCustomPlot(this);
@@ -45,7 +46,6 @@ public:
     QCheckBox * showPoints = new QCheckBox("Show points", this);
     QCheckBox * showLines = new QCheckBox("Show lines", this);
     QCheckBox * rectZoom = new QCheckBox("Rectangle zoom", this);
-    QCheckBox * selectionOfPoint = new QCheckBox("Select", this);
     // -- text edity --
     QTextEdit * RmsIntStart = new QTextEdit(this);
     QTextEdit * RmsIntEnd = new QTextEdit(this);
@@ -63,8 +63,18 @@ public:
     QCPSelectionDecorator * dekorator = new QCPSelectionDecorator();
     // boole
     bool selectable = false;
+    // --------------------------
+    // -- popup window --
+    QWidget * popupWindow = new QWidget();
+    QGridLayout * gridOfPopupWindow = new QGridLayout(popupWindow);
+    QCustomPlot * spectrumOnPopupWindow = new QCustomPlot(popupWindow);
+    QPushButton * flagOnPopupWindow = new QPushButton(popupWindow);
+    QPushButton * closePopupWIndow = new QPushButton(popupWindow);
+    QLabel * labelOnPopupWindow = new QLabel(popupWindow);
+    bool popupWindowOpened = false;
+
+    // --------------------------
     // -----------------------------------------------------
-    // -- show Points --
 private:
     void setUpButtons();
     void setUpLabels();
@@ -80,14 +90,17 @@ private:
     void setDarkMode();
     void setLightMode();
     void setCrosshairPen(QPen pen);
+    void setSelectionForPlot(QCustomPlot * plotSelection, QCustomPlot * plot1, QCustomPlot * plot2);
+    void setUpPopupWindow();
+    void fillPopupWindowWithData(int index);
+    void setLabelOnPopupWindow(int index);
 
 private slots:
     void changeInteractions();
     void showPointsSlot();
     void showLinesSlot();
     void showIVLR();
-    void switchSelect();
-    void fillWithData();
+
     // cross-hair
     void crossHairRmsVsTime(QMouseEvent* event);
     void crossHairTsysVsTime(QMouseEvent* event);
@@ -102,10 +115,18 @@ private slots:
     void exportTintVsTimeSlot();
     void exportAllAboveSlot();
     void recalculateIntegrationSlot();
-    void setSelectionsOnRms();
+    void setSelectionOnRms();
+    void setSelectionOnTsys();
+    void setSelectionOnInt();
+    void showPopupWindowSlot();
+    void rescaleGraphs();
+
 public:
     void darthMode(bool darthModeEnabled);
 
+public slots:
+    void closePopupWindowSlot();
+    void fillWithData();
 };
 
 #endif // RMS_SEC_WIDGET_H

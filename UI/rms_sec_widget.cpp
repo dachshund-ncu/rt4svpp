@@ -3,15 +3,17 @@
 Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
                : dataTable(dataTable)
 {
+    this->setVisible(false);
     // -- procesujemy odpowiednie rzeczy --
     setUpButtons();
     setUpLabels();
     setUpPlottables();
     placeOnGrid();
     connectElementsToSlots();
+    setUpPopupWindow();
     // -- dajemy nowe rzeczy do roboty --
-    this->setGeometry(300, 300, 1280, 720);
-    this->setVisible(true);
+    //this->setGeometry(300, 300, 1280, 720);
+
 }
 
 void Rms_sec_widget::setUpButtons()
@@ -23,12 +25,14 @@ void Rms_sec_widget::setUpButtons()
     exportTsysVsTme->setMaximumSize(10000,10000);
     exportAllVSTme->setMaximumSize(10000,10000);
     showSelectedSpectrum->setMaximumSize(10000,10000);
+    autoscaleGraphs->setMaximumSize(10000,10000);
     recalculateIntegration->setMinimumSize(0,0);
     exportRmsVsTme->setMinimumSize(0,0);
     exportTintVsTme->setMinimumSize(0,0);
     exportTsysVsTme->setMinimumSize(0,0);
     exportAllVSTme->setMinimumSize(0,0);
     showSelectedSpectrum->setMinimumSize(0,0);
+    autoscaleGraphs->setMinimumSize(0,0);
     // -- teksty --
     recalculateIntegration->setText("Recalculate integration");
     exportRmsVsTme->setText("Export rms vs time");
@@ -36,7 +40,9 @@ void Rms_sec_widget::setUpButtons()
     exportTsysVsTme->setText("Export Integrated flux vs time");
     exportAllVSTme->setText("Export all of the above");
     showSelectedSpectrum->setText("Show selected spectrum");
-
+    closePopupWIndow->setText("Close");
+    flagOnPopupWindow->setText("Flag");
+    autoscaleGraphs->setText("Rescale");
     // -- text edity --
     RmsIntStart->setMaximumSize(100,40);
     RmsIntEnd->setMaximumSize(100,40);
@@ -100,6 +106,13 @@ void Rms_sec_widget::setUpPlottables()
     tsysVsTime->setSelectionRectMode(QCP::srmZoom);
     tsysVsTime->setCursor(QCursor(Qt::CrossCursor));
 
+    spectrumOnPopupWindow->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
+    spectrumOnPopupWindow->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    spectrumOnPopupWindow->axisRect()->setRangeZoom(Qt::Horizontal| Qt::Vertical);
+    spectrumOnPopupWindow->axisRect()->setRangeZoomAxes(spectrumOnPopupWindow->xAxis, spectrumOnPopupWindow->yAxis);
+    spectrumOnPopupWindow->setSelectionRectMode(QCP::srmZoom);
+    spectrumOnPopupWindow->setCursor(QCursor(Qt::CrossCursor));
+
     // -- labele --
     RmsVsTime->xAxis->setLabel("MJD");
     RmsVsTime->yAxis->setLabel("RMS");
@@ -107,6 +120,7 @@ void Rms_sec_widget::setUpPlottables()
     intVsTime->yAxis->setLabel("Integrated amplitude");
     tsysVsTime->xAxis->setLabel("MJD");
     tsysVsTime->yAxis->setLabel("Tsys (K)");
+    spectrumOnPopupWindow->xAxis->setLabel("Velocity");
 
     // -- xaxis2 i yaxis2 --
     RmsVsTime->xAxis2->setVisible(true);
@@ -124,12 +138,18 @@ void Rms_sec_widget::setUpPlottables()
     tsysVsTime->xAxis2->setTickLabels(false);
     tsysVsTime->yAxis2->setTickLabels(false);
 
+    spectrumOnPopupWindow->xAxis2->setVisible(true);
+    spectrumOnPopupWindow->yAxis2->setVisible(true);
+    spectrumOnPopupWindow->xAxis2->setTickLabels(false);
+    spectrumOnPopupWindow->yAxis2->setTickLabels(false);
+
     // -- legenda --
     QFont f( "Arial", 10, QFont::Bold);
     RmsVsTime->legend->setVisible(true);
     RmsVsTime->legend->setFont(f);
     intVsTime->legend->setVisible(true);
     intVsTime->legend->setFont(f);
+
 
     // -- connecting the axis --
     connect(RmsVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), RmsVsTime->xAxis2, SLOT(setRange(QCPRange)) );
@@ -138,8 +158,8 @@ void Rms_sec_widget::setUpPlottables()
     connect(tsysVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), tsysVsTime->yAxis2, SLOT(setRange(QCPRange)) );
     connect(intVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->xAxis2, SLOT(setRange(QCPRange)) );
     connect(intVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->yAxis2, SLOT(setRange(QCPRange)) );
-
-
+    connect(spectrumOnPopupWindow->xAxis, SIGNAL(rangeChanged(QCPRange)), spectrumOnPopupWindow->xAxis2, SLOT(setRange(QCPRange)) );
+    connect(spectrumOnPopupWindow->yAxis, SIGNAL(rangeChanged(QCPRange)), spectrumOnPopupWindow->yAxis2, SLOT(setRange(QCPRange)) );
 
     // -- connecting crosshairs --
     QObject::connect(RmsVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairRmsVsTime(QMouseEvent*)));
@@ -164,11 +184,14 @@ void Rms_sec_widget::setUpPlottables()
         // -- adding graphs --
         RmsVsTime->addGraph();
         intVsTime->addGraph();
+        spectrumOnPopupWindow->addGraph();
         // -- setting properties --
         RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
         RmsVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
         intVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
         intVsTime->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
+        spectrumOnPopupWindow->graph(i)->setLineStyle(QCPGraph::lsNone);
+        spectrumOnPopupWindow->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 4));
         // -- selected pens --
         QCPSelectionDecorator * dekRMS = new QCPSelectionDecorator();
         dekRMS->copyFrom(dekorator);
@@ -179,21 +202,25 @@ void Rms_sec_widget::setUpPlottables()
         // -- setting pens --
         RmsVsTime->graph(i)->setPen(pensForGraphs[i]);
         intVsTime->graph(i)->setPen(pensForGraphs[i]);
+        spectrumOnPopupWindow->graph(i)->setPen(pensForGraphs[i]);
         // -- setting visibilities --
         if (i != 0)
         {
             RmsVsTime->graph(i)->setVisible(false);
             intVsTime->graph(i)->setVisible(false);
+            spectrumOnPopupWindow->graph(i)->setVisible(false);
         }
         // -- setting names --
         RmsVsTime->graph(i)->setName(names[i].c_str());
         intVsTime->graph(i)->setName(names[i].c_str());
+        spectrumOnPopupWindow->graph(i)->setName(names[i].c_str());
         // ---------------------------
         // -- selection --
         RmsVsTime->graph(i)->setSelectable(QCP::stSingleData);
         intVsTime->graph(i)->setSelectable(QCP::stSingleData);
-
+        spectrumOnPopupWindow->graph(i)->setSelectable(QCP::stSingleData);
     }
+
     // -- setup tsys vs time --
     tsysVsTime->addGraph();
     tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsNone);
@@ -204,51 +231,9 @@ void Rms_sec_widget::setUpPlottables()
     dekTSYS->copyFrom(dekorator);
     tsysVsTime->graph(0)->setSelectionDecorator(dekTSYS);
 
-
-    // -- dodajemy graphy z kółeczkami zaznaczenia --
-    for(int i = 0; i < 4; i++)
-    {
-        RmsVsTime->addGraph();
-        intVsTime->addGraph();
-        // --
-        if (i != 2)
-        {
-            RmsVsTime->graph(4+i)->setPen(QPen(Qt::red));
-            intVsTime->graph(4+i)->setPen(QPen(Qt::red));
-        }
-        else
-        {
-            RmsVsTime->graph(4+i)->setPen(QPen(Qt::blue));
-            intVsTime->graph(4+i)->setPen(QPen(Qt::blue));
-        }
-        // --
-        RmsVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
-        intVsTime->graph(4+i)->setLineStyle(QCPGraph::lsNone);
-        // --
-        RmsVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-        intVsTime->graph(4+i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-        // --
-        RmsVsTime->graph(4+i)->setVisible(false);
-        intVsTime->graph(4+i)->setVisible(false);
-        // --
-        RmsVsTime->graph(4+i)->removeFromLegend();
-        intVsTime->graph(4+i)->removeFromLegend();
-        // --
-        RmsVsTime->graph(4+i)->setSelectable(QCP::stNone);
-        intVsTime->graph(4+i)->setSelectable(QCP::stNone);
-    }
-    tsysVsTime->addGraph();
-    tsysVsTime->graph(1)->setLineStyle(QCPGraph::lsNone);
-    tsysVsTime->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle , 10));
-    tsysVsTime->graph(1)->setPen(QPen(Qt::red));
-    tsysVsTime->graph(1)->setVisible(false);
-    tsysVsTime->graph(1)->removeFromLegend();
-    tsysVsTime->graph(1)->setSelectable(QCP::stNone);
-
-    connect(RmsVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
-    connect(tsysVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
-    connect(intVsTime, SIGNAL(selectionChangedByUser()), this, SLOT(setSelectionsOnRms() ) );
-
+    connect(RmsVsTime, SIGNAL( selectionChangedByUser() ), this, SLOT(setSelectionOnRms() ) );
+    connect(tsysVsTime, SIGNAL( selectionChangedByUser() ), this, SLOT(setSelectionOnTsys() ) );
+    connect(intVsTime, SIGNAL( selectionChangedByUser() ), this, SLOT(setSelectionOnInt() ) );
 }
 
 void Rms_sec_widget::placeOnGrid()
@@ -284,8 +269,8 @@ void Rms_sec_widget::placeOnGrid()
     grid->addWidget(showPoints,           14,12,1,1);
     grid->addWidget(showLines,            14,14,1,1);
     grid->addWidget(rectZoom,             15,12,1,1);
-    grid->addWidget(selectionOfPoint,     15,14,1,1);
-    grid->addWidget(showSelectedSpectrum, 14,8,2,4);
+    grid->addWidget(showSelectedSpectrum, 14,8,2,2);
+    grid->addWidget(autoscaleGraphs,      14,10,2,2);
     // ---- row stretche ---
     for(int i = 0; i < grid->rowCount(); i++)
         grid->setRowStretch(i,1);
@@ -305,8 +290,6 @@ void Rms_sec_widget::connectElementsToSlots()
     QObject::connect(showPoints, SIGNAL(clicked()), this, SLOT(showPointsSlot()));
     QObject::connect(showLines, SIGNAL(clicked()), this, SLOT(showLinesSlot()));
 
-    QObject::connect(selectionOfPoint, SIGNAL(clicked()), this, SLOT(switchSelect()));
-
     QObject::connect(exportRmsVsTme, SIGNAL(clicked()), this, SLOT(exportRmsVsTimeSlot()));
     QObject::connect(exportTintVsTme, SIGNAL(clicked()), this, SLOT(exportTintVsTimeSlot()));
     QObject::connect(exportTsysVsTme, SIGNAL(clicked()), this, SLOT(exportTsysVsTimeSlot()));
@@ -314,8 +297,22 @@ void Rms_sec_widget::connectElementsToSlots()
 
     QObject::connect(recalculateIntegration, SIGNAL(clicked()), this, SLOT(recalculateIntegrationSlot()) );
 
-    // TMP
-    QObject::connect(showSelectedSpectrum, SIGNAL(clicked()), this, SLOT(fillWithData()));
+    QObject::connect(showSelectedSpectrum, SIGNAL(clicked()), this, SLOT(showPopupWindowSlot()) );
+
+    QObject::connect(closePopupWIndow, SIGNAL(clicked()), this, SLOT(closePopupWindowSlot()));
+    QObject::connect(autoscaleGraphs, SIGNAL(clicked()), this, SLOT(rescaleGraphs()));
+
+}
+
+void Rms_sec_widget::setUpPopupWindow()
+{
+    popupWindow->setVisible(false);
+    popupWindow->setGeometry(300, 300, 1320, 720);
+    // -- dodajemy plot do gridu --
+    gridOfPopupWindow->addWidget(spectrumOnPopupWindow, 0, 0, 6,6);
+    gridOfPopupWindow->addWidget(flagOnPopupWindow, 6, 0, 1, 3);
+    gridOfPopupWindow->addWidget(closePopupWIndow, 6, 3, 1,3);
+    gridOfPopupWindow->addWidget(labelOnPopupWindow, 0, 6, 6, 3);
 }
 
 void Rms_sec_widget::changeInteractions()
@@ -331,6 +328,9 @@ void Rms_sec_widget::changeInteractions()
         intVsTime->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
         intVsTime->setSelectionRectMode(QCP::srmZoom);
         intVsTime->setCursor(QCursor(Qt::CrossCursor));
+        spectrumOnPopupWindow->setInteractions(QCP::iRangeZoom| QCP::iSelectPlottables);
+        spectrumOnPopupWindow->setSelectionRectMode(QCP::srmZoom);
+        spectrumOnPopupWindow->setCursor(QCursor(Qt::CrossCursor));
     }
     else
     {
@@ -343,6 +343,9 @@ void Rms_sec_widget::changeInteractions()
         intVsTime->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom| QCP::iSelectPlottables);
         intVsTime->setSelectionRectMode(QCP::srmNone);
         intVsTime->setCursor(QCursor(Qt::ArrowCursor));
+        spectrumOnPopupWindow->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom| QCP::iSelectPlottables);
+        spectrumOnPopupWindow->setSelectionRectMode(QCP::srmNone);
+        spectrumOnPopupWindow->setCursor(QCursor(Qt::ArrowCursor));
     }
 }
 
@@ -363,6 +366,7 @@ void Rms_sec_widget::showPointsSlot()
     {
         RmsVsTime->graph(i)->setScatterStyle(style);
         intVsTime->graph(i)->setScatterStyle(style);
+        spectrumOnPopupWindow->graph(i)->setScatterStyle(style);
     }
     tsysVsTime->graph(0)->setScatterStyle(style);
     replotGraphs();
@@ -376,6 +380,7 @@ void Rms_sec_widget::showLinesSlot()
         {
             RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
             intVsTime->graph(i)->setLineStyle(QCPGraph::lsNone);
+            spectrumOnPopupWindow->graph(i)->setLineStyle(QCPGraph::lsNone);
         }
         tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsNone);
     }
@@ -385,6 +390,7 @@ void Rms_sec_widget::showLinesSlot()
         {
             RmsVsTime->graph(i)->setLineStyle(QCPGraph::lsLine);
             intVsTime->graph(i)->setLineStyle(QCPGraph::lsLine);
+            spectrumOnPopupWindow->graph(i)->setLineStyle(QCPGraph::lsLine);
         }
         tsysVsTime->graph(0)->setLineStyle(QCPGraph::lsLine);
     }
@@ -406,20 +412,9 @@ void Rms_sec_widget::showIVLR()
     {
         RmsVsTime->graph(i)->setVisible(vis[i]);
         intVsTime->graph(i)->setVisible(vis[i]);
+        spectrumOnPopupWindow->graph(i)->setVisible(vis[i]);
     }
     replotGraphs();
-}
-
-void Rms_sec_widget::switchSelect()
-{
-    if(selectionOfPoint->isChecked())
-    {
-        selectable = true;
-    }
-    else
-    {
-        selectable = false;
-    }
 }
 
 void Rms_sec_widget::fillWithData()
@@ -466,6 +461,7 @@ void Rms_sec_widget::replotGraphs()
     RmsVsTime->replot();
     tsysVsTime->replot();
     intVsTime->replot();
+    spectrumOnPopupWindow->replot();
 }
 
 void Rms_sec_widget::autoscaleGraph(QCustomPlot * plot)
@@ -529,6 +525,8 @@ void Rms_sec_widget::setDarkMode()
     intVsTime->graph(0)->setPen(dataPen);
     intVsTime->graph(1)->setPen(QPen(Qt::white));
     tsysVsTime->graph(0)->setPen(dataPen);
+    spectrumOnPopupWindow->graph(0)->setPen(dataPen);
+    spectrumOnPopupWindow->graph(1)->setPen(QPen(Qt::white));
     // -- crosshair --
     QPen crossPen(Qt::white);
     crossPen.setStyle(Qt::DashLine);
@@ -538,9 +536,7 @@ void Rms_sec_widget::setDarkMode()
     tintCshLabel->setColor(Qt::white);
     // --------------
     // replotujemy
-    RmsVsTime->replot();
-    tsysVsTime->replot();
-    intVsTime->replot();
+    replotGraphs();
 }
 
 void Rms_sec_widget::setLightMode()
@@ -554,6 +550,8 @@ void Rms_sec_widget::setLightMode()
     intVsTime->graph(0)->setPen(dataPen);
     intVsTime->graph(1)->setPen(QPen(Qt::black));
     tsysVsTime->graph(0)->setPen(dataPen);
+    spectrumOnPopupWindow->graph(0)->setPen(dataPen);
+    spectrumOnPopupWindow->graph(1)->setPen(QPen(Qt::black));
     // -- crosshair --
     QPen crossPen(Qt::black);
     crossPen.setStyle(Qt::DashLine);
@@ -563,9 +561,7 @@ void Rms_sec_widget::setLightMode()
     tintCshLabel->setColor(Qt::black);
     // --------------
     // replotujemy
-    RmsVsTime->replot();
-    tsysVsTime->replot();
-    intVsTime->replot();
+    replotGraphs();
 }
 
 void Rms_sec_widget::colorCanvas(QPen background, QPen spines)
@@ -587,6 +583,12 @@ void Rms_sec_widget::colorCanvas(QPen background, QPen spines)
     intVsTime->axisRect()->setBackground(background.color());
     // -- spines --
     colorSpines(intVsTime, spines);
+    // ---------------------------------
+    // -- tło --
+    spectrumOnPopupWindow->setBackground(background.color());
+    spectrumOnPopupWindow->axisRect()->setBackground(background.color());
+    // -- spines --
+    colorSpines(spectrumOnPopupWindow, spines);
 }
 
 void Rms_sec_widget::colorSpines(QCustomPlot *plot, QPen pendulum)
@@ -805,8 +807,9 @@ void Rms_sec_widget::recalculateIntegrationSlot()
     intVsTime->replot();
 }
 
-void Rms_sec_widget::setSelectionsOnRms()
+void Rms_sec_widget::setSelectionOnRms()
 {
+  // -- gdy klinkie się tak, żeby selection się wyzerowało --
   if(RmsVsTime->selectedGraphs().size() == 0)
   {
       QCPDataSelection selection;
@@ -819,14 +822,141 @@ void Rms_sec_widget::setSelectionsOnRms()
       replotGraphs();
       return;
   }
-  QCPDataSelection selection = RmsVsTime->selectedGraphs().constFirst()->selection();
-  int index = selection.dataRanges().constFirst().begin();
-
-  for(int i = 0; i < 4; i++)
-  {
-      RmsVsTime->graph(i)->setSelection(selection);
-      intVsTime->graph(i)->setSelection(selection);
-  }
-  tsysVsTime->graph(0)->setSelection(selection);
+  setSelectionForPlot(RmsVsTime, tsysVsTime, intVsTime);
   replotGraphs();
+}
+
+void Rms_sec_widget::setSelectionOnTsys()
+{
+    // -- gdy klinkie się tak, żeby selection się wyzerowało --
+    if(tsysVsTime->selectedGraphs().size() == 0)
+    {
+        QCPDataSelection selection;
+        for(int i = 0; i < 4; i++)
+            {
+                RmsVsTime->graph(i)->setSelection(selection);
+                intVsTime->graph(i)->setSelection(selection);
+            }
+            tsysVsTime->graph(0)->setSelection(selection);
+        replotGraphs();
+        return;
+    }
+    setSelectionForPlot(tsysVsTime, RmsVsTime, intVsTime);
+    replotGraphs();
+}
+
+void Rms_sec_widget::setSelectionOnInt()
+{
+    // -- gdy klinkie się tak, żeby selection się wyzerowało --
+    if(intVsTime->selectedGraphs().size() == 0)
+    {
+        QCPDataSelection selection;
+        for(int i = 0; i < 4; i++)
+            {
+                RmsVsTime->graph(i)->setSelection(selection);
+                intVsTime->graph(i)->setSelection(selection);
+            }
+            tsysVsTime->graph(0)->setSelection(selection);
+        replotGraphs();
+        return;
+    }
+    setSelectionForPlot(intVsTime, RmsVsTime, tsysVsTime);
+    replotGraphs();
+}
+
+void Rms_sec_widget::setSelectionForPlot(QCustomPlot *plotSelection, QCustomPlot *plot1, QCustomPlot *plot2)
+{
+    // -- bierzemy selection --
+    QCPDataSelection selection = plotSelection->selectedGraphs().constFirst()->selection();
+    // -- zaznaczamy selection na graphah --
+    for(int i = 0; i < plotSelection->graphCount(); i++)
+        plotSelection->graph(i)->setSelection(selection);
+    for(int i = 0; i < plot1->graphCount(); i++)
+        plot1->graph(i)->setSelection(selection);
+    for(int i = 0; i < plot2->graphCount(); i++)
+        plot2->graph(i)->setSelection(selection);
+}
+
+void Rms_sec_widget::showPopupWindowSlot()
+{
+    // -- zabezpieczenie --
+    if(RmsVsTime->selectedGraphs().size() == 0)
+        return;
+
+    // wyciągamy indeks (xD ile tego)
+    int index = RmsVsTime->selectedGraphs().constFirst()->selection().dataRange().begin();
+
+    // zapełniamy popup window danymi
+    fillPopupWindowWithData(index);
+
+    popupWindow->setVisible(true);
+
+    popupWindowOpened = true;
+}
+
+void Rms_sec_widget::closePopupWindowSlot()
+{
+    popupWindow->setVisible(false);
+    popupWindowOpened = false;
+}
+
+void Rms_sec_widget::fillPopupWindowWithData(int index)
+{
+
+    // -- gdy nie załadowano danych --
+    if (!dataTable->loadedData)
+        return;
+
+    // -- zaczynamy pisać --
+    // - w stylue c: deklarujemy kontenery -
+    unsigned long int size = dataTable->spectraTableI[index].size();
+    QVector < double > velTab(size), Itab(size), vTab(size), lhcTab(size), rhcTab(size);
+    // - zapełniamy wektory -
+    for(unsigned long int i = 0; i < size; i++)
+    {
+        // --
+        velTab[i] = dataTable->velocityTable[index][i];
+        // --
+        Itab[i] = dataTable->spectraTableI[index][i];
+        vTab[i] = dataTable->spectraTableV[index][i];
+        lhcTab[i] = dataTable->spectraTableLHC[index][i];
+        rhcTab[i] = dataTable->spectraTableRHC[index][i];
+    }
+    // -- dodajemy do graphów --
+    // - RMS -
+    spectrumOnPopupWindow->graph(0)->setData(velTab, Itab);
+    spectrumOnPopupWindow->graph(1)->setData(velTab, vTab);
+    spectrumOnPopupWindow->graph(2)->setData(velTab, lhcTab);
+    spectrumOnPopupWindow->graph(3)->setData(velTab, rhcTab);
+    // - label na popup window -
+    setLabelOnPopupWindow(index);
+    // - skalowanie wykresów -
+    autoscaleGraph(spectrumOnPopupWindow);
+    spectrumOnPopupWindow->replot();
+}
+
+void Rms_sec_widget::setLabelOnPopupWindow(int index)
+{
+    std::string label_to_popup_window;
+    label_to_popup_window = "Filename: " + dataTable->fileNamesTab[index] + "\n";
+    label_to_popup_window += "MJD: " + std::to_string(dataTable->mjdTable[index]) + "\n";
+
+    label_to_popup_window += "Date (YYYY MM DD): " + dataTable->isotimeTable[index] +  "\n\n";
+
+    label_to_popup_window += "Tsys: " + std::to_string(dataTable->tsysTable[index]) +"\n\n";
+    label_to_popup_window += "RMS (I): " + std::to_string(dataTable->spectraTableIERR[index]) +"\n";
+    label_to_popup_window += "RMS (V): " + std::to_string(dataTable->spectraTableVERR[index]) +"\n";
+    label_to_popup_window += "RMS (LHC): " + std::to_string(dataTable->spectraTableLHCERR[index]) +"\n";
+    label_to_popup_window += "RMS (RHC): " + std::to_string(dataTable->spectraTableRHCERR[index]) +"\n\n";
+
+    labelOnPopupWindow->setText(QString::fromStdString(label_to_popup_window));
+}
+
+void Rms_sec_widget::rescaleGraphs()
+{
+    autoscaleGraph(RmsVsTime);
+    autoscaleGraph(tsysVsTime);
+    autoscaleGraph(intVsTime);
+    autoscaleGraph(spectrumOnPopupWindow);
+    replotGraphs();
 }
