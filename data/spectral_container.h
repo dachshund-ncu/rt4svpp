@@ -20,6 +20,7 @@ kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
 #include <string>
 #include <QtWidgets>
 #include <CCfits/CCfits>
+#include <QMessageBox>
 
 // -- definicja klasy --
 class spectral_container
@@ -126,6 +127,8 @@ public:
     void exportTsysData();
     std::string getFileNameForExportedRms();
     std::string getFileNameForExportedTsys();
+    // -- metoda flagująca --
+    void flag(int epoch);
 
 
 private:
@@ -197,6 +200,10 @@ private:
     double interpolateCAL(double beginEpoch, double beginCoeff, double endEpoch, double endCoeff, double MJD);
     double calibrateEpoch(double calCoeff, double epochNR);
     // ---------------
+    // -- flagowanie --
+    void appendToFlaggedList(std::string flaggedFilename);
+    std::vector < std::string > readFlaggedFiles();
+    bool checkIfFlagged(std::string fileName, const std::vector < std::string > & flagTable);
 
 };
 

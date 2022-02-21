@@ -302,6 +302,7 @@ void Rms_sec_widget::connectElementsToSlots()
     QObject::connect(closePopupWIndow, SIGNAL(clicked()), this, SLOT(closePopupWindowSlot()));
     QObject::connect(autoscaleGraphs, SIGNAL(clicked()), this, SLOT(rescaleGraphs()));
 
+    QObject::connect(flagOnPopupWindow, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
 }
 
 void Rms_sec_widget::setUpPopupWindow()
@@ -423,6 +424,13 @@ void Rms_sec_widget::fillWithData()
     // -- gdy nie załadowano danych --
     if (!dataTable->loadedData)
         return;
+
+    /* BUGFIX */
+    // -- czyścimy zaznaczenia --
+    clearGraphSelections();
+    indexOfTheSpectrum = 0;
+    if (popupWindow->isVisible())
+        popupWindow->setVisible(false);
 
     // -- zaczynamy pisać --
     // - w stylue c: deklarujemy kontenery -
@@ -886,6 +894,10 @@ void Rms_sec_widget::showPopupWindowSlot()
     // wyciągamy indeks (xD ile tego)
     int index = RmsVsTime->selectedGraphs().constFirst()->selection().dataRange().begin();
 
+    if (index > (int) dataTable->spectraTableI.size()-1)
+        return;
+
+    std::cout << index << std::endl;
     // zapełniamy popup window danymi
     fillPopupWindowWithData(index);
 
@@ -907,6 +919,10 @@ void Rms_sec_widget::fillPopupWindowWithData(int index)
     if (!dataTable->loadedData)
         return;
 
+    if((int) dataTable->spectraTableI.size()-1 < index)
+        return;
+
+    indexOfTheSpectrum = index;
     // -- zaczynamy pisać --
     // - w stylue c: deklarujemy kontenery -
     unsigned long int size = dataTable->spectraTableI[index].size();
@@ -959,4 +975,19 @@ void Rms_sec_widget::rescaleGraphs()
     autoscaleGraph(intVsTime);
     autoscaleGraph(spectrumOnPopupWindow);
     replotGraphs();
+}
+
+void Rms_sec_widget::flagActualEpoch()
+{
+    dataTable->flag(indexOfTheSpectrum + 1);
+}
+
+void Rms_sec_widget::clearGraphSelections()
+{
+    for(auto &i: RmsVsTime->selectedGraphs())
+        i->selection().clear();
+    for(auto &i: tsysVsTime->selectedGraphs())
+        i->selection().clear();
+    for(auto &i: intVsTime->selectedGraphs())
+        i->selection().clear();
 }

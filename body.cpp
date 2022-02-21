@@ -50,47 +50,36 @@ body::body(const char * nazwa)
     kill_dynspec->setVisible(false);
     kill_rms_section->setVisible(false);
 
-    // -- connectujemy przycisk do slotu --
-    //QObject::connect(&quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection); // wylaczanie &QApplication::closeAllWindows
-
     QObject::connect(kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
     QObject::connect(kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
     QObject::connect(kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
+
     // -- setujemy widgety roznych sekcji --
     set_gauss_widget();
-
     connectSectionsToSlots();
 
-    //cout << "Widgets set" << endl;
-
     // -- probojemy czytac liste --
-    /*
-    if (strncmp(nazwa, "", 300) == 0)
+    if ( strncmp(nazwa, "", 300) != 0)
     {
-        //lista.open("lista");
-        dataTable->loadDataFromList("lista");
-        window.setGeometry(window.x(), window.y(),1360,720);
-        display_dynamic_spectrum();
-        geometry_window_set = 1;
-        loaded_data = true;
-
-     }
-    else
-    {
-        dataTable->loadDataFromList(nazwa);
-        list_filename = string(nazwa);
-        window.setGeometry(window.x(), window.y(),1360,720);
-        display_dynamic_spectrum();
-        geometry_window_set = 1;
-        loaded_data = true;
+        std::cout << "Loading list file " << "\"" << nazwa << "\"..." << std::endl;
+        dataTable->loadDataFromList(string(nazwa));
+        if(dataTable->loadedData)
+        {
+            list_filename = string(nazwa);
+            window.setGeometry(window.x(), window.y(),1360,720);
+            display_dynamic_spectrum();
+            geometry_window_set = 1;
+            loaded_data = true;
+        }
+        else
+        {
+            std::cout << "Could not read list file \"" << nazwa << "\"" << std::endl;
+        }
     }
-    */
     // -- domyślnie ustawiamy dark mode --
     set_dark_mode();
-
     // -- pokazujemy okno --
     window.show();
-
 }
 
 // --- connectujemy ---
@@ -807,8 +796,10 @@ void body::reload_slot()
         }
         // -------------------
         dataTable->loadDataFromList(tmpqstringlist);
+        // -- zapełniamy danymi sekcję RMS --
+        rms_sec_w->fillWithData();
     }
-
+    // -- jeśli widmo dynamiczne było otwarte - updatujemy je --
     if (dynamic_spectrum_opened)
         display_dynamic_spectrum();
 }

@@ -33,38 +33,47 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
 
     // -- zdobywamy info o ścieżce całkowitej --
     QFileInfo infotmp (QString::fromStdString(listWithFilenames));
-    std::string working_directory = infotmp.absolutePath().toStdString();
+    saveDirectory = infotmp.absolutePath().toStdString();
+    // -----------------------------------------
 
+    // -- wczytujemy pliki z flagami --
+    std::vector < std::string > flaggedFiles = readFlaggedFiles();
+    // --------------------------------
 
     // bufor
     std::string bufor;
 
     // pętla
+    filesList.seekg(0);
+    std::cout << filesList.good() << std::endl;
     while (filesList.good())
     {
         // czytamy jedną linię z listy plików
         std::getline(filesList, bufor);
 
+
         // -- dodatkowe zabezpieczenie --
         if (bufor != "")
         {
-            // ładujemy plik z listy
-            // w argumencie podajemy ABSOLUTNĄ ścieżkę
-            loadSingleSpectrumFromFile(working_directory + "/" + bufor);
-        }
 
+            if ( checkIfFlagged(bufor, flaggedFiles) )
+            {
+                std::cout << "File: " << saveDirectory + "/" + bufor << " is flagged and I will not read it." << std::endl;
+            }
+            else
+            {
+                loadSingleSpectrumFromFile(saveDirectory + "/" + bufor); // ładujemy plik z listy, w argumencie podajemy ABSOLUTNĄ ścieżkę
+            }
+        }
         // do paska nierządu
         licznik += 1;
         postep.setValue(licznik);
+        QCoreApplication::processEvents();
     }
     filesList.close();
 
-    // zapisujemy dodatkowo katalog do zapisywania
-    saveDirectory = working_directory;
-
     // ustawiamy flagę loaded
     loadedData = true;
-
 }
 
 // - metoda czytająca listę plików -
@@ -81,23 +90,31 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     postep.setVisible(true);
     // -----------------------------------
 
+    // --------------------------------
+    // w liście zawsze będą absolutne ścieżki do plików
+    // dlatego ekstrahujemy z jej pierwszego elementu
+    QFileInfo info(qtListaPlikow[0]);
+    saveDirectory = info.absolutePath().toStdString();
+    // --------------------------------
+
+    // -- wczytujemy pliki z flagami --
+    std::vector < std::string > flaggedFiles = readFlaggedFiles();
+    // --------------------------------
+
     // -- komunikat w terminalu --
     std::cout << "---> Loading files from QT list:" << std::endl;
     // -- i czytamy pliki zgodnie z listą --
     for(int i = 0; i < qtListaPlikow.size(); i++)
     {
-        loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
+        if ( checkIfFlagged(qtListaPlikow[i].toStdString(), flaggedFiles) )
+            std::cout << "File: " << saveDirectory + "/" + qtListaPlikow[i].toStdString() << " is flagged and I will not read it." << std::endl;
+        else
+            loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
         postep.setValue(i);
         QCoreApplication::processEvents();
     }
-    // w liście zawsze będą absolutne ścieżki do plików
-    // dlatego ekstrahujemy z jej pierwszego elementu
-    QFileInfo info(qtListaPlikow[0]);
-    saveDirectory = info.absolutePath().toStdString();
-
     // ustawiamy flagę loaded
     loadedData = true;
-
 }
 
 
@@ -1014,6 +1031,69 @@ int spectral_container::lengthOfTheListFile(std::ifstream &lstfile)
         std::getline(lstfile, bufor);
         licznik += 1;
     }
-    lstfile.seekg(0);
+    //lstfile.seekg(0);
+    lstfile.clear(lstfile.goodbit);
     return licznik;
 }
+
+void spectral_container::flag(int epoch)
+{
+    // -- nazwa oflagowanego pliku --
+    std::string flaggedFilename = fileNamesTab[epoch-1];
+    appendToFlaggedList(flaggedFilename);
+    std::cout << "---> Flagged " << flaggedFilename << std::endl;
+    // -- okno do upewniania sie, ze na pewno chcesz --
+
+//    QMessageBox::StandardButton upewka;
+//    upewka = QMessageBox::question(nullptr, "Are you sure?", QString::fromStdString("Do you realy want to flag " + flaggedFilename + "?"), QMessageBox::Yes| QMessageBox::No);
+//    if (upewka == QMessageBox::No)
+//    {
+//        return;
+//    }
+
+}
+
+void spectral_container::appendToFlaggedList(std::string flaggedFilename)
+{
+    std::ofstream flagfile;
+    flagfile.open((saveDirectory + "/" + "flagged_obs.dat").c_str(), std::ios_base::app );
+    if (flagfile.good())
+    {
+        flagfile << flaggedFilename << std::endl;
+        flagfile.close();
+    }
+}
+
+std::vector < std::string > spectral_container::readFlaggedFiles()
+{
+    std::vector < std::string > returnedFlagFilesTable;
+    // -- otwieramy plik z flagami --
+    std::ifstream flagfile;
+    flagfile.open((saveDirectory + "/" + "flagged_obs.dat").c_str());
+    while(flagfile.good())
+    {
+        std::string bufor = "";
+        std::getline(flagfile, bufor);
+        returnedFlagFilesTable.push_back(bufor);
+    }
+    flagfile.close();
+    return returnedFlagFilesTable;
+}
+
+bool spectral_container::checkIfFlagged(std::string fileName, const std::vector<std::string> &flagTable)
+{
+    std::string baseFileName = fileName.substr(fileName.find_first_of("/\\")+1);
+    for(auto &i : flagTable)
+    {
+        if(fileName == i)
+            return true;
+        if((saveDirectory + "/" + fileName) == i)
+            return true;
+        if(baseFileName == i)
+            return true;
+        if((saveDirectory + "/" + baseFileName) == i)
+            return true;
+    }
+    return false;
+}
+

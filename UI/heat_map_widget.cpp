@@ -272,8 +272,6 @@ void heat_map_widget::connectForAxis()
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMap, SLOT(setDataRange(QCPRange)));
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMapPlot, SLOT(replot()));
 
-    QObject::connect(flag, SIGNAL(clicked()), this, SLOT( tmp_plot() ) );
-
     // klikałke
     QObject::connect(heatMapPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(pressMap(QMouseEvent*)) );
 
@@ -284,6 +282,10 @@ void heat_map_widget::connectForAxis()
     xDownBorder_shrt->setKey(QKeySequence("l"));
     xUpBorder_shrt->setKey(QKeySequence("p"));
     heatMapReset->setKey(QKeySequence("b"));
+    nextEpochKey->setKey(QKeySequence(Qt::Key_Right));
+    prevEpochKey->setKey(QKeySequence(Qt::Key_Left));
+    nextChanKey->setKey(QKeySequence(Qt::Key_Up));
+    prevChanKey->setKey(QKeySequence(Qt::Key_Down));
     // -
     QObject::connect(yDownBorder, SIGNAL(clicked()), this, SLOT(setMinVelOnHeatMap()));
     QObject::connect(yUpBorder, SIGNAL(clicked()), this, SLOT(setMaxVelOnHeatMap()));
@@ -309,6 +311,13 @@ void heat_map_widget::connectForAxis()
     QObject::connect(makeLcsButton, SIGNAL(clicked()), this, SLOT(makeLCS()));
     // - widmo dynamiczne -
     QObject::connect(setLogScale, SIGNAL(clicked()), this, SLOT(setLogScale_slot()));
+    // - flagowanie -
+    QObject::connect(flag, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
+    // - klikanie -
+    QObject::connect(nextEpochKey, SIGNAL(activated()), this, SLOT(nextEpoch()));
+    QObject::connect(prevEpochKey, SIGNAL(activated()), this, SLOT(prevEpoch()));
+    QObject::connect(nextChanKey, SIGNAL(activated()), this, SLOT(nextChan()));
+    QObject::connect(prevChanKey, SIGNAL(activated()), this, SLOT(prevChan()));
 }
 
 void heat_map_widget::tmp_plot()
@@ -907,7 +916,7 @@ void heat_map_widget::setDarkMode()
     // -- odpowiednie długopisy --
     QPen dataPen(QColor(135,206,250));
     dataPen.setWidth(2);
-    QPen errorPen(QColor(180,180,180));
+    QPen errorPen(QColor(128,128,128));
     QPen dotPen(Qt::magenta);
     // -- kolorujemy wykresy --
     colorGraphs(dataPen, errorPen, dotPen);
@@ -942,4 +951,48 @@ void heat_map_widget::darthMode(bool enabled)
     colorbarWidget->replot();
     spectrumPlot->replot();
     lcsPlot->replot();
+}
+
+void heat_map_widget::flagActualEpoch()
+{
+    dataTable->flag(xIndex + 1);
+//    std::string message = "";
+//    message += "File " + dataTable->fileNamesTab[xIndex] + " is flagged. RELOAD the data to see changes.";
+//    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+}
+
+void heat_map_widget::nextEpoch()
+{
+    if(xIndex+1 < dataTable->spectraTableI.size()-1)
+        xIndex++;
+    else
+        xIndex = 0;
+    setMapPressed(xIndex, yIndex);
+}
+
+void heat_map_widget::prevEpoch()
+{
+    if(xIndex == 0)
+        xIndex = dataTable->spectraTableI.size()-1;
+    else
+        xIndex--;
+    setMapPressed(xIndex, yIndex);
+}
+
+void heat_map_widget::nextChan()
+{
+    if(yIndex+1 < dataTable->spectraTableI[xIndex].size()-1)
+        yIndex++;
+    else
+        yIndex = 0;
+    setMapPressed(xIndex, yIndex);
+}
+
+void heat_map_widget::prevChan()
+{
+    if(yIndex == 0)
+        yIndex = dataTable->spectraTableI[xIndex].size()-1;
+    else
+        yIndex--;
+    setMapPressed(xIndex, yIndex);
 }

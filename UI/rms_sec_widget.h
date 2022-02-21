@@ -72,7 +72,7 @@ public:
     QPushButton * closePopupWIndow = new QPushButton(popupWindow);
     QLabel * labelOnPopupWindow = new QLabel(popupWindow);
     bool popupWindowOpened = false;
-
+    int indexOfTheSpectrum = 0;
     // --------------------------
     // -----------------------------------------------------
 private:
@@ -94,6 +94,7 @@ private:
     void setUpPopupWindow();
     void fillPopupWindowWithData(int index);
     void setLabelOnPopupWindow(int index);
+    void clearGraphSelections();
 
 private slots:
     void changeInteractions();
@@ -120,6 +121,7 @@ private slots:
     void setSelectionOnInt();
     void showPopupWindowSlot();
     void rescaleGraphs();
+    void flagActualEpoch();
 
 public:
     void darthMode(bool darthModeEnabled);

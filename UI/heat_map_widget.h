@@ -41,6 +41,10 @@ public:
     QShortcut * xDownBorder_shrt = new QShortcut(this);
     QShortcut * xUpBorder_shrt = new QShortcut(this);
     QShortcut * heatMapReset = new QShortcut(this);
+    QShortcut * nextEpochKey = new QShortcut(this);
+    QShortcut * prevEpochKey = new QShortcut(this);
+    QShortcut * nextChanKey = new QShortcut(this);
+    QShortcut * prevChanKey = new QShortcut(this);
     // -- polaryzacje --
     QPushButton * Ibut = new QPushButton(this);
     QPushButton * Vbut = new QPushButton(this);
@@ -124,6 +128,11 @@ private slots:
     void setLogScale_slot();
     void tmp_plot();
     void pressMap(QMouseEvent * event);
+    void flagActualEpoch();
+    void nextEpoch();
+    void prevEpoch();
+    void nextChan();
+    void prevChan();
     //void updateDynamicSpectrum();
     //void onClick();
     //void setClickedPoint(unsigned long int x, unsigned long int y);
