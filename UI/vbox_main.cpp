@@ -14,20 +14,19 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 void vbox_mainw::makeProperSizeForButtons()
 {
     // -- maximum --
-    LoadAVRFiles->setMaximumSize(10000, 10000);
-    LoadFITSFiles->setMaximumSize(10000, 10000);
-    Reload->setMaximumSize(10000, 10000);
-    DynamicSpectrum->setMaximumSize(10000, 10000);
-    SingleSpectrum->setMaximumSize(10000, 10000);
-    RMSSection->setMaximumSize(10000, 10000);
-    GaussFitting->setMaximumSize(10000, 10000);
-    Integrate->setMaximumSize(10000, 10000);
-    AverOverVelocity->setMaximumSize(10000, 10000);
-    AverOverTime->setMaximumSize(10000, 10000);
-    SpectralIndex->setMaximumSize(10000, 10000);
-    ExportDynamicSpectrum->setMaximumSize(10000, 10000);
-    Calibrate->setMaximumSize(10000, 10000);
-    Quit->setMaximumSize(10000, 10000);
+//    LoadAVRFiles->setMaximumSize(10000, 10000);
+//    LoadFITSFiles->setMaximumSize(10000, 10000);
+//    Reload->setMaximumSize(10000, 10000);
+//    DynamicSpectrum->setMaximumSize(10000, 10000);
+//    SingleSpectrum->setMaximumSize(10000, 10000);
+//    RMSSection->setMaximumSize(10000, 10000);
+//    Integrate->setMaximumSize(10000, 10000);
+//    AverOverVelocity->setMaximumSize(10000, 10000);
+//    AverOverTime->setMaximumSize(10000, 10000);
+//    SpectralIndex->setMaximumSize(10000, 10000);
+//    ExportDynamicSpectrum->setMaximumSize(10000, 10000);
+//    Calibrate->setMaximumSize(10000, 10000);
+//    Quit->setMaximumSize(10000, 10000);
 
     // -- minimum --
     LoadAVRFiles->setMinimumSize(0, 0);
@@ -36,7 +35,6 @@ void vbox_mainw::makeProperSizeForButtons()
     DynamicSpectrum->setMinimumSize(0, 0);
     SingleSpectrum->setMinimumSize(0, 0);
     RMSSection->setMinimumSize(0, 0);
-    GaussFitting->setMinimumSize(0, 0);
     Integrate->setMinimumSize(0, 0);
     AverOverVelocity->setMinimumSize(0, 0);
     AverOverTime->setMinimumSize(0, 0);
@@ -48,24 +46,85 @@ void vbox_mainw::makeProperSizeForButtons()
 
 void vbox_mainw::makeProperLabelsForButtons()
 {
-    LoadAVRFiles->setText("A");
+    int butSize = 60;
+    // ---
     LoadAVRFiles->setToolTip("Load AVR files");
-    LoadFITSFiles->setText("R");
-    Reload->setText("R");
-
-    DynamicSpectrum->setText("DS");
-    SingleSpectrum->setText("SP");
-    RMSSection->setText("RMS");
-    GaussFitting->setText("GS");
-
-    Integrate->setText("INT");
-    AverOverVelocity->setText("AOV");
-    AverOverTime->setText("AOT");
-    SpectralIndex->setText("SPI");
-    ExportDynamicSpectrum->setText("EDS");
-
-    Calibrate->setText("CAL");
-    Quit->setText("QT");
+    LoadAVRFiles->setIcon(QIcon(":/images/loadFitsAVRIcon.svg"));
+    LoadAVRFiles->setIconSize(QSize(butSize,butSize));
+    LoadAVRFiles->setMaximumSize(butSize,butSize);
+    LoadAVRFiles->setFlat(true);
+    // ---
+    LoadFITSFiles->setToolTip("Load FITS files");
+    LoadFITSFiles->setIcon(QIcon(":/images/loadFitsFilesIcon.svg"));
+    LoadFITSFiles->setIconSize(QSize(butSize,butSize));
+    LoadFITSFiles->setMaximumSize(butSize,butSize);
+    LoadFITSFiles->setFlat(true);
+    // ---
+    Reload->setToolTip("Reload");
+    Reload->setIcon(QIcon(":/images/reloadIcon.svg"));
+    Reload->setIconSize(QSize(butSize,butSize));
+    Reload->setMaximumSize(butSize,butSize);
+    Reload->setFlat(true);
+    // ---
+    DynamicSpectrum->setToolTip("Open Dynamic Spectrum");
+    DynamicSpectrum->setIcon(QIcon(":/images/openDynSpecIcon.svg"));
+    DynamicSpectrum->setIconSize(QSize(butSize,butSize));
+    DynamicSpectrum->setMaximumSize(butSize,butSize);
+    DynamicSpectrum->setFlat(true);
+    // --
+    SingleSpectrum->setToolTip("Open Single Spectrum");
+    SingleSpectrum->setIcon(QIcon(":/images/openSingleSpecIcon.svg"));
+    SingleSpectrum->setIconSize(QSize(butSize,butSize));
+    SingleSpectrum->setMaximumSize(butSize,butSize);
+    SingleSpectrum->setFlat(true);
+    // --
+    RMSSection->setToolTip("Open RMS section");
+    RMSSection->setIcon(QIcon(":/images/openRmsSection.svg"));
+    RMSSection->setIconSize(QSize(butSize,butSize));
+    RMSSection->setMaximumSize(butSize,butSize);
+    RMSSection->setFlat(true);
+    // --
+    Integrate->setToolTip("Integrate time series");
+    Integrate->setIcon(QIcon(":/images/integrateIcon.svg"));
+    Integrate->setIconSize(QSize(butSize,butSize));
+    Integrate->setMaximumSize(butSize,butSize);
+    Integrate->setFlat(true);
+    // --
+    AverOverVelocity->setToolTip("Average time series over velocity");
+    AverOverVelocity->setIcon(QIcon(":/images/averOverVelIcon.svg"));
+    AverOverVelocity->setIconSize(QSize(butSize,butSize));
+    AverOverVelocity->setMaximumSize(butSize,butSize);
+    AverOverVelocity->setFlat(true);
+    // --
+    AverOverTime->setToolTip("Average velocity series over time");
+    AverOverTime->setIcon(QIcon(":/images/averOverTimeIcon.svg"));
+    AverOverTime->setIconSize(QSize(butSize,butSize));
+    AverOverTime->setMaximumSize(butSize,butSize);
+    AverOverTime->setFlat(true);
+    // --
+    SpectralIndex->setToolTip("Calculate variability coefficients (VI, FI, CHi2Red)");
+    SpectralIndex->setIcon(QIcon(":/images/chiRedIcon.svg"));
+    SpectralIndex->setIconSize(QSize(butSize,butSize));
+    SpectralIndex->setMaximumSize(butSize,butSize);
+    SpectralIndex->setFlat(true);
+    // --
+    ExportDynamicSpectrum->setToolTip("Export Dynamic spectrum file");
+    ExportDynamicSpectrum->setIcon(QIcon(":/images/exportDynspecIcon.svg"));
+    ExportDynamicSpectrum->setIconSize(QSize(butSize,butSize));
+    ExportDynamicSpectrum->setMaximumSize(butSize,butSize);
+    ExportDynamicSpectrum->setFlat(true);
+    // --
+    Calibrate->setToolTip("Calibrate currently displayed data");
+    Calibrate->setIcon(QIcon(":/images/calibrateIcon.svg"));
+    Calibrate->setIconSize(QSize(butSize,butSize));
+    Calibrate->setMaximumSize(butSize,butSize);
+    Calibrate->setFlat(true);
+    // --
+    Quit->setToolTip("Exit the program");
+    Quit->setIcon(QIcon(":/images/exitIcon.svg"));
+    Quit->setIconSize(QSize(butSize,butSize));
+    Quit->setMaximumSize(butSize,butSize);
+    Quit->setFlat(true);
 }
 
 void vbox_mainw::setupLabels()
@@ -89,30 +148,32 @@ void vbox_mainw::setupLabels()
 
 void vbox_mainw::addEverythingToWidget()
 {
-    VboxGrid->addWidget(LoadingSectionlabel,    0,0, 1, 2);
-    VboxGrid->addWidget(LoadAVRFiles,           1,0, 1, 1);
-    VboxGrid->addWidget(LoadFITSFiles,          1,1, 1, 1);
-    VboxGrid->addWidget(Reload,                 2,0, 1, 1);
-    VboxGrid->addWidget(DarthMode,              3,0, 1, 2);
+    persistentGrid->addWidget(LoadingSectionlabel,    0,0, 1, 2);
+    persistentGrid->addWidget(LoadAVRFiles,           1,0, 1, 1);
+    persistentGrid->addWidget(LoadFITSFiles,          1,1, 1, 1);
+    persistentGrid->addWidget(Reload,                 2,0, 1, 1);
+    persistentGrid->addWidget(DarthMode,              3,0, 1, 2);
 
-    VboxGrid->addWidget(VisualSectionLabel,     4,0, 1, 2);
-    VboxGrid->addWidget(DynamicSpectrum,        5,0, 1, 1);
-    VboxGrid->addWidget(SingleSpectrum,         5,1, 1, 1);
-    VboxGrid->addWidget(RMSSection,             6,0, 1, 1);
-    VboxGrid->addWidget(GaussFitting,           6,1, 1, 1);
+    persistentGrid->addWidget(VisualSectionLabel,     4,0, 1, 2);
+    persistentGrid->addWidget(DynamicSpectrum,        5,0, 1, 1);
+    persistentGrid->addWidget(SingleSpectrum,         5,1, 1, 1);
+    persistentGrid->addWidget(RMSSection,             6,0, 1, 1);
 
+    persistentGrid->addWidget(ExportAndAnalysisLabel, 7,0, 1, 2);
+    persistentGrid->addWidget(Integrate,              8,0, 1, 1);
+    persistentGrid->addWidget(AverOverVelocity,       8,1, 1, 1);
+    persistentGrid->addWidget(AverOverTime,           9,0, 1, 1);
+    persistentGrid->addWidget(SpectralIndex,          9,1, 1, 1);
+    persistentGrid->addWidget(ExportDynamicSpectrum, 10,0, 1, 1);
+    persistentGrid->addWidget(IsotimeInclude,        11,0, 1, 2);
 
-    VboxGrid->addWidget(ExportAndAnalysisLabel, 7,0, 1, 2);
-    VboxGrid->addWidget(Integrate,              8,0, 1, 1);
-    VboxGrid->addWidget(AverOverVelocity,       8,1, 1, 1);
-    VboxGrid->addWidget(AverOverTime,           9,0, 1, 1);
-    VboxGrid->addWidget(SpectralIndex,          9,1, 1, 1);
-    VboxGrid->addWidget(ExportDynamicSpectrum, 10,0, 1, 1);
-    VboxGrid->addWidget(IsotimeInclude,        11,0, 1, 2);
+    persistentGrid->addWidget(OthersLabel,           12,0, 1, 2);
+    persistentGrid->addWidget(Calibrate,             13,0, 1, 1);
+    persistentGrid->addWidget(Quit,                  13,1, 1, 1);
 
-    VboxGrid->addWidget(OthersLabel,           12,0, 1, 2);
-    VboxGrid->addWidget(Calibrate,             13,0, 1, 1);
-    VboxGrid->addWidget(Quit,                  13,1, 1, 1);
+    persistentButtons->setMaximumSize(300, 720);
+    VboxGrid->addWidget(persistentButtons, 0,0);
+    VboxGrid->setAlignment(Qt::AlignTop);
 }
 
 void vbox_mainw::appendWidget(QWidget *widget)
@@ -145,7 +206,6 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(clicked()), parent, SLOT(open_rms_section_slot()));
     QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(set_dark_mode()));
-    QObject::connect(GaussFitting, SIGNAL(clicked()), parent, SLOT(open_gauss_widget()));
 }
 // ---------------------------------------------------------------
 

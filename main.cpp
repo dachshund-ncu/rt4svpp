@@ -14,6 +14,7 @@ using namespace CCfits;
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
+    Q_INIT_RESOURCE(resources);
     FITS::setVerboseMode(true);
     // -- zaczynamy program --
     QApplication program (argc, argv);

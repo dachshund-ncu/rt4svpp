@@ -19,6 +19,8 @@ public:
     // konstruktor
     vbox_mainw(QObject *parent = 0, const char * name = 0);
 
+    QWidget * persistentButtons = new QWidget(this);
+
     // dzieci - buttony
     // -- load --
     QPushButton * LoadAVRFiles = new QPushButton(this);
@@ -28,7 +30,6 @@ public:
     QPushButton * DynamicSpectrum = new QPushButton(this);
     QPushButton * SingleSpectrum = new QPushButton(this);
     QPushButton * RMSSection = new QPushButton(this);
-    QPushButton * GaussFitting = new QPushButton(this);
     // -- pomniejsze sekcje --
     QPushButton * Integrate = new QPushButton(this);
     QPushButton * AverOverVelocity = new QPushButton(this);
@@ -41,10 +42,14 @@ public:
 
     // layouty
     QGridLayout * VboxGrid = new QGridLayout(this);
+    QGridLayout * persistentGrid = new QGridLayout(persistentButtons);
+
+
+
 
     // checkboxy
     QCheckBox * DarthMode = new QCheckBox("Darth Mode", this);
-    QCheckBox * IsotimeInclude = new QCheckBox("Include time in isoformat", this);
+    QCheckBox * IsotimeInclude = new QCheckBox("Iso time", this);
 
     // labele
     QLabel * LoadingSectionlabel = new QLabel(this);

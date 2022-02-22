@@ -37,10 +37,10 @@ public:
     // ------------------------------
     vbox_mainw * left_hand_list = new vbox_mainw(this);
     integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)");
-    integrate_widget * averOverVelocityWidget = new integrate_widget(this, "A.O.V. (channels)");
-    integrate_widget * averOverTimeWidget = new integrate_widget(this, "A.O.T. (epochs)");
-    integrate_widget * SpectralIndexWidget = new integrate_widget(this, "S.I. (epochs)");
-    export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export DS");
+    integrate_widget * averOverVelocityWidget = new integrate_widget(this, "Aver Over Velocity (channels)");
+    integrate_widget * averOverTimeWidget = new integrate_widget(this, "Aver over Time (epochs)");
+    integrate_widget * SpectralIndexWidget = new integrate_widget(this, "Variability coefficients (epochs)");
+    export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export Dynamic Spectrum");
     calsection * calibrateWidget = new calsection(this, "Calibrate");
     // -------------------------------
     // -- do przechowywania danych --

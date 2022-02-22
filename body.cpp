@@ -43,9 +43,9 @@ body::body(const char * nazwa)
     grid->addWidget(left_hand_list, 0,0,9,1);
     grid->setColumnStretch(0,1);
 
-    kill_dynspec->setText("Kill dynamic spectrum");
-    kill_singspec->setText("Kill single spectrum");
-    kill_rms_section->setText("Kill RMS section");
+    kill_dynspec->setText("Kill -->");
+    kill_singspec->setText("Kill -->");
+    kill_rms_section->setText("Kill -->");
     kill_singspec->setVisible(false);
     kill_dynspec->setVisible(false);
     kill_rms_section->setVisible(false);
@@ -1682,7 +1682,7 @@ void body::openIntegrateSection()
     integrate_window_opened = 1;
 
     // - przypinamy do vboxa -
-    left_hand_list->appendWidget(intWidget);
+    //left_hand_list->appendWidget(intWidget);
     intWidget->setVisible(true);
 }
 
@@ -1692,7 +1692,7 @@ void body::closeIntegrateSection()
     // - znikamy widget -
     intWidget->setVisible(false);
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(intWidget);
+    //left_hand_list->deleteWidgetFromList(intWidget);
     // - ustalamy boola -
     integrate_window_opened = 0;
 }
@@ -1719,7 +1719,7 @@ void body::openAOVSection()
     aver_over_velocity_window_opened = 1;
 
     // - przypinamy do vboxa -
-    left_hand_list->appendWidget(averOverVelocityWidget);
+    //left_hand_list->appendWidget(averOverVelocityWidget);
 
     // - pokazujemy -
     averOverVelocityWidget->setVisible(true);
@@ -1731,7 +1731,7 @@ void body::closeAOVSection()
     // - znikamy widget -
     averOverVelocityWidget->setVisible(false);
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(averOverVelocityWidget);
+    //left_hand_list->deleteWidgetFromList(averOverVelocityWidget);
     // - ustalamy boola -
     aver_over_velocity_window_opened = 0;
 }
@@ -1758,7 +1758,7 @@ void body::openAOTSection()
     aver_over_time_window_opened = 1;
 
     // - przypinamy do vboxa -
-    left_hand_list->appendWidget(averOverTimeWidget);
+    //left_hand_list->appendWidget(averOverTimeWidget);
 
     // - pokazujemy -
     averOverTimeWidget->setVisible(true);
@@ -1771,7 +1771,7 @@ void body::closeAOTSection()
     averOverTimeWidget->setVisible(false);
 
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(averOverTimeWidget);
+    //left_hand_list->deleteWidgetFromList(averOverTimeWidget);
 
     // - zmieniamy boola -
     aver_over_time_window_opened = 0;
@@ -1796,7 +1796,7 @@ void body::openSPINDSection()
     }
 
     // - przypinamy do vboxa -
-    left_hand_list->appendWidget(SpectralIndexWidget);
+    //left_hand_list->appendWidget(SpectralIndexWidget);
 
     // - pokazujemy -
     SpectralIndexWidget->setVisible(true);
@@ -1812,7 +1812,7 @@ void body::closeSPINDSection()
     SpectralIndexWidget->setVisible(false);
 
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(SpectralIndexWidget);
+    //left_hand_list->deleteWidgetFromList(SpectralIndexWidget);
 
     // - usrtawiamy boola -
     spind_window_opened = 0;
@@ -1838,7 +1838,7 @@ void body::openWDSection()
     }
 
     // przypinamy do vboxa
-    left_hand_list->appendWidget(exDynspWidget);
+    //left_hand_list->appendWidget(exDynspWidget);
     // ustalamy visibility
     exDynspWidget->setVisible(true);
 
@@ -1851,7 +1851,7 @@ void body::closeWDSection()
     // -- znikamy --
     exDynspWidget->setVisible(false);
     // -- odpinamy od vboxa --
-    left_hand_list->deleteWidgetFromList(exDynspWidget);
+    //left_hand_list->deleteWidgetFromList(exDynspWidget);
     // -- ustalamy boola --
     wd_section_opened = 0;
 }
@@ -1892,7 +1892,7 @@ void body::openCALSection()
     }
     // ------------------------------------------------------------
     // -- dodajemy do vboxa --
-    left_hand_list->appendWidget(calibrateWidget);
+    //left_hand_list->appendWidget(calibrateWidget);
     // -- ustawiamy visibility --
     calibrateWidget->setVisible(true);
     // -- ustawiamy boola --
@@ -1904,7 +1904,7 @@ void body::closeCALSection()
     // -- znikamy --
     calibrateWidget->setVisible(false);
     // -- odpinamy od vboxa --
-    left_hand_list->deleteWidgetFromList(calibrateWidget);
+    //left_hand_list->deleteWidgetFromList(calibrateWidget);
     // -- ustawiamy boola --
     calibration_section_opened = 0;
 }

@@ -1,5 +1,18 @@
 <RCC>
     <qresource prefix="/">
         <file>images/deathstaradder.svg</file>
+        <file>images/loadFitsFilesIcon.svg</file>
+        <file>images/loadFitsAVRIcon.svg</file>
+        <file>images/reloadIcon.svg</file>
+        <file>images/openDynSpecIcon.svg</file>
+        <file>images/openSingleSpecIcon.svg</file>
+        <file>images/openRmsSection.svg</file>
+        <file>images/integrateIcon.svg</file>
+        <file>images/averOverTimeIcon.svg</file>
+        <file>images/averOverVelIcon.svg</file>
+        <file>images/chiRedIcon.svg</file>
+        <file>images/exportDynspecIcon.svg</file>
+        <file>images/calibrateIcon.svg</file>
+        <file>images/exitIcon.svg</file>
     </qresource>
 </RCC>
