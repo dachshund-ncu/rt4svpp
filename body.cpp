@@ -1711,8 +1711,8 @@ void body::openAOVSection()
     // jeśli otwarte jest widmo dynamiczne, ustal text edity na granice tegoż
     if(dynamic_spectrum_opened == 1)
     {
-        averOverVelocityWidget->startingChannelInt->setText(QString::fromStdString(to_string(dynspecWidget->minRangeVelIndex+1)));
-        averOverVelocityWidget->endingChannelInt->setText((QString::fromStdString(to_string(dynspecWidget->maxRangeVelIndex+1))));
+        averOverVelocityWidget->startingChannelInt->setText(QString::fromStdString(to_string((dynspecWidget->yIndex+1)-1) ));
+        averOverVelocityWidget->endingChannelInt->setText(QString::fromStdString(to_string((dynspecWidget->yIndex+1)+1) ));
     }
 
     // - ustawiamy boola, informującego o otwarciu sekcji -

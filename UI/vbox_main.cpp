@@ -52,79 +52,79 @@ void vbox_mainw::makeProperLabelsForButtons()
     LoadAVRFiles->setIcon(QIcon(":/images/loadFitsAVRIcon.svg"));
     LoadAVRFiles->setIconSize(QSize(butSize,butSize));
     LoadAVRFiles->setMaximumSize(butSize,butSize);
-    LoadAVRFiles->setFlat(true);
+    //LoadAVRFiles->setFlat(true);
     // ---
     LoadFITSFiles->setToolTip("Load FITS files");
     LoadFITSFiles->setIcon(QIcon(":/images/loadFitsFilesIcon.svg"));
     LoadFITSFiles->setIconSize(QSize(butSize,butSize));
     LoadFITSFiles->setMaximumSize(butSize,butSize);
-    LoadFITSFiles->setFlat(true);
+    //LoadFITSFiles->setFlat(true);
     // ---
     Reload->setToolTip("Reload");
     Reload->setIcon(QIcon(":/images/reloadIcon.svg"));
     Reload->setIconSize(QSize(butSize,butSize));
     Reload->setMaximumSize(butSize,butSize);
-    Reload->setFlat(true);
+    //Reload->setFlat(true);
     // ---
     DynamicSpectrum->setToolTip("Open Dynamic Spectrum");
     DynamicSpectrum->setIcon(QIcon(":/images/openDynSpecIcon.svg"));
     DynamicSpectrum->setIconSize(QSize(butSize,butSize));
     DynamicSpectrum->setMaximumSize(butSize,butSize);
-    DynamicSpectrum->setFlat(true);
+    //DynamicSpectrum->setFlat(true);
     // --
     SingleSpectrum->setToolTip("Open Single Spectrum");
     SingleSpectrum->setIcon(QIcon(":/images/openSingleSpecIcon.svg"));
     SingleSpectrum->setIconSize(QSize(butSize,butSize));
     SingleSpectrum->setMaximumSize(butSize,butSize);
-    SingleSpectrum->setFlat(true);
+    //SingleSpectrum->setFlat(true);
     // --
     RMSSection->setToolTip("Open RMS section");
     RMSSection->setIcon(QIcon(":/images/openRmsSection.svg"));
     RMSSection->setIconSize(QSize(butSize,butSize));
     RMSSection->setMaximumSize(butSize,butSize);
-    RMSSection->setFlat(true);
+    //RMSSection->setFlat(true);
     // --
     Integrate->setToolTip("Integrate time series");
     Integrate->setIcon(QIcon(":/images/integrateIcon.svg"));
     Integrate->setIconSize(QSize(butSize,butSize));
     Integrate->setMaximumSize(butSize,butSize);
-    Integrate->setFlat(true);
+    //Integrate->setFlat(true);
     // --
     AverOverVelocity->setToolTip("Average time series over velocity");
     AverOverVelocity->setIcon(QIcon(":/images/averOverVelIcon.svg"));
     AverOverVelocity->setIconSize(QSize(butSize,butSize));
     AverOverVelocity->setMaximumSize(butSize,butSize);
-    AverOverVelocity->setFlat(true);
+    //AverOverVelocity->setFlat(true);
     // --
     AverOverTime->setToolTip("Average velocity series over time");
     AverOverTime->setIcon(QIcon(":/images/averOverTimeIcon.svg"));
     AverOverTime->setIconSize(QSize(butSize,butSize));
     AverOverTime->setMaximumSize(butSize,butSize);
-    AverOverTime->setFlat(true);
+    //AverOverTime->setFlat(true);
     // --
     SpectralIndex->setToolTip("Calculate variability coefficients (VI, FI, CHi2Red)");
     SpectralIndex->setIcon(QIcon(":/images/chiRedIcon.svg"));
     SpectralIndex->setIconSize(QSize(butSize,butSize));
     SpectralIndex->setMaximumSize(butSize,butSize);
-    SpectralIndex->setFlat(true);
+    //SpectralIndex->setFlat(true);
     // --
     ExportDynamicSpectrum->setToolTip("Export Dynamic spectrum file");
     ExportDynamicSpectrum->setIcon(QIcon(":/images/exportDynspecIcon.svg"));
     ExportDynamicSpectrum->setIconSize(QSize(butSize,butSize));
     ExportDynamicSpectrum->setMaximumSize(butSize,butSize);
-    ExportDynamicSpectrum->setFlat(true);
+    //ExportDynamicSpectrum->setFlat(true);
     // --
     Calibrate->setToolTip("Calibrate currently displayed data");
     Calibrate->setIcon(QIcon(":/images/calibrateIcon.svg"));
     Calibrate->setIconSize(QSize(butSize,butSize));
     Calibrate->setMaximumSize(butSize,butSize);
-    Calibrate->setFlat(true);
+    //Calibrate->setFlat(true);
     // --
     Quit->setToolTip("Exit the program");
     Quit->setIcon(QIcon(":/images/exitIcon.svg"));
     Quit->setIconSize(QSize(butSize,butSize));
     Quit->setMaximumSize(butSize,butSize);
-    Quit->setFlat(true);
+    //Quit->setFlat(true);
 }
 
 void vbox_mainw::setupLabels()
