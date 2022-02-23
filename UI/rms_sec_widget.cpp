@@ -897,12 +897,9 @@ void Rms_sec_widget::showPopupWindowSlot()
     if (index > (int) dataTable->spectraTableI.size()-1)
         return;
 
-    std::cout << index << std::endl;
     // zapełniamy popup window danymi
     fillPopupWindowWithData(index);
-
     popupWindow->setVisible(true);
-
     popupWindowOpened = true;
 }
 

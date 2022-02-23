@@ -657,6 +657,8 @@ void spectral_container::clearAllTables()
 
     AVRHeaders.clear();
 
+    isotimeTable.clear();
+
 }
 
 // - sprawdza, czy wybrano psa -
