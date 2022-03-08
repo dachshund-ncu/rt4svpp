@@ -106,6 +106,7 @@ public:
 public:
     void darthMode(bool enabled = false);
     void firstPlotOnDynamicSpectrum();
+    void setMapPressed(unsigned long int x, unsigned long int y);
 
 public slots:
     void resetHeatMap();
@@ -150,7 +151,7 @@ private:
     // klikanie widma dynamicznego
     unsigned long int searchForClickedX(double x);
     unsigned long int searchForClickedY(double y);
-    void setMapPressed(unsigned long int x, unsigned long int y);
+    //void setMapPressed(unsigned long int x, unsigned long int y);
         void setCrosshair(unsigned long int x, unsigned long int y);
         void plotSingleSpectrum(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
         void plotLCS(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab, std::vector < double > & errtab);

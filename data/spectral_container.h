@@ -129,6 +129,8 @@ public:
     std::string getFileNameForExportedTsys();
     // -- metoda flagująca --
     void flag(int epoch);
+    // -- pomocnicza metoda --
+    std::string getFileNameFromFullPath(std::string fileName);
 
 
 private:

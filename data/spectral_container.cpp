@@ -58,7 +58,7 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
 
             if ( checkIfFlagged(bufor, flaggedFiles) )
             {
-                std::cout << "File: " << saveDirectory + "/" + bufor << " is flagged and I will not read it." << std::endl;
+                std::cout << "----> File: " << getFileNameFromFullPath(bufor) << " is flagged and I will not read it." << std::endl;
             }
             else
             {
@@ -107,7 +107,7 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     for(int i = 0; i < qtListaPlikow.size(); i++)
     {
         if ( checkIfFlagged(qtListaPlikow[i].toStdString(), flaggedFiles) )
-            std::cout << "File: " << saveDirectory + "/" + qtListaPlikow[i].toStdString() << " is flagged and I will not read it." << std::endl;
+            std::cout << "----> File: " << getFileNameFromFullPath( qtListaPlikow[i].toStdString()) << " is flagged and I will not read it." << std::endl;
         else
             loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
         postep.setValue(i);
@@ -1011,7 +1011,7 @@ std::string spectral_container::construct_isotime(double year, double month, dou
 void spectral_container::print_loaded_comm(int obsnum, std::string isotime, double obs_error)
 {
     // printuje komunikat o załadowanym pliku
-    std::cout << "[" << obsnum << "]   " << isotime << "   rms: " << obs_error << std::endl;
+    std::cout << "----> [" << obsnum << "]   " << isotime << "   rms: " << obs_error << std::endl;
 }
 
 std::string spectral_container::getHeaderFromAVRFile(std::vector<std::string> linesInFile)
@@ -1041,9 +1041,9 @@ int spectral_container::lengthOfTheListFile(std::ifstream &lstfile)
 void spectral_container::flag(int epoch)
 {
     // -- nazwa oflagowanego pliku --
-    std::string flaggedFilename = fileNamesTab[epoch-1];
-    appendToFlaggedList(flaggedFilename);
-    std::cout << "---> Flagged " << flaggedFilename << std::endl;
+    std::string flaggedFilename = getFileNameFromFullPath(fileNamesTab[epoch-1]);
+    appendToFlaggedList( flaggedFilename);
+    std::cout << "----> Flagged " << flaggedFilename << std::endl;
     // -- okno do upewniania sie, ze na pewno chcesz --
 
 //    QMessageBox::StandardButton upewka;
@@ -1084,13 +1084,10 @@ std::vector < std::string > spectral_container::readFlaggedFiles()
 
 bool spectral_container::checkIfFlagged(std::string fileName, const std::vector<std::string> &flagTable)
 {
-    std::string baseFileName = fileName.substr(fileName.find_first_of("/\\")+1);
+    std::string baseFileName = getFileNameFromFullPath(fileName);
+
     for(auto &i : flagTable)
     {
-        if(fileName == i)
-            return true;
-        if((saveDirectory + "/" + fileName) == i)
-            return true;
         if(baseFileName == i)
             return true;
         if((saveDirectory + "/" + baseFileName) == i)
@@ -1099,3 +1096,7 @@ bool spectral_container::checkIfFlagged(std::string fileName, const std::vector<
     return false;
 }
 
+std::string spectral_container::getFileNameFromFullPath(std::string fileName)
+{
+    return fileName.substr(fileName.find_last_of("/\\")+1);
+}

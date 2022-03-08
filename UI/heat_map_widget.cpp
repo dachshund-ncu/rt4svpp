@@ -414,8 +414,8 @@ void heat_map_widget::setCrosshair(unsigned long x, unsigned long y)
     x_axis_line->start->setCoords(x, -QCPRange::maxRange);
     x_axis_line->end->setCoords(x, QCPRange::maxRange);
     // pozioma
-    y_axis_line->start->setCoords(-QCPRange::maxRange, dataTable->velocityTable[0][y]);
-    y_axis_line->end->setCoords(QCPRange::maxRange, dataTable->velocityTable[0][y]);
+    y_axis_line->start->setCoords(-QCPRange::maxRange, dataTable->velocityTable[x][y]);
+    y_axis_line->end->setCoords(QCPRange::maxRange, dataTable->velocityTable[x][y]);
     // kwadrat
     double h = abs(dataTable->velocityTable[x][0] - dataTable->velocityTable[x][1]); // odstęp między kanałami
     rectangle->topLeft->setCoords(double(x) - 0.5, dataTable->velocityTable[x][y] + 0.5*h);
@@ -963,7 +963,7 @@ void heat_map_widget::flagActualEpoch()
 
 void heat_map_widget::nextEpoch()
 {
-    if(xIndex+1 < dataTable->spectraTableI.size()-1)
+    if(xIndex+1 < dataTable->spectraTableI.size())
         xIndex++;
     else
         xIndex = 0;
@@ -981,7 +981,7 @@ void heat_map_widget::prevEpoch()
 
 void heat_map_widget::nextChan()
 {
-    if(yIndex+1 < dataTable->spectraTableI[xIndex].size()-1)
+    if(yIndex+1 < dataTable->spectraTableI[xIndex].size())
         yIndex++;
     else
         yIndex = 0;

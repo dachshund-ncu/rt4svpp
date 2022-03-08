@@ -951,7 +951,7 @@ void Rms_sec_widget::fillPopupWindowWithData(int index)
 void Rms_sec_widget::setLabelOnPopupWindow(int index)
 {
     std::string label_to_popup_window;
-    label_to_popup_window = "Filename: " + dataTable->fileNamesTab[index] + "\n";
+    label_to_popup_window = "Filename: " + dataTable->getFileNameFromFullPath(dataTable->fileNamesTab[index]) + "\n";
     label_to_popup_window += "MJD: " + std::to_string(dataTable->mjdTable[index]) + "\n";
 
     label_to_popup_window += "Date (YYYY MM DD): " + dataTable->isotimeTable[index] +  "\n\n";

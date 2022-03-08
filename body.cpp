@@ -24,7 +24,7 @@ using namespace CCfits;
 body::body(const char * nazwa)
 {
     Q_INIT_RESOURCE(resources);
-
+    window.setVisible(false);
     // -- ustawiamy rozmiary okna --
     window.setGeometry(300,300,300,720);
     // -- ustawiamy tytul okna --
@@ -68,8 +68,10 @@ body::body(const char * nazwa)
             list_filename = string(nazwa);
             window.setGeometry(window.x(), window.y(),1360,720);
             display_dynamic_spectrum();
+            dynspecWidget->setMapPressed(0,0);
             geometry_window_set = 1;
             loaded_data = true;
+            window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
         }
         else
         {
@@ -79,6 +81,7 @@ body::body(const char * nazwa)
     // -- domyślnie ustawiamy dark mode --
     set_dark_mode();
     // -- pokazujemy okno --
+    window.setVisible(true);
     window.show();
 }
 
@@ -488,6 +491,8 @@ void body::load_time_series()
         display_dynamic_spectrum();
         geometry_window_set = 1;
     }
+    dynspecWidget->setMapPressed(0,0);
+    window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
 }
 
 
@@ -801,7 +806,10 @@ void body::reload_slot()
     }
     // -- jeśli widmo dynamiczne było otwarte - updatujemy je --
     if (dynamic_spectrum_opened)
+    {
+        dynspecWidget->setMapPressed(0,0);
         display_dynamic_spectrum();
+    }
 }
 
 // -- czyta nazwy plików z pliku 'flagged_obs.dat' --
@@ -2031,7 +2039,7 @@ void body::connectSectionsToSlots()
     QObject::connect(exDynspWidget->cancel, SIGNAL(clicked()), this, SLOT(closeWDSection()));
     // CAL
     QObject::connect(calibrateWidget->make, SIGNAL(clicked()), this, SLOT(calibrate_button()));
-    QObject::connect(calibrateWidget->cancel, SIGNAL(clicked()), this, SLOT(closeWDSection()));
+    QObject::connect(calibrateWidget->cancel, SIGNAL(clicked()), this, SLOT(closeCALSection()));
     QObject::connect(calibrateWidget->loadCaltabL1, SIGNAL(clicked()), this, SLOT(load_l1_caltab_button()));
     QObject::connect(calibrateWidget->loadCaltabR1, SIGNAL(clicked()), this, SLOT(load_r1_caltab_button()));
 }
