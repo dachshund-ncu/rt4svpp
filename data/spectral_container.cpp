@@ -45,7 +45,6 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
 
     // pętla
     filesList.seekg(0);
-    std::cout << filesList.good() << std::endl;
     while (filesList.good())
     {
         // czytamy jedną linię z listy plików

@@ -7,11 +7,11 @@ export_dynamic_spectrum_widget::export_dynamic_spectrum_widget(QObject * parent,
 
 void export_dynamic_spectrum_widget::setUpWidgets(const char * name)
 {
-    // - size policy -
-    this->setMaximumSize(100000,200);
-
     // - przy starcie nie chcemy go widziec -
     this->setVisible(false);
+
+    // - size policy -
+    this->setMaximumSize(100000,200);
 
     // - rozmiaty text editow -
     startChannelTextEd->setMaximumSize(100,30);

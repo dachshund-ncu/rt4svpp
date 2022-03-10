@@ -5,6 +5,7 @@ TARGET = rt4sv++
 TEMPLATE = app
 
 SOURCES += \
+    UI/varcoefscalcwidget.cpp \
     body.cpp \
     data/calibration.cpp \
     data/exportvaroiusdata.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
     UI/rms_sec_widget.cpp
 
 HEADERS += \
+    UI/varcoefscalcwidget.h \
     body.h \
     data/spectral_container.h \
     libs/qcustomplot.h \

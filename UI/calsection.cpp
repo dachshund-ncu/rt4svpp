@@ -7,11 +7,10 @@ calsection::calsection(QObject * parent, const char * name)
 
 void calsection::setUpWidget(const char * name)
 {
-    // - size policy -
-    this->setMaximumSize(100000,150);
-
     // - visibility -
     this->setVisible(false);
+    // - size policy -
+    this->setMaximumSize(100000,150);
 
     // - setujemy tekst -
     cancel->setText("Cancel");

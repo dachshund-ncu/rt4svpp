@@ -11,9 +11,6 @@ Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
     placeOnGrid();
     connectElementsToSlots();
     setUpPopupWindow();
-    // -- dajemy nowe rzeczy do roboty --
-    //this->setGeometry(300, 300, 1280, 720);
-
 }
 
 void Rms_sec_widget::setUpButtons()

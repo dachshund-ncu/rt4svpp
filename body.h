@@ -23,6 +23,7 @@
 #include "UI/heat_map_widget.h"
 #include "UI/single_spec_widget.h"
 #include "UI/rms_sec_widget.h"
+#include "UI/varcoefscalcwidget.h"
 using namespace std;
 
 class body : public QObject
@@ -39,7 +40,7 @@ public:
     integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)");
     integrate_widget * averOverVelocityWidget = new integrate_widget(this, "Aver Over Velocity (channels)");
     integrate_widget * averOverTimeWidget = new integrate_widget(this, "Aver over Time (epochs)");
-    integrate_widget * SpectralIndexWidget = new integrate_widget(this, "Variability coefficients (epochs)");
+    varCoefsCalcWidget * SpectralIndexWidget = new varCoefsCalcWidget(this, "Variability coefficients (epochs)");
     export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export Dynamic Spectrum");
     calsection * calibrateWidget = new calsection(this, "Calibrate");
     // -------------------------------
@@ -454,6 +455,8 @@ public:
     void save_new_cols_in_fits_file(string fitsfilename, vector < double > lhc, vector < double > rhc);
 
     bool check_if_avr_or_fits(string filename_of_tested_file, bool name_with_absolute_path);
+
+    double readNumberFromQTextEdit(QTextEdit * box);
     //void connectToSlotsVboxMain();
     //void read_chan4int();
 public slots:

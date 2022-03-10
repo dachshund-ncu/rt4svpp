@@ -753,24 +753,29 @@ void body::calculate_aver_over_time()
 // -- liczy VI, FI i chi2red dla wszystkich kanałów --
 void body::calculate_spectral_index()
 {
-    // wypisujemy co chcemy
+    /*
+     * Celem tej metody jest policzenie współczynników VI, FI i Chi^2_red
+     * Oraz zapisanie ich do plików tekstowych (robi to klasa spectral_container, tutaj tylko wywołujemy jej metodę)
+    */
+    // --------------
     std::vector < int > minmax = readMinMaxValuesFromEpochs(*SpectralIndexWidget->startingChannelInt, *SpectralIndexWidget->endingChannelInt);
+    double absoluteErr = readNumberFromQTextEdit(SpectralIndexWidget->absoluteErrorBox);
+    //std::cout << absoluteErr << std::endl;
     int min = minmax[0];
     int max = minmax[1];
     if (min == -1 and max == -1)
         return;
-
-    dataTable->spectralIndex4Pol(min, max, 0.0);
-
+    // --------------
+    dataTable->spectralIndex4Pol(min, max, absoluteErr);
+    // --------------
     string message;
     message = "Spectral-indexed over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
     message = message + "VI Saved to " + dataTable->getVIFileName(min, max) + "\n";
     message = message + "FI Saved to " + dataTable->getFIFileName(min, max) + "\n";
     message = message + "Chi2Red Saved to " + dataTable->getChi2RedFileName(min, max) + "\n";
-    //message = message + "chi2 Saved to " + filenamechi2 + "\n";
+    // --------------
     closeSPINDSection();
     QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
-
 }
 
 void body::save_all_to_gnuplot_slot()
@@ -2089,4 +2094,29 @@ void body::load_r1_caltab_button()
 void body::calibrate_button()
 {
     dataTable->calibrateAll(true);
+}
+
+double body::readNumberFromQTextEdit(QTextEdit *box)
+{
+    /*
+     * Prosta metoda, czytająca numer z QTextEdit i konwertująca go na double
+     * Dodatkowo posiada kilka zabezpieczeń na wypadek nieprawidłowego wypełnienia
+     */
+    double returnedValue;
+    QString bufor = box->toPlainText();
+    if (bufor.toStdString() == "")
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        return 0.0;
+    }
+    try
+    {
+        returnedValue = bufor.toDouble();
+    }
+    catch(...)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        return 0.0;
+    }
+    return returnedValue;
 }

@@ -3,12 +3,12 @@
 
 vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 {
+    this->setVisible(true);
     makeProperSizeForButtons();
     makeProperLabelsForButtons();
     setupLabels();
     connectToSlots(parent);
     addEverythingToWidget();
-    this->setVisible(true);
 }
 
 void vbox_mainw::makeProperSizeForButtons()

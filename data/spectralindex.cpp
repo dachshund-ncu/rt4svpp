@@ -65,7 +65,6 @@ double spectral_container::chi2redFromSingleChannel(int channel, int begin_epoch
     double tmpFlux = 0.0; // tymczasowy strumień, żeby mniej pisać
     double tmpError = 0.0; // tymczasowa niepewność, żeby mniej pisać
     double meanFlux = meanOfChannel(channel, begin_epoch, end_epoch, poltab); // średni strumień
-
     // pętla sumująca chi
     for(int i = begin_epoch-1; i < end_epoch; i++)
     {
