@@ -31,7 +31,7 @@ CCFits and cfitsio libraries (https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
 
 ### How to install? ###
 
-you can use installation script (sudo python3 installReqs.py)
+If you run something, based on Ubuntu LTS, you can use installation script (sudo python3 installReqs.py)
 
 Or do everything manually:
 
