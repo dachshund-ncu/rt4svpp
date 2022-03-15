@@ -31,12 +31,17 @@ CCFits and cfitsio libraries (https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
 
 ### How to install? ###
 
+you can use installation script (sudo python3 installReqs.py)
+
+Or do everything manually:
+
 sudo apt install g++
 
 sudo apt install qt5-default
 
 CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local"
-< cfitsio >:
+
+< cfitsio >
 * untar the files
 * in the main untared directory run ./configure --prefix=/usr/local/
 * run make
