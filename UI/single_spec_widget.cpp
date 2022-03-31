@@ -141,7 +141,9 @@ void single_spec_widget::addSpectrumToPlot(int epochNo)
 
 void single_spec_widget::add()
 {
-    addSpectrumToPlot(listOfObservations->currentRow()); // czytamy obecnie wybrany rząd
+    if (listOfObservations->currentRow() == -1)
+        return;
+    addSpectrumToPlot(listOfObservations->currentRow());
 }
 
 void single_spec_widget::pop()

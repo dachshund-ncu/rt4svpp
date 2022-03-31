@@ -61,8 +61,21 @@ body::body(const char * nazwa)
     // -- probojemy czytac liste --
     if ( strncmp(nazwa, "", 300) != 0)
     {
-        std::cout << "Loading list file " << "\"" << nazwa << "\"..." << std::endl;
-        dataTable->loadDataFromList(string(nazwa));
+        if (checkIfFits(nazwa) )
+        {
+            std::cout << "---> Fits file provided, loading..." << std::endl;
+            QStringList lista;
+            lista.append(QString(nazwa));
+            dataTable->loadDataFromList(lista);
+        }
+        else
+        {
+            std::cout << "--> List of files provided, loading..." << std::endl;
+            std::cout << "Loading list file " << "\"" << nazwa << "\"..." << std::endl;
+            dataTable->loadDataFromList(string(nazwa));
+        }
+
+
         if(dataTable->loadedData)
         {
             list_filename = string(nazwa);
@@ -85,13 +98,23 @@ body::body(const char * nazwa)
     window.show();
 }
 
-// --- connectujemy ---
-// łączymy buttony z innymi metodami
+bool body::checkIfFits(const char * filename)
+{
+    try
+    {
+        CCfits::FITS pies(filename, CCfits::Read);
+        CCfits::ExtHDU & table = pies.extension(1);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
 
 
 // -------------------------------------------------------------------------------
 // -- funkcje, ustawiajace widgety (wywolywane na poczatku programu i tylko wtedy)
-
 void body::set_gauss_widget()
 {
     // -- ustalamy maksima --

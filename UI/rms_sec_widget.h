@@ -46,16 +46,25 @@ public:
     QCheckBox * showPoints = new QCheckBox("Show points", this);
     QCheckBox * showLines = new QCheckBox("Show lines", this);
     QCheckBox * rectZoom = new QCheckBox("Rectangle zoom", this);
+    QCheckBox * showCross = new QCheckBox("Show crosshair", this);
     // -- text edity --
-    QTextEdit * RmsIntStart = new QTextEdit(this);
-    QTextEdit * RmsIntEnd = new QTextEdit(this);
+    QSpinBox * RmsIntStart = new QSpinBox(this);
+    QSpinBox * RmsIntEnd = new QSpinBox(this);
     // -- grid --
     QGridLayout * grid = new QGridLayout(this);
     QVBoxLayout * exportVbox = new QVBoxLayout();
+    // -- widget, przechowujący opcje etc. --
+    QTabWidget * tabTools = new QTabWidget(this);
+    QWidget * plotSettings = new QWidget(this);
+    QGridLayout * plotSettingsGrid = new QGridLayout(plotSettings);
+    QWidget * dataExport = new QWidget(this);
+    QGridLayout * dataExportGrid = new QGridLayout(dataExport);
+    QWidget * otherTools = new QWidget(this);
+    QGridLayout * otherToolsGrid = new QGridLayout(otherTools);
     // -- labele --
     QLabel * stokesParams = new QLabel(this);
     QLabel * intParamsLabel = new QLabel(this);
-    QLabel * exportingSecLabel = new QLabel(this);
+    //QLabel * exportingSecLabel = new QLabel(this);
     QLabel * graphParamsLabel = new QLabel(this);
     QLabel * startIntegrateLabel = new QLabel(this);
     QLabel * endIntegrateLabel = new QLabel(this);
@@ -84,7 +93,7 @@ private:
     void replotGraphs();
     void autoscaleGraph(QCustomPlot * plot);
     std::vector < std::vector < double > > getIntegrateFromDataTable();
-    int getChannel(QTextEdit * pole);
+    int getChannel(QSpinBox * pole);
     void colorCanvas(QPen background, QPen spines);
     void colorSpines(QCustomPlot *plot, QPen pendulum);
     void setDarkMode();
@@ -122,6 +131,7 @@ private slots:
     void showPopupWindowSlot();
     void rescaleGraphs();
     void flagActualEpoch();
+    void showCrosshairSlot();
 
 public:
     void darthMode(bool darthModeEnabled);

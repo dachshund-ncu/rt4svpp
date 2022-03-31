@@ -43,8 +43,10 @@ void Rms_sec_widget::setUpButtons()
     // -- text edity --
     RmsIntStart->setMaximumSize(100,40);
     RmsIntEnd->setMaximumSize(100,40);
-    RmsIntStart->setText("500");
-    RmsIntEnd->setText("1500");
+    RmsIntStart->setMaximum(9999999);
+    RmsIntEnd->setMaximum(9999999);
+    RmsIntStart->setValue(500);
+    RmsIntEnd->setValue(1500);
     // -- checkboxy --
     IOnRms->setChecked(true);
     VOnRms->setChecked(false);
@@ -52,8 +54,7 @@ void Rms_sec_widget::setUpButtons()
     RHCOnRms->setChecked(false);
     rectZoom->setChecked(true);
     showPoints->setChecked(true);
-
-
+    showCross->setChecked(true);
 }
 
 void Rms_sec_widget::setUpLabels()
@@ -61,16 +62,16 @@ void Rms_sec_widget::setUpLabels()
     // -- czcionka --
     QFont f( "Arial", 10, QFont::Bold);
     // -- teksty labeli --
-    stokesParams->setText("Stokes parameters");
+    stokesParams->setText("Stokes");
     intParamsLabel->setText("Integration parameters");
-    exportingSecLabel->setText("Exporting");
+    //exportingSecLabel->setText("Exporting");
     graphParamsLabel->setText("Plot properties");
     startIntegrateLabel->setText("Integration start channel");
     endIntegrateLabel->setText("Integration end channel");
     // -- fonty --
     stokesParams->setFont(f);
     intParamsLabel->setFont(f);
-    exportingSecLabel->setFont(f);
+    //exportingSecLabel->setFont(f);
     graphParamsLabel->setFont(f);
 }
 
@@ -241,33 +242,72 @@ void Rms_sec_widget::placeOnGrid()
     grid->addWidget(tsysVsTime, 8, 0, 8, 8);
     grid->addWidget(intVsTime, 0, 8, 8, 8);
     // -- stokes params --
-    grid->addWidget(stokesParams, 8,8, 1,4);
-    grid->addWidget(IOnRms, 9,8,1,1);
-    grid->addWidget(VOnRms, 9,9,1,1);
-    grid->addWidget(LHCOnRms, 9,10,1,1);
-    grid->addWidget(RHCOnRms, 9,11,1,1);
-    // -- integration parameters --
-    grid->addWidget(intParamsLabel, 10,8,1,4);
-    grid->addWidget(RmsIntStart, 11,11,1,1);
-    grid->addWidget(RmsIntEnd, 12,11,1,1);
-    grid->addWidget(startIntegrateLabel, 11,8,1,3);
-    grid->addWidget(endIntegrateLabel, 12,8,1,3);
-    grid->addWidget(recalculateIntegration, 13,8,1,4);
-    // -- exporting --
-    grid->addWidget(exportingSecLabel,      8,12,1,4);
-    // ---- export vbox ----
+    plotSettingsGrid->addWidget(stokesParams, 0,0);
+    plotSettingsGrid->addWidget(IOnRms,       1,0,1,1);
+    plotSettingsGrid->addWidget(VOnRms,       1,1,1,1);
+    plotSettingsGrid->addWidget(LHCOnRms,     1,2,1,1);
+    plotSettingsGrid->addWidget(RHCOnRms,     1,3,1,1);
+
+    plotSettingsGrid->addWidget(graphParamsLabel,     2,0,1,4);
+    plotSettingsGrid->addWidget(showPoints,           3,0,1,1);
+    plotSettingsGrid->addWidget(showLines,            3,1,1,1);
+    plotSettingsGrid->addWidget(rectZoom,             3,2,1,1);
+    plotSettingsGrid->addWidget(showCross,             3,3,1,1);
+    plotSettingsGrid->addWidget(showSelectedSpectrum, 4,0,1,2);
+    plotSettingsGrid->addWidget(autoscaleGraphs,      4,2,1,2);
+
+    // -- data export --
     exportVbox->addWidget(exportRmsVsTme);
     exportVbox->addWidget(exportTsysVsTme);
     exportVbox->addWidget(exportTintVsTme);
     exportVbox->addWidget(exportAllVSTme);
-    grid->addLayout(exportVbox, 9,12,4,4);
-    // -- plot properties --
-    grid->addWidget(graphParamsLabel,     13,12,1,4);
-    grid->addWidget(showPoints,           14,12,1,1);
-    grid->addWidget(showLines,            14,14,1,1);
-    grid->addWidget(rectZoom,             15,12,1,1);
-    grid->addWidget(showSelectedSpectrum, 14,8,2,2);
-    grid->addWidget(autoscaleGraphs,      14,10,2,2);
+    dataExportGrid->addLayout(exportVbox, 0,0);
+    // ---- row stretche ---
+    for(int i = 0; i < plotSettingsGrid->rowCount(); i++)
+        plotSettingsGrid->setRowStretch(i,1);
+    for(int i = 0; i < plotSettingsGrid->columnCount(); i++)
+        plotSettingsGrid->setColumnStretch(i,1);
+
+    // -- integration parameters --
+    otherToolsGrid->addWidget(intParamsLabel,         0,0,1,4);
+    otherToolsGrid->addWidget(startIntegrateLabel,    1,0,1,3);
+    otherToolsGrid->addWidget(RmsIntStart,            1,3,1,1);
+    otherToolsGrid->addWidget(endIntegrateLabel,      2,0,1,3);
+    otherToolsGrid->addWidget(RmsIntEnd,              2,3,1,1);
+    otherToolsGrid->addWidget(recalculateIntegration, 3,0,1,4);
+
+//
+//    grid->addWidget(stokesParams, 8,8, 1,4);
+//    grid->addWidget(IOnRms, 9,8,1,1);
+//    grid->addWidget(VOnRms, 9,9,1,1);
+//    grid->addWidget(LHCOnRms, 9,10,1,1);
+//    grid->addWidget(RHCOnRms, 9,11,1,1);
+//    // -- integration parameters --
+//    grid->addWidget(intParamsLabel, 10,8,1,4);
+//    grid->addWidget(RmsIntStart, 11,11,1,1);
+//    grid->addWidget(RmsIntEnd, 12,11,1,1);
+//    grid->addWidget(startIntegrateLabel, 11,8,1,3);
+//    grid->addWidget(endIntegrateLabel, 12,8,1,3);
+//    grid->addWidget(recalculateIntegration, 13,8,1,4);
+//    // -- exporting --
+//    grid->addWidget(exportingSecLabel,      8,12,1,4);
+//    // ---- export vbox ----
+//    exportVbox->addWidget(exportRmsVsTme);
+//    exportVbox->addWidget(exportTsysVsTme);
+//    exportVbox->addWidget(exportTintVsTme);
+//    exportVbox->addWidget(exportAllVSTme);
+//    grid->addLayout(exportVbox, 9,12,4,4);
+//    // -- plot properties --
+//    grid->addWidget(graphParamsLabel,     13,12,1,4);
+//    grid->addWidget(showPoints,           14,12,1,1);
+//    grid->addWidget(showLines,            14,14,1,1);
+//    grid->addWidget(rectZoom,             15,12,1,1);
+//    grid->addWidget(showSelectedSpectrum, 14,8,2,2);
+//    grid->addWidget(autoscaleGraphs,      14,10,2,2);
+    tabTools->addTab(plotSettings, "Plot settings");
+    tabTools->addTab(dataExport, "Data export");
+    tabTools->addTab(otherTools, "Others");
+    grid->addWidget(tabTools, 8,8,8,8);
     // ---- row stretche ---
     for(int i = 0; i < grid->rowCount(); i++)
         grid->setRowStretch(i,1);
@@ -300,6 +340,8 @@ void Rms_sec_widget::connectElementsToSlots()
     QObject::connect(autoscaleGraphs, SIGNAL(clicked()), this, SLOT(rescaleGraphs()));
 
     QObject::connect(flagOnPopupWindow, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
+
+    QObject::connect(showCross, SIGNAL(clicked()), this, SLOT(showCrosshairSlot()));
 }
 
 void Rms_sec_widget::setUpPopupWindow()
@@ -490,31 +532,19 @@ std::vector < std::vector < double > > Rms_sec_widget::getIntegrateFromDataTable
     if(min < 1)
     {
         min = 1;
-        RmsIntStart->setText("1");
+        RmsIntStart->setValue(1);
     }
     if (max > (int) dataTable->spectraTableI[0].size())
     {
         max = (int) dataTable->spectraTableI[0].size();
-        RmsIntEnd->setText( std::to_string((int) dataTable->spectraTableI[0].size()).c_str() );
+        RmsIntEnd->setValue( (int) dataTable->spectraTableI[0].size());
     }
     return dataTable->getIntegrate(min,max);
 }
 
-int Rms_sec_widget::getChannel(QTextEdit * pole)
+int Rms_sec_widget::getChannel(QSpinBox * pole)
 {
-    QString numberInString = pole->toPlainText();
-    if(numberInString == "")
-        return 0;
-
-    try
-    {
-        int number = std::stoi(numberInString.toStdString());
-        return number;
-    }
-    catch (...)
-    {
-        return 0;
-    }
+    return pole->value();
 }
 
 void Rms_sec_widget::setDarkMode()
@@ -636,14 +666,14 @@ void Rms_sec_widget::darthMode(bool darthModeEnabled)
 void Rms_sec_widget::crossHairRmsVsTime(QMouseEvent* event)
 {
     // setting visibilities
-    RmsXAxisLine->setVisible(true);
-    RmsYAxisLine->setVisible(true);
+    RmsXAxisLine->setVisible(showCross->isChecked());
+    RmsYAxisLine->setVisible(showCross->isChecked());
     tsysXAxisLine->setVisible(false);
     tsysYAxisLine->setVisible(false);
     tintXAxisLine->setVisible(false);
     tintYAxisLine->setVisible(false);
     // ----
-    rmsCshLabel->setVisible(true);
+    rmsCshLabel->setVisible(showCross->isChecked());
     tsysCshLabel->setVisible(false);
     tintCshLabel->setVisible(false);
     // ----
@@ -675,13 +705,13 @@ void Rms_sec_widget::crossHairTsysVsTime(QMouseEvent* event)
     // setting visibilities
     RmsXAxisLine->setVisible(false);
     RmsYAxisLine->setVisible(false);
-    tsysXAxisLine->setVisible(true);
-    tsysYAxisLine->setVisible(true);
+    tsysXAxisLine->setVisible(showCross->isChecked());
+    tsysYAxisLine->setVisible(showCross->isChecked());
     tintXAxisLine->setVisible(false);
     tintYAxisLine->setVisible(false);
     // ----
     rmsCshLabel->setVisible(false);
-    tsysCshLabel->setVisible(true);
+    tsysCshLabel->setVisible(showCross->isChecked());
     tintCshLabel->setVisible(false);
     // ----
 
@@ -714,12 +744,12 @@ void Rms_sec_widget::crossHairTintVsTime(QMouseEvent* event)
     RmsYAxisLine->setVisible(false);
     tsysXAxisLine->setVisible(false);
     tsysYAxisLine->setVisible(false);
-    tintXAxisLine->setVisible(true);
-    tintYAxisLine->setVisible(true);
+    tintXAxisLine->setVisible(showCross->isChecked());
+    tintYAxisLine->setVisible(showCross->isChecked());
     // ----
     rmsCshLabel->setVisible(false);
     tsysCshLabel->setVisible(false);
-    tintCshLabel->setVisible(true);
+    tintCshLabel->setVisible(showCross->isChecked());
     // ----
 
     // -- pozycja --
@@ -984,4 +1014,30 @@ void Rms_sec_widget::clearGraphSelections()
         i->selection().clear();
     for(auto &i: intVsTime->selectedGraphs())
         i->selection().clear();
+}
+
+void Rms_sec_widget::showCrosshairSlot()
+{
+    bool flag;
+    if (showCross->isChecked())
+    {
+        flag = true;
+    }
+    else
+    {
+        flag = false;
+    }
+    RmsXAxisLine->setVisible(flag);
+    RmsYAxisLine->setVisible(flag);
+    tsysXAxisLine->setVisible(flag);
+    tsysYAxisLine->setVisible(flag);
+    tintXAxisLine->setVisible(flag);
+    tintYAxisLine->setVisible(flag);
+    rmsCshLabel->setVisible(flag);
+    tsysCshLabel->setVisible(flag);
+    tintCshLabel->setVisible(flag);
+    // -- replotting ==
+    RmsVsTime->replot();
+    tsysVsTime->replot();
+    intVsTime->replot();
 }

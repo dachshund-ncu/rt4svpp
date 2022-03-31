@@ -292,6 +292,8 @@ public:
     int number_of_rotated_channels = 1;
     //int max_range_mjd_index;
 
+private:
+    bool checkIfFits(const char * filename);
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --

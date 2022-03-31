@@ -313,7 +313,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     // deklarujemy tymczasowe zmienne w stacku
     // zostaną zniszczone po wykonaniu funkcji, więc nie musimy się o nie martwić
     double vlsr, freq_beg, freq_mid, freq_end, freq_rang, equinox, nchans, restfreq, el, az, z, tsys1, tsys2, dopp_vsu, dopp_vob, dopp_vto;
-    double year, month, day, hour, min,sec;
+    //double year, month, day, hour, min,sec;
     std::string zstr, tsysstr, vlsr_str, freq_beg_str, freq_mid_str, freq_end_str, freq_rang_str, equinox_str, nchans_str, restfreq_str, el_str, az_str, z_str, tsys1_str, tsys2_str, dopp_vsu_str, dopp_vob_str, dopp_vto_str;
     std::string sourcename, isotime, ra, dec;
 
