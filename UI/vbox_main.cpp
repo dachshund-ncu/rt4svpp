@@ -174,6 +174,10 @@ void vbox_mainw::addEverythingToWidget()
     persistentButtons->setMaximumSize(300, 720);
     VboxGrid->addWidget(persistentButtons, 0,0);
     VboxGrid->setAlignment(Qt::AlignTop);
+    // -----
+    DynamicSpectrum->setCheckable(true);
+    SingleSpectrum->setCheckable(true);
+    RMSSection->setCheckable(true);
 }
 
 void vbox_mainw::appendWidget(QWidget *widget)
@@ -193,8 +197,8 @@ void vbox_mainw::deleteWidgetFromList(QWidget *widget)
 void vbox_mainw::connectToSlots(QObject *parent)
 {
     QObject::connect(Quit, SIGNAL(clicked()), qApp, SLOT(quit()), Qt::QueuedConnection);
-    QObject::connect(LoadAVRFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
-    QObject::connect(LoadFITSFiles, SIGNAL(clicked()), parent, SLOT(load_time_series()));
+    QObject::connect(LoadAVRFiles, SIGNAL(clicked()), parent, SLOT(load_time_series_AVR()));
+    QObject::connect(LoadFITSFiles, SIGNAL(clicked()), parent, SLOT(load_time_series_FITS()));
     QObject::connect(Integrate, SIGNAL(clicked()), parent, SLOT(openIntegrateSection()));
     QObject::connect(SingleSpectrum, SIGNAL(clicked()), parent, SLOT(display_single_spectrum()));
     QObject::connect(DynamicSpectrum, SIGNAL(clicked()), parent, SLOT(display_dynamic_spectrum()));

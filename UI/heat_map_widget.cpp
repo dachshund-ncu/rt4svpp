@@ -69,7 +69,13 @@ void heat_map_widget::setButtonsProperties()
     // -- checkboxy --
     rotateAllPols->setChecked(true);
     // -- button --
-    Ibut->setDown(true);
+
+    Ibut->setCheckable(true);
+    Vbut->setCheckable(true);
+    LHCbut->setCheckable(true);
+    RHCbut->setCheckable(true);
+
+    Ibut->setChecked(true);
 }
 
 void heat_map_widget::processTextEdits()
@@ -684,10 +690,10 @@ void heat_map_widget::choosePolRHC()
 }
 void heat_map_widget::setDownPolButtons()
 {
-    Ibut->setDown(polI);
-    Vbut->setDown(polV);
-    LHCbut->setDown(polLHC);
-    RHCbut->setDown(polRHC);
+    Ibut->setChecked(polI);
+    Vbut->setChecked(polV);
+    LHCbut->setChecked(polLHC);
+    RHCbut->setChecked(polRHC);
 }
 
 void heat_map_widget::rotateSpectrum(bool direction)

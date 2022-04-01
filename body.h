@@ -59,155 +59,6 @@ public:
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
 
-    // ------  SEKCJA DO DOPASOWYWANIA GAUSSA ------
-    // - WIDGET -
-    QWidget * gauss_fitting_widget = new QWidget(&window);
-
-    // - customploty -
-    QCustomPlot * spectrum_w_gauss = new QCustomPlot(gauss_fitting_widget);
-    // axis recty
-    QCPAxisRect * gorne_widmo_gauss = new QCPAxisRect(spectrum_w_gauss, true);
-    QCPAxisRect * dolne_widmo_gauss = new QCPAxisRect(spectrum_w_gauss, true);
-    // linie do crosshair
-    //QCPItemLine * gauss_h_crosshair = new QCPItemLine(spectrum_w_gauss);
-    //QCPItemLine * gauss_v_crosshair = new QCPItemLine(spectrum_w_gauss);
-    //QCPItemLine * gauss_res_crosshair = new QCPItemLine(spectrum_w_gauss);
-
-    // - buttony -
-    QPushButton * fit_gauss = new QPushButton(gauss_fitting_widget);
-    QPushButton * kill_gauss = new QPushButton(&window);
-    QPushButton * prev_epoch = new QPushButton(gauss_fitting_widget);
-    QPushButton * next_epoch = new QPushButton(gauss_fitting_widget);
-    QPushButton * set_clicker_gauss = new QPushButton(gauss_fitting_widget);
-    QPushButton * change_bounds = new QPushButton(gauss_fitting_widget);
-    QPushButton * set_range_to_fit_limits = new QPushButton(gauss_fitting_widget);
-    QPushButton * set_range_to_data = new QPushButton(gauss_fitting_widget);
-
-
-    // - groupboxy -
-    QGroupBox * fitted_params_gb = new QGroupBox("Fitted parameters");
-    QGroupBox * starting_fit_params_gb = new QGroupBox("Starting fit parameters");
-    //QWidget * fitted_params_gb = new QWidget(gauss_fitting_widget);
-    //QWidget * starting_fit_params_gb = new QWidget(gauss_fitting_widget);
-
-    // - layouty -
-    QGridLayout * grid_for_gauss = new QGridLayout(gauss_fitting_widget);
-    QVBoxLayout * fitted_params = new QVBoxLayout();
-    QVBoxLayout * starting_fit_params = new QVBoxLayout();
-    QHBoxLayout * top_right_buttons_gauss = new QHBoxLayout();
-    QVBoxLayout * top_right_buttons_gauss_V = new QVBoxLayout();
-    QVBoxLayout * labels_over_plot_gauss = new QVBoxLayout();
-    QHBoxLayout * top_left_buttons_gauss = new QHBoxLayout();
-
-    //QHBoxLayout * first_gauss_amp_start = new QHBoxLayout();
-    //QHBoxLayout * first_gauss_vel_start = new QHBoxLayout();
-    //QHBoxLayout * first_gauss_fwhm_start = new QHBoxLayout();
-    //QHBoxLayout * first_gauss_amp_fitted = new QHBoxLayout();
-    //QHBoxLayout * first_gauss_vel_fitted = new QHBoxLayout();
-    //QHBoxLayout * first_gauss_fwhm_fitted = new QHBoxLayout();
-    QHBoxLayout * fit_range_managment = new QHBoxLayout();
-    QVBoxLayout * checkboxes_on_left_top = new QVBoxLayout();
-    QVBoxLayout * range_buttons = new QVBoxLayout();
-
-
-    // -- labele --
-    /*
-    QLabel * amp_starting = new QLabel(gauss_fitting_widget);
-    QLabel * vel_starting = new QLabel(gauss_fitting_widget);
-    QLabel * fwhm_starting = new QLabel(gauss_fitting_widget);
-
-    QLabel * amp_fitted = new QLabel(gauss_fitting_widget);
-    QLabel * vel_fitted = new QLabel(gauss_fitting_widget);
-    QLabel * fwhm_fitted = new QLabel(gauss_fitting_widget);
-    */
-    QLabel * actual_mjd_gauss = new QLabel(gauss_fitting_widget);
-    QLabel * actual_epoch_nr_gauss = new QLabel(gauss_fitting_widget);
-
-    QLabel * range_lbl = new QLabel(gauss_fitting_widget);
-    QLabel * lt = new QLabel(gauss_fitting_widget);
-
-    /*
-    QLabel * pm = new QLabel(gauss_fitting_widget);
-    QLabel * pm2 = new QLabel(gauss_fitting_widget);
-    QLabel * pm3 = new QLabel(gauss_fitting_widget);
-    QLabel * pm4 = new QLabel(gauss_fitting_widget);
-    QLabel * pm5 = new QLabel(gauss_fitting_widget);
-    QLabel * pm6 = new QLabel(gauss_fitting_widget);
-    */
-    // -- textedity --
-    QTextEdit * min_fit_range = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * max_fit_range = new QTextEdit(gauss_fitting_widget);
-
-    QTextEdit * fitted_params_texted = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * starting_params_texted = new QTextEdit(gauss_fitting_widget);
-    /*
-    QTextEdit * amp_starting_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * vel_starting_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * fwhm_starting_texed = new QTextEdit(gauss_fitting_widget);
-    // errory
-    QTextEdit * amp_starting_err_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * vel_starting_err_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * fwhm_starting_err_texed = new QTextEdit(gauss_fitting_widget);
-
-    QTextEdit * amp_fitted_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * vel_fitted_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * fwhm_fitted_texed = new QTextEdit(gauss_fitting_widget);
-    // errory
-    QTextEdit * amp_fitted_err_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * vel_fitted_err_texed = new QTextEdit(gauss_fitting_widget);
-    QTextEdit * fwhm_fitted_err_texed = new QTextEdit(gauss_fitting_widget);
-    */
-    // -- checkboxy --
-    QCheckBox * set_lines_gauss = new QCheckBox("Show lines", gauss_fitting_widget);
-    QCheckBox * set_points_gauss = new QCheckBox("Show points", gauss_fitting_widget);
-    QCheckBox * set_crosshair_gauss = new QCheckBox("Show crosshair", gauss_fitting_widget);
-
-
-    // -- scroll areasy --
-    //QScrollArea * scroll_fitted_params = new QScrollArea();
-    //QScrollArea * scroll_starting_params = new QScrollArea();
-
-    /*
-    // -- kontenery --
-    // labele
-    vector < QLabel * > fitted_amp_labels;
-    vector < QLabel * > fitted_vel_labels;
-    vector < QLabel * > fitted_fwhm_labels;
-    vector < QLabel * > fitted_amp_pm;
-    vector < QLabel * > fitted_vel_pm;
-    vector < QLabel * > fitted_fwhm_pm;
-    // textedity
-    vector < QTextEdit * > fitted_amp_texted;
-    vector < QTextEdit * > fitted_vel_texted;
-    vector < QTextEdit * > fitted_fwhm_texted;
-    vector < QTextEdit * > fitted_amp_texted_err;
-    vector < QTextEdit * > fitted_vel_texted_err;
-    vector < QTextEdit * > fitted_fwhm_texted_err;
-    // hboxy
-
-    vector < QHBoxLayout > fitted_amp_hbox;
-    vector < QHBoxLayout > fitted_vel_hbox;
-    vector < QHBoxLayout > fitted_fwhm_hbox;
-    vector < QVBoxLayout > fitted_one_record;
-
-    // widgety
-    vector < QWidget * > fitted_one_widget;
-    */
-
-    vector < bool > fit_done; // przechowuje informacje, czy dopasowanie jest zrobione dla danej obserwacji
-    unsigned long int actual_obs_index_gauss = 0; // jaki obecnie mamy indeks obserwacji?
-
-    vector < vector < double > > fitted_parameters_tab;
-    vector < vector < double > > starting_fit_parameters_tab;
-
-    // -- boole --
-    bool range_to_data_set = 1;
-    bool range_to_fit_set = 0;
-
-    // -- inty --
-    double min_fit_range_d;
-    double max_fit_range_d;
-    // ---------------------------------------------------------------------
 
     // -- group boxy --
     // -- glowne widgety --
@@ -274,8 +125,6 @@ public:
     bool made_rotation = 0;
     bool check_if_loading_not_interrupted = 0;
 
-    bool gauss_section_opened = 0;
-
     bool caltabs_loaded = 0;
     unsigned long int xind = 0;
     unsigned long int yind = 0;
@@ -294,10 +143,13 @@ public:
 
 private:
     bool checkIfFits(const char * filename);
+    void setCheckedProperButtons();
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --
-    void load_time_series();
+    void load_time_series_AVR();
+    void load_time_series_FITS();
+    void loadTimeSeriesWrapper(QFileDialog * fileDialog);
     void reload_slot();
     // -- single widmo --
     void display_single_spectrum();
@@ -311,44 +163,7 @@ public slots:
 
     void save_all_to_gnuplot_slot();
     //void autorange_plot(QCustomPlot * plot);
-
     void set_dark_mode();
-
-    void set_gauss_widget();
-    void open_gauss_widget();
-    void close_gauss_widget();
-
-    // -- sloty do sekcji gaussa --
-    void previous_gauss_spec();
-    void next_gauss_spec();
-    void actual_gauss_spec();
-
-    void plot_initial_fit();
-    void plot_fitted_fit();
-
-    void autoscale_gauss_graph();
-    bool read_gauss_range_from_txt();
-
-    void scale_fit_plot_to_data();
-    void scale_fit_plot_to_txt();
-
-    void set_gauss_dark_mode_pens();
-    void set_gauss_light_mode_pens();
-
-    void show_lines_gauss();
-    void show_points_gauss();
-    void show_crosshair_gauss();
-
-    void cross_hair_gauss(QMouseEvent * event);
-
-    //void fitted_parameters_creator(unsigned long int amount);
-    //void menu_request(QPoint pos);
-    /*
-    void average_over_velocity();
-    void average_over_time();
-    void calculate_spectral_index();
-    */
-
 public:
     // ZMIENNE do uzycia tymczasowego:
     ifstream avr; // obiekt czytanego pliku AVR
