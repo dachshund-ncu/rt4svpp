@@ -372,11 +372,14 @@ void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
 // metody pomocnicze do klikałke
 unsigned long int  heat_map_widget::searchForClickedX(double x)
 {
+    if (x < 0.0)
+        x = 0.0;
     unsigned long int tmpx = (unsigned long int) round(x);
     if( tmpx < minObsNumber)
         tmpx = minObsNumber;
     else if (tmpx > maxObsNumber)
         tmpx = maxObsNumber;
+
     return tmpx;
 }
 
@@ -404,6 +407,7 @@ unsigned long int  heat_map_widget::searchForClickedY(double y)
     }
     return yind;
 }
+
 void heat_map_widget::addGraphs()
 {
     // --- single spectrum ---

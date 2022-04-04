@@ -76,7 +76,7 @@ public:
     bool loadedData = false;
     bool madeRotation = false;
     // czy czytamy fits czy avr
-    std::vector < bool > fileTypesTab;
+    std::vector < bool > fileTypesTab; // false - AVR, true - fits?
 
     // - metody -
     // metoda inicjująca

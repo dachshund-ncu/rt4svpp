@@ -24,6 +24,7 @@
 #include "UI/single_spec_widget.h"
 #include "UI/rms_sec_widget.h"
 #include "UI/varcoefscalcwidget.h"
+#include "UI/just_new_menu.h"
 using namespace std;
 
 class body : public QObject
@@ -53,12 +54,14 @@ public:
     single_spec_widget * ssWidget = new single_spec_widget(dataTable);
     // -- do RMS section --
     Rms_sec_widget * rms_sec_w = new Rms_sec_widget(dataTable);
+    // -- menu --
+    just_new_menu * superMegaMenuBar = new just_new_menu();
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
     QWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
-
+    // --------------------------------------
 
     // -- group boxy --
     // -- glowne widgety --

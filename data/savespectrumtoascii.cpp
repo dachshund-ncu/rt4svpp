@@ -60,12 +60,12 @@ std::string spectral_container::getFileNameForAsciiSave(int epoch)
     // dodajemy coś jeszcze
     if (!fileTypesTab[epoch-1])
     {
-        oldFileName.erase(oldFileName.end()-7, oldFileName.end());
+        oldFileName.erase(oldFileName.end()-4, oldFileName.end());
     }
     else
     {
-        oldFileName.erase(oldFileName.end()-8, oldFileName.end());
+        oldFileName.erase(oldFileName.end()-5, oldFileName.end());
     }
-    asciiFileName += oldFileName + "ascii.DAT";
+    asciiFileName += oldFileName + "_ascii.DAT";
     return asciiFileName;
 }

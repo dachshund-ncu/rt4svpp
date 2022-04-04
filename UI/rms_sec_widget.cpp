@@ -1016,28 +1016,24 @@ void Rms_sec_widget::clearGraphSelections()
         i->selection().clear();
 }
 
+
 void Rms_sec_widget::showCrosshairSlot()
 {
-    bool flag;
-    if (showCross->isChecked())
+    if (!showCross->isChecked())
     {
-        flag = true;
+        RmsXAxisLine->setVisible(false);
+        RmsYAxisLine->setVisible(false);
+        tsysXAxisLine->setVisible(false);
+        tsysYAxisLine->setVisible(false);
+        tintXAxisLine->setVisible(false);
+        tintYAxisLine->setVisible(false);
+        rmsCshLabel->setVisible(false);
+        tsysCshLabel->setVisible(false);
+        tintCshLabel->setVisible(false);
+        // -- replotting ==
+        RmsVsTime->replot();
+        tsysVsTime->replot();
+        intVsTime->replot();
     }
-    else
-    {
-        flag = false;
-    }
-    RmsXAxisLine->setVisible(flag);
-    RmsYAxisLine->setVisible(flag);
-    tsysXAxisLine->setVisible(flag);
-    tsysYAxisLine->setVisible(flag);
-    tintXAxisLine->setVisible(flag);
-    tintYAxisLine->setVisible(flag);
-    rmsCshLabel->setVisible(flag);
-    tsysCshLabel->setVisible(flag);
-    tintCshLabel->setVisible(flag);
-    // -- replotting ==
-    RmsVsTime->replot();
-    tsysVsTime->replot();
-    intVsTime->replot();
 }
+

@@ -29,6 +29,8 @@ body::body(const char * nazwa)
     window.setGeometry(300,300,300,720);
     // -- ustawiamy tytul okna --
     window.setWindowTitle("RT4SV++");
+    // --
+    window.layout()->setMenuBar(superMegaMenuBar);
     // -- sizepolicy --
     kill_singspec->setMaximumSize(10000,10000);
     kill_rms_section->setMaximumSize(10000,10000);
@@ -157,6 +159,8 @@ void body::display_single_spectrum()
     single_spectrum_opened=1;
     // -----------
     setCheckedProperButtons();
+
+    superMegaMenuBar->addSingspec();
 }
 
 // - zamyka sekcję "single spectrum"
@@ -173,6 +177,8 @@ void body::kill_single_spectrum()
     single_spectrum_opened=0;
     //
     setCheckedProperButtons();
+
+    superMegaMenuBar->hideAll();
 }
 
 void body::loadTimeSeriesWrapper(QFileDialog * dialog)
@@ -305,6 +311,8 @@ void body::display_dynamic_spectrum()
     dynamic_spectrum_opened = true;
 
     setCheckedProperButtons();
+
+    superMegaMenuBar->addDynspec();
 }
 
 // -- zamyka widmo dynamiczne --
@@ -318,6 +326,7 @@ void body::kill_dynamic_spectrum()
 
     setCheckedProperButtons();
 
+    superMegaMenuBar->hideAll();
 }
 
 // -- czyta kanały do liczenia rms z pliku 'chan4rms.sv' --
@@ -754,6 +763,8 @@ void body::open_rms_section_slot()
     // -- ustalamy visibilities --
     rms_sec_w->setVisible(true);
     kill_rms_section->setVisible(true);
+
+    superMegaMenuBar->addRmssec();
 }
 
 void body::close_rms_section_slot()
@@ -769,6 +780,8 @@ void body::close_rms_section_slot()
     // ustalamy wartość boola
     rms_section_opened = false;
     setCheckedProperButtons();
+
+    superMegaMenuBar->hideAll();
 }
 
 
