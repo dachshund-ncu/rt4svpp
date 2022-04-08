@@ -29,30 +29,17 @@ body::body(const char * nazwa)
     window.setGeometry(300,300,300,720);
     // -- ustawiamy tytul okna --
     window.setWindowTitle("RT4SV++");
+    // -- setting up SUPER MEGA MENU BAR --
+    createMenuEntries();
+    makeActions();
+    updateBar();
+    connectActionsInSuperBar();
+    connectSomeButtons();
+
     // --
     window.layout()->setMenuBar(superMegaMenuBar);
-    // -- sizepolicy --
-    kill_singspec->setMaximumSize(10000,10000);
-    kill_rms_section->setMaximumSize(10000,10000);
-    kill_dynspec->setMaximumSize(10000,10000);
-
-    kill_singspec->setMinimumSize(0,0);
-    kill_rms_section->setMinimumSize(0,0);
-    kill_dynspec->setMinimumSize(0,0);
-
     grid->addWidget(left_hand_list, 0,0,9,1);
     grid->setColumnStretch(0,1);
-
-    kill_dynspec->setText("Kill -->");
-    kill_singspec->setText("Kill -->");
-    kill_rms_section->setText("Kill -->");
-    kill_singspec->setVisible(false);
-    kill_dynspec->setVisible(false);
-    kill_rms_section->setVisible(false);
-
-    QObject::connect(kill_rms_section, SIGNAL(clicked()), this, SLOT(close_rms_section_slot()));
-    QObject::connect(kill_dynspec, SIGNAL(clicked()), this, SLOT(kill_dynamic_spectrum()));
-    QObject::connect(kill_singspec, SIGNAL(clicked()), this, SLOT(kill_single_spectrum()));
 
     // -- setujemy widgety roznych sekcji --
     connectSectionsToSlots();
@@ -91,18 +78,314 @@ body::body(const char * nazwa)
         }
     }
     // -- domyślnie ustawiamy dark mode --
-    set_dark_mode();
+    set_dark_mode(true);
     // -- pokazujemy okno --
     window.setVisible(true);
     window.show();
 }
-
 
 void body::setCheckedProperButtons()
 {
     left_hand_list->DynamicSpectrum->setChecked(dynamic_spectrum_opened);
     left_hand_list->SingleSpectrum->setChecked(single_spectrum_opened);
     left_hand_list->RMSSection->setChecked(rms_section_opened);
+}
+
+
+void body::createMenuEntries()
+{
+    superMegaMenuBar->addMenu(filesM);
+    superMegaMenuBar->addMenu(advancedM);
+    superMegaMenuBar->addMenu(dynSpecM);
+    superMegaMenuBar->addMenu(singSpecM);
+    superMegaMenuBar->addMenu(rmsSecM);
+}
+
+void body::makeActions()
+{
+    // -----------------------
+    loadAVRFile->setText("Load AVR file");
+    loadFITSFile->setText("Load FITS file");
+    reload->setText("Reload");
+    quit->setText("Quit");
+    // --
+    filesM->addAction(loadAVRFile);
+    filesM->addAction(loadFITSFile);
+    filesM->addAction(reload);
+    filesM->addSeparator();
+    filesM->addAction(quit);
+    // -----------------------
+    openDynamicSpectrumA->setText("Show dynamic spectrum");
+    openSingleSpectrumA->setText("Show single spectrum");
+    openRmsSectionA->setText("Show RMS section");
+    openIntegrationA->setText("Integrate");
+    openAverOverVelA->setText("Aver over velocity");
+    openAverOverTimeA->setText("Aver over time");
+    openSpindicateA->setText("Vatriability coefficients");
+    openExportDynSpectrumA->setText("Export dynamic spectrum");
+    openCalibrateSectionA->setText("Open calibrate section");
+    darthModeA->setText("Darth Mode");
+    isoTimeA->setText("Include isotime");
+    darthModeA->setCheckable(true);
+    isoTimeA->setCheckable(true);
+    darthModeA->setChecked(true);
+    showIonDS->setCheckable(true);
+    showVonDS->setCheckable(true);
+    showLHConDS->setCheckable(true);
+    showRHConDS->setCheckable(true);
+    showIonDS->setChecked(true);
+    // --
+    advancedM->addAction(openDynamicSpectrumA);
+    advancedM->addAction(openSingleSpectrumA);
+    advancedM->addAction(openRmsSectionA);
+    advancedM->addSeparator();
+    advancedM->addAction(openIntegrationA);
+    advancedM->addAction(openAverOverVelA);
+    advancedM->addAction(openAverOverTimeA);
+    advancedM->addAction(openSpindicateA);
+    advancedM->addAction(openExportDynSpectrumA);
+    advancedM->addAction(openCalibrateSectionA);
+    advancedM->addSeparator();
+    advancedM->addAction(darthModeA);
+    advancedM->addAction(isoTimeA);
+    // -----------------------
+    showIonDS->setText("Show I on dynamic spectrum");
+    showVonDS->setText("Show V on dynamic spectrum");
+    showLHConDS->setText("Show LHC on dynamic spectrum");
+    showRHConDS->setText("Show RHC on dynamic spectrum");
+    rotatePlus->setText("Rotate +");
+    rotateMinus->setText("Rotate -");
+    save->setText("Save edited spectra");
+    recalIVA->setText("Recalibrate I and V from R/LHC");
+    flagA->setText("Flag");
+    makeLCS->setText("Export light curve");
+    logScale->setText("Set log color scale");
+    rotate_IVLR->setText("Rotate L/RHC independently");
+    resetDS->setText("Reset heat map");
+    logScale->setCheckable(true);
+    rotate_IVLR->setCheckable(true);
+    logScale->setChecked(false);
+    rotate_IVLR->setChecked(true);
+    // --
+    dynSpecM->addAction(showIonDS);
+    dynSpecM->addAction(showVonDS);
+    dynSpecM->addAction(showLHConDS);
+    dynSpecM->addAction(showRHConDS);
+    dynSpecM->addSeparator();
+    dynSpecM->addAction(flagA);
+    dynSpecM->addAction(makeLCS);
+    dynSpecM->addSeparator();
+    dynSpecM->addAction(rotatePlus);
+    dynSpecM->addAction(rotateMinus);
+    dynSpecM->addAction(save);
+    dynSpecM->addAction(recalIVA);
+    dynSpecM->addAction(rotate_IVLR);
+    dynSpecM->addSeparator();
+    dynSpecM->addAction(resetDS);
+    dynSpecM->addAction(logScale);
+    // -----------------------
+    exportAllSpectraA->setText("Export all spectra to ASCII");
+    displayOnSingleSpecA->setText("Display marked epoch on plot");
+    setDefaultRangeA->setText("Autorange plot");
+    eraseLastGraphA->setText("Erase last added epoch from plot");
+    exportSpectraFromGraphA->setText("Save epochs from plot to ASCII");
+    // --
+    singSpecM->addAction(displayOnSingleSpecA);
+    singSpecM->addAction(eraseLastGraphA);
+    singSpecM->addAction(setDefaultRangeA);
+    singSpecM->addSeparator();
+    singSpecM->addAction(exportSpectraFromGraphA);
+    singSpecM->addAction(exportAllSpectraA);
+    // -----------------------
+    stokesIA->setText("Show I");
+    stokesVA->setText("Show V");
+    stokesLHCA->setText("Show LHC");
+    stokesRHCA->setText("Show RHC");
+    stokesIA->setCheckable(true);
+    stokesVA->setCheckable(true);
+    stokesLHCA->setCheckable(true);
+    stokesRHCA->setCheckable(true);
+    stokesIA->setChecked(true);
+    // -
+    showPointsA->setText("Show points");
+    showLinesA->setText("Show lines");
+    rectangleZoomA->setText("Rectangle zoom");
+    showCrosshairA->setText("Show crosshair");
+    showPointsA->setCheckable(true);
+    showLinesA->setCheckable(true);
+    rectangleZoomA->setCheckable(true);
+    showCrosshairA->setCheckable(true);
+    showPointsA->setChecked(true);
+    rectangleZoomA->setChecked(true);
+    showCrosshairA->setChecked(true);
+    // -
+    showSelSpectrumA->setText("Show selected spectrum");
+    rescaleA->setText("Rescale");
+    // -
+    exportRmsVsTimeA->setText("Export RMS vs Time");
+    exportSintVsTimeA->setText("Export Sint vs Time");
+    exportTsysVsTimeA->setText("Export Tsys vs Time");
+    exportAllParameA->setText("Export all of the above");
+    // -
+    recalculateIntegrationA->setText("Recalculate integration");
+    // ---
+    rmsSecM->addAction(stokesIA);
+    rmsSecM->addAction(stokesVA);
+    rmsSecM->addAction(stokesLHCA);
+    rmsSecM->addAction(stokesRHCA);
+    rmsSecM->addSeparator();
+    rmsSecM->addAction(showPointsA);
+    rmsSecM->addAction(showLinesA);
+    rmsSecM->addAction(rectangleZoomA);
+    rmsSecM->addAction(showCrosshairA);
+    rmsSecM->addSeparator();
+    rmsSecM->addAction(showSelSpectrumA);
+    rmsSecM->addAction(rescaleA);
+    rmsSecM->addSeparator();
+    rmsSecM->addAction(exportRmsVsTimeA);
+    rmsSecM->addAction(exportSintVsTimeA);
+    rmsSecM->addAction(exportTsysVsTimeA);
+    rmsSecM->addAction(exportAllParameA);
+    rmsSecM->addSeparator();
+    rmsSecM->addAction(recalculateIntegrationA);
+}
+
+void body::updateBar()
+{
+    //dynSpecM->setVisible(dynSpecOpened);
+    dynSpecM->menuAction()->setVisible(dynamic_spectrum_opened);
+    //singSpecM->setVisible(singSpecOpened);
+    singSpecM->menuAction()->setVisible(single_spectrum_opened);
+    //rmsSecM->setVisible(rmsSpecOpened);
+    rmsSecM->menuAction()->setVisible(rms_section_opened);
+}
+
+void body::connectActionsInSuperBar()
+{
+    // -------
+    QObject::connect(loadAVRFile, SIGNAL(triggered()), this, SLOT(load_time_series_AVR()));
+    QObject::connect(loadFITSFile, SIGNAL(triggered()), this, SLOT(load_time_series_FITS()));
+    QObject::connect(reload, SIGNAL(triggered()), this, SLOT(reload_slot()));
+    QObject::connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()), Qt::QueuedConnection);
+    // -------
+    QObject::connect(openDynamicSpectrumA, SIGNAL(triggered()), this, SLOT(display_dynamic_spectrum()));
+    QObject::connect(openSingleSpectrumA, SIGNAL(triggered()), this, SLOT(display_single_spectrum()));
+    QObject::connect(openRmsSectionA, SIGNAL(triggered()), this, SLOT(open_rms_section_slot()));
+    QObject::connect(openIntegrationA, SIGNAL(triggered()), this, SLOT(openIntegrateSection()));
+    QObject::connect(openAverOverVelA, SIGNAL(triggered()), this, SLOT(openAOVSection()));
+    QObject::connect(openAverOverTimeA, SIGNAL(triggered()), this, SLOT(openAOTSection()));
+    QObject::connect(openSpindicateA, SIGNAL(triggered()), this, SLOT(openSPINDSection()));
+    QObject::connect(openExportDynSpectrumA, SIGNAL(triggered()), this, SLOT(openWDSection()));
+    QObject::connect(openCalibrateSectionA, SIGNAL(triggered()), this, SLOT(openCALSection()));
+    QObject::connect(darthModeA, SIGNAL(triggered()), this, SLOT(darkModeAction()));
+    QObject::connect(isoTimeA, SIGNAL(triggered()), this, SLOT(isoTimeWrapperAction()));
+    // -------
+    QObject::connect(showIonDS, SIGNAL(triggered()), this, SLOT(choosePolIButton()));
+    QObject::connect(showVonDS, SIGNAL(triggered()), this, SLOT(choosePolVButton()));
+    QObject::connect(showLHConDS, SIGNAL(triggered()), this, SLOT(choosePolLHCButton()));
+    QObject::connect(showRHConDS, SIGNAL(triggered()), this, SLOT(choosePolRHCButton()));
+    QObject::connect(recalIVA, SIGNAL(triggered()), dynspecWidget, SLOT(recal()));
+    QObject::connect(flagA, SIGNAL(triggered()), dynspecWidget, SLOT(flagActualEpoch()));
+    QObject::connect(rotatePlus, SIGNAL(triggered()), dynspecWidget, SLOT(rotatePlus()));
+    QObject::connect(rotateMinus, SIGNAL(triggered()), dynspecWidget, SLOT(rotateMinus()));
+    QObject::connect(save, SIGNAL(triggered()), dynspecWidget, SLOT(saveEditedSpectra()));
+    QObject::connect(makeLCS, SIGNAL(triggered()), dynspecWidget, SLOT(makeLCS()));
+    QObject::connect(logScale, SIGNAL(triggered()), this, SLOT(setLogScaleForAction()));
+    QObject::connect(rotate_IVLR, SIGNAL(triggered()), this, SLOT(setIVLRCheckBox()));
+    QObject::connect(resetDS, SIGNAL(triggered()), dynspecWidget, SLOT(resetHeatMap()));
+    // -------
+    QObject::connect(exportAllSpectraA, SIGNAL(triggered()), ssWidget, SLOT(saveAllSpectraToGnuplotSlot()));
+    QObject::connect(displayOnSingleSpecA, SIGNAL(triggered()), ssWidget, SLOT(add()));
+    QObject::connect(setDefaultRangeA, SIGNAL(triggered()), ssWidget, SLOT(setDefaultRangeSlot()));
+    QObject::connect(eraseLastGraphA, SIGNAL(triggered()), ssWidget, SLOT(pop()));
+    QObject::connect(exportSpectraFromGraphA, SIGNAL(triggered()), ssWidget, SLOT(savePlotsOnSingleSpectrumSlot()));
+}
+
+void body::connectSomeButtons()
+{
+    QObject::connect(dynspecWidget->Ibut, SIGNAL(clicked()), this, SLOT(choosePolIButton()));
+    QObject::connect(dynspecWidget->Vbut, SIGNAL(clicked()), this, SLOT(choosePolVButton()));
+    QObject::connect(dynspecWidget->LHCbut, SIGNAL(clicked()), this, SLOT(choosePolLHCButton()));
+    QObject::connect(dynspecWidget->RHCbut, SIGNAL(clicked()), this, SLOT(choosePolRHCButton()));
+
+    QObject::connect(dynspecWidget->setLogScale, SIGNAL(clicked()), this, SLOT(setLogScaleSlot()));
+    QObject::connect(dynspecWidget->rotateAllPols, SIGNAL(clicked()), this, SLOT(setIVLRAction()));
+
+    QObject::connect(left_hand_list->IsotimeInclude, SIGNAL(clicked()), this, SLOT(isoTimeWrapper()));
+}
+
+
+
+/*
+ * This is for handling checkboxes - so they turn on and off at the same time
+*/
+void body::isoTimeWrapper()
+{
+    isoTimeA->setChecked(left_hand_list->IsotimeInclude->isChecked());
+}
+void body::isoTimeWrapperAction()
+{
+    left_hand_list->IsotimeInclude->setChecked(isoTimeA->isChecked());
+}
+
+
+void body::setIVLRCheckBox()
+{
+    dynspecWidget->rotateAllPols->setChecked(rotate_IVLR->isChecked());
+}
+void body::setIVLRAction()
+{
+    rotate_IVLR->setChecked(dynspecWidget->rotateAllPols->isChecked());
+}
+
+/*
+ * This is handler for displaying LOG color scale on a heatmap
+ * LOG itself is handled in heat_map_widget class
+*/
+void body::setLogScaleSlot()
+{
+    logScale->setChecked(dynspecWidget->setLogScale->isChecked());
+    dynspecWidget->setLogScale_slot();
+}
+void body::setLogScaleForAction()
+{
+    dynspecWidget->setLogScale->setChecked(logScale->isChecked());
+    dynspecWidget->setLogScale_slot();
+}
+
+/*
+ * This is for choosing STOKES on dynamic spectrum
+ * We need this to be cross compatible (change on DS will change also actions in menu)
+*/
+
+void body::choosePolIButton()
+{
+    dynspecWidget->choosePolI();
+    setProperActionsChecked();
+}
+void body::choosePolVButton()
+{
+    dynspecWidget->choosePolV();
+    setProperActionsChecked();
+}
+void body::choosePolLHCButton()
+{
+    dynspecWidget->choosePolLHC();
+    setProperActionsChecked();
+}
+void body::choosePolRHCButton()
+{
+    dynspecWidget->choosePolRHC();
+    setProperActionsChecked();
+}
+
+
+void body::setProperActionsChecked()
+{
+    showIonDS->setChecked(dynspecWidget->polI);
+    showVonDS->setChecked(dynspecWidget->polV);
+    showLHConDS->setChecked(dynspecWidget->polLHC);
+    showRHConDS->setChecked(dynspecWidget->polRHC);
 }
 
 bool body::checkIfFits(const char * filename)
@@ -142,7 +425,6 @@ void body::display_single_spectrum()
     // -- dodajemy widget do głównego gridu --
     grid->addWidget(ssWidget, 0,1,9,5);
     // -- dodajemy kill singspec do vboxa --
-    left_hand_list->appendWidget(kill_dynspec);
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,2);
@@ -152,15 +434,13 @@ void body::display_single_spectrum()
     // -- zapelniamy wstepnie single spectrum --
     ssWidget->fillListWithObservations();
     // -- ustawiamy visibility naszego widgetu --
-    left_hand_list->appendWidget(kill_singspec);
     ssWidget->setVisible(true);
-    kill_singspec->setVisible(true);
     // -- ustawiamy boola, informujacego co jest akurat otwarte --
     single_spectrum_opened=1;
     // -----------
     setCheckedProperButtons();
 
-    superMegaMenuBar->addSingspec();
+    updateBar();
 }
 
 // - zamyka sekcję "single spectrum"
@@ -169,16 +449,14 @@ void body::kill_single_spectrum()
     // - odpinamy od grida -
     grid->removeWidget(ssWidget);
     // - odpinamy od vboxa -
-    left_hand_list->deleteWidgetFromList(kill_singspec);
     // - znikamy -
     ssWidget->setVisible(false);
-    kill_singspec->setVisible(false);
     // - ustawiamy widoczność -
     single_spectrum_opened=0;
     //
     setCheckedProperButtons();
 
-    superMegaMenuBar->hideAll();
+    updateBar();
 }
 
 void body::loadTimeSeriesWrapper(QFileDialog * dialog)
@@ -297,7 +575,6 @@ void body::display_dynamic_spectrum()
     // -- dodajemy widget do grida --
     grid->addWidget(dynspecWidget, 0,1,9,5);
     // -- dodajemy do vbox maina przycisk killujacy dynspec --
-    left_hand_list->appendWidget(kill_dynspec);
     // -- ustalamy szerokości kolumny --
     grid->setColumnStretch(1,1);
     grid->setColumnStretch(2,2);
@@ -306,27 +583,24 @@ void body::display_dynamic_spectrum()
     grid->setColumnStretch(5,2);
     // -- visibility --
     dynspecWidget->setVisible(true);
-    kill_dynspec->setVisible(true);
     // -- bool --
     dynamic_spectrum_opened = true;
 
     setCheckedProperButtons();
 
-    superMegaMenuBar->addDynspec();
+    updateBar();
 }
 
 // -- zamyka widmo dynamiczne --
 void body::kill_dynamic_spectrum()
 {
     dynspecWidget->setVisible(false);
-    kill_dynspec->setVisible(false);
-    left_hand_list->deleteWidgetFromList(kill_dynspec);
     grid->removeWidget(dynspecWidget);
     dynamic_spectrum_opened = false;
 
     setCheckedProperButtons();
 
-    superMegaMenuBar->hideAll();
+    updateBar();
 }
 
 // -- czyta kanały do liczenia rms z pliku 'chan4rms.sv' --
@@ -746,7 +1020,6 @@ void body::open_rms_section_slot()
     grid->addWidget(rms_sec_w, 0, 1, 9, 5);
 
     // dodajemy zamykający button do głównego panelu
-    left_hand_list->appendWidget(kill_rms_section);
 
     // zapełniamy danymi
     rms_sec_w->fillWithData();
@@ -762,26 +1035,23 @@ void body::open_rms_section_slot()
     setCheckedProperButtons();
     // -- ustalamy visibilities --
     rms_sec_w->setVisible(true);
-    kill_rms_section->setVisible(true);
 
-    superMegaMenuBar->addRmssec();
+    updateBar();
 }
 
 void body::close_rms_section_slot()
 {
     // ustalamy visibilities
-    kill_rms_section->setVisible(false);
     rms_sec_w->setVisible(false);
 
     // odpinamy od grida
-    left_hand_list->deleteWidgetFromList(kill_rms_section);
     grid->removeWidget(rms_sec_w);
 
     // ustalamy wartość boola
     rms_section_opened = false;
     setCheckedProperButtons();
 
-    superMegaMenuBar->hideAll();
+    updateBar();
 }
 
 
@@ -800,41 +1070,25 @@ void body::close_rms_section_slot()
 //    plot->replot();
 //}
 
-void body::set_dark_mode()
+
+void body::darkModeSlot()
 {
-    dynspecWidget->darthMode(!dark_mode_enabled);
-    ssWidget->darthMode(!dark_mode_enabled);
-    rms_sec_w->darthMode(!dark_mode_enabled);
-    /*
-    // pomocnicze prezydenty
-    QPen graph_dark;
-    graph_dark.setColor(QColor(135,206,250));
-    graph_dark.setWidth(2);
+    dark_mode_enabled = !dark_mode_enabled;
+    set_dark_mode(dark_mode_enabled);
+    darthModeA->setChecked(dark_mode_enabled);
+}
+void body::darkModeAction()
+{
+    dark_mode_enabled = !dark_mode_enabled;
+    set_dark_mode(dark_mode_enabled);
+    left_hand_list->DarthMode->setChecked(dark_mode_enabled);
+}
 
-    QPen graph_light;
-    graph_light.setColor(QColor(0,0,255));
-    graph_light.setWidth(2);
-    QPen pen2;
-    pen2.setColor(QColor(182,26,26));
-
-    if (dark_mode_enabled == 0)
-    {
-        // -- tutaj ustawiamy coś, co nazywa się dark mode --
-
-        // -- deklarujemy biały qpen
-        QPen duda;
-        duda.setColor(Qt::white);
-        // -- ustawiamy boola --
-        dark_mode_enabled = 1;
-    }
-    else
-    {
-        // -- deklarujemy biały qpen
-        QPen duda;
-        duda.setColor(Qt::black);
-        dark_mode_enabled = 0;
-    }
-    */
+void body::set_dark_mode(bool mode)
+{
+    dynspecWidget->darthMode(mode);
+    ssWidget->darthMode(mode);
+    rms_sec_w->darthMode(mode);
 }
 
 

@@ -111,7 +111,7 @@ public:
 public slots:
     void resetHeatMap();
 
-private slots:
+public slots:
     void updateHeatMap();
         void setMinVelOnHeatMap();
         void setMaxVelOnHeatMap();

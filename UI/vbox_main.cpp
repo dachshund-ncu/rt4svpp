@@ -209,7 +209,7 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(Calibrate, SIGNAL(clicked()), parent, SLOT(openCALSection()));
     QObject::connect(ExportDynamicSpectrum, SIGNAL(clicked()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(clicked()), parent, SLOT(open_rms_section_slot()));
-    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(set_dark_mode()));
+    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
 }
 // ---------------------------------------------------------------
 

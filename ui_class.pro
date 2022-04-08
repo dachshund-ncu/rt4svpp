@@ -5,7 +5,6 @@ TARGET = rt4sv++
 TEMPLATE = app
 
 SOURCES += \
-    UI/just_new_menu.cpp \
     UI/varcoefscalcwidget.cpp \
     body.cpp \
     data/calibration.cpp \
@@ -29,7 +28,6 @@ SOURCES += \
     UI/rms_sec_widget.cpp
 
 HEADERS += \
-    UI/just_new_menu.h \
     UI/varcoefscalcwidget.h \
     body.h \
     data/spectral_container.h \

@@ -304,10 +304,7 @@ void heat_map_widget::connectForAxis()
     QObject::connect(xUpBorder_shrt, SIGNAL(activated()), this, SLOT(setMaxEpochOnHeatMap()));
     QObject::connect(heatMapReset, SIGNAL(activated()), this, SLOT(resetHeatMap()));
     // - polaryzacje -
-    QObject::connect(Ibut, SIGNAL(clicked()), this, SLOT(choosePolI()));
-    QObject::connect(Vbut, SIGNAL(clicked()), this, SLOT(choosePolV()));
-    QObject::connect(LHCbut, SIGNAL(clicked()), this, SLOT(choosePolLHC()));
-    QObject::connect(RHCbut, SIGNAL(clicked()), this, SLOT(choosePolRHC()));
+
     // - rotacja -
     QObject::connect(rotate, SIGNAL(clicked()), this, SLOT(rotatePlus()));
     QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotateMinus()));
@@ -316,7 +313,7 @@ void heat_map_widget::connectForAxis()
     // - krzywa blasku -
     QObject::connect(makeLcsButton, SIGNAL(clicked()), this, SLOT(makeLCS()));
     // - widmo dynamiczne -
-    QObject::connect(setLogScale, SIGNAL(clicked()), this, SLOT(setLogScale_slot()));
+
     // - flagowanie -
     QObject::connect(flag, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
     // - klikanie -

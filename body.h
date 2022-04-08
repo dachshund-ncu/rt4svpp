@@ -55,7 +55,7 @@ public:
     // -- do RMS section --
     Rms_sec_widget * rms_sec_w = new Rms_sec_widget(dataTable);
     // -- menu --
-    just_new_menu * superMegaMenuBar = new just_new_menu();
+    //just_new_menu * superMegaMenuBar = new just_new_menu();
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
@@ -65,20 +65,104 @@ public:
 
     // -- group boxy --
     // -- glowne widgety --
-    QPushButton * kill_dynspec = new QPushButton(dynspecWidget);
+    //QPushButton * kill_dynspec = new QPushButton(dynspecWidget);
 
     deque < QCPItemRect * > flagi;
     int flags_number = 0;
 
-    QPushButton * kill_singspec = new QPushButton(&window);
+    //QPushButton * kill_singspec = new QPushButton(&window);
 
     QStringList AVRNAMES_from_load;
 
     // -- do robienia sekcji rms vs czas --
     // - buttony -
-    QPushButton * kill_rms_section = new QPushButton(&window);
+    //QPushButton * kill_rms_section = new QPushButton(&window);
     // - kontnery -
     vector < double > I_sint, V_sint, LHC_sint, RHC_sint, I_sint_e, V_sint_e, LHC_sint_e, RHC_sint_e;
+
+
+    // -------------------------------------
+    // -- QMenuBar --
+    QMenuBar * superMegaMenuBar = new QMenuBar();
+    // -- QMENU --
+    QMenu * filesM = new QMenu(tr("&File"));
+    QMenu * advancedM = new QMenu(tr("&Advanced"));
+    QMenu * dynSpecM = new QMenu(tr("&Dynamic spectrum"));
+    QMenu * singSpecM = new QMenu(tr("&Single spectrum"));
+    QMenu * rmsSecM = new QMenu(tr("&RMS section"));
+    // actions
+    // FILE
+    QAction * loadAVRFile = new QAction(filesM);
+    QAction * loadFITSFile = new QAction(filesM);
+    QAction * reload = new QAction(filesM);
+    QAction * quit = new QAction(filesM);
+    // ADVANCED
+    QAction * openDynamicSpectrumA = new QAction(advancedM);
+    QAction * openSingleSpectrumA = new QAction(advancedM);
+    QAction * openRmsSectionA = new QAction(advancedM);
+    QAction * openIntegrationA = new QAction(advancedM);
+    QAction * openAverOverVelA = new QAction(advancedM);
+    QAction * openAverOverTimeA = new QAction(advancedM);
+    QAction * openSpindicateA = new QAction(advancedM);
+    QAction * openExportDynSpectrumA = new QAction(advancedM);
+    QAction * openCalibrateSectionA = new QAction(advancedM);
+    QAction * darthModeA = new QAction(advancedM);
+    QAction * isoTimeA = new QAction(advancedM);
+    // DYNAMIC SPECTRUM
+    QAction * showIonDS = new QAction(dynSpecM);
+    QAction * showVonDS = new QAction(dynSpecM);
+    QAction * showLHConDS = new QAction(dynSpecM);
+    QAction * showRHConDS = new QAction(dynSpecM);
+    QAction * recalIVA = new QAction(dynSpecM);
+    QAction * flagA = new QAction(dynSpecM);
+    QAction * rotatePlus = new QAction(dynSpecM);
+    QAction * rotateMinus = new QAction(dynSpecM);
+    QAction * save = new QAction(dynSpecM);
+    QAction * makeLCS = new QAction(dynSpecM);
+    QAction * logScale = new QAction(dynSpecM);
+    QAction * rotate_IVLR = new QAction(dynSpecM);
+    QAction * resetDS = new QAction(dynSpecM);
+    // SINGLE SPECTRUM
+    QAction * exportAllSpectraA = new QAction(singSpecM);
+    QAction * displayOnSingleSpecA = new QAction(singSpecM);
+    QAction * setDefaultRangeA = new QAction(singSpecM);
+    QAction * eraseLastGraphA = new QAction(singSpecM);
+    QAction * exportSpectraFromGraphA = new QAction(singSpecM);
+    // RMS SECTION
+    QAction * stokesIA = new QAction(rmsSecM);
+    QAction * stokesVA = new QAction(rmsSecM);
+    QAction * stokesLHCA = new QAction(rmsSecM);
+    QAction * stokesRHCA = new QAction(rmsSecM);
+    // -
+    QAction * showPointsA = new QAction(rmsSecM);
+    QAction * showLinesA = new QAction(rmsSecM);
+    QAction * rectangleZoomA = new QAction(rmsSecM);
+    QAction * showCrosshairA = new QAction(rmsSecM);
+    // -
+    QAction * showSelSpectrumA = new QAction(rmsSecM);
+    QAction * rescaleA = new QAction(rmsSecM);
+    // -
+    QAction * exportRmsVsTimeA = new QAction(rmsSecM);
+    QAction * exportSintVsTimeA = new QAction(rmsSecM);
+    QAction * exportTsysVsTimeA = new QAction(rmsSecM);
+    QAction * exportAllParameA = new QAction(rmsSecM);
+    // -
+    QAction * recalculateIntegrationA = new QAction(rmsSecM);
+    // -------------------------------------
+
+private:
+    void createMenuEntries();
+    void updateBar();
+    void makeActions();
+private slots:
+    void connectActionsInSuperBar();
+public:
+    void addDynspec();
+    void addSingspec();
+    void addRmssec();
+    void hideAll();
+    // -------------------------------------
+
 
     // boole
     bool rms_section_opened = 0;
@@ -117,7 +201,7 @@ public:
     bool integrate_buttons_connected = 0;
     bool intgridloaded = 0;
 
-    bool dark_mode_enabled = 0;
+    bool dark_mode_enabled = true;
     bool integrate_window_opened = 0;
     bool spind_window_opened = 0;
     bool aver_over_time_window_opened = 0;
@@ -166,7 +250,7 @@ public slots:
 
     void save_all_to_gnuplot_slot();
     //void autorange_plot(QCustomPlot * plot);
-    void set_dark_mode();
+    void set_dark_mode(bool mode = true);
 public:
     // ZMIENNE do uzycia tymczasowego:
     ifstream avr; // obiekt czytanego pliku AVR
@@ -312,6 +396,25 @@ public slots:
     void calibrate_button();
     void load_l1_caltab_button();
     void load_r1_caltab_button();
+    // -- choosing polarization on heat map (just to make it menu-compatible --
+    void choosePolIButton();
+    void choosePolVButton();
+    void choosePolLHCButton();
+    void choosePolRHCButton();
+    void connectSomeButtons();
+    void setProperActionsChecked();
+    // -- for log scale working also from the menu --
+    void setLogScaleSlot();
+    void setLogScaleForAction();
+    // -- for IVLR checkboxes to work together --
+    void setIVLRCheckBox();
+    void setIVLRAction();
+    // -- dark mode --
+    void darkModeAction();
+    void darkModeSlot();
+    // -- isotime --
+    void isoTimeWrapper();
+    void isoTimeWrapperAction();
 };
 
 #endif // BODY_H
