@@ -77,6 +77,9 @@ public:
     bool madeRotation = false;
     // czy czytamy fits czy avr
     std::vector < bool > fileTypesTab; // false - AVR, true - fits?
+    // kanały
+    std::vector < unsigned long int > rmsChannelsTab;
+    bool rmsSet = false;
 
     // - metody -
     // metoda inicjująca
@@ -131,7 +134,8 @@ public:
     void flag(int epoch);
     // -- pomocnicza metoda --
     std::string getFileNameFromFullPath(std::string fileName);
-
+    // -- ustawianie nowych kanałów RMS --
+    void setNewRMSChannels(std::vector < int > chns);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku

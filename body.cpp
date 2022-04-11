@@ -35,7 +35,8 @@ body::body(const char * nazwa)
     updateBar();
     connectActionsInSuperBar();
     connectSomeButtons();
-
+    // -- RMS SELECTION --
+    connectButtonsOnRmsSelection();
     // --
     window.layout()->setMenuBar(superMegaMenuBar);
     grid->addWidget(left_hand_list, 0,0,9,1);
@@ -76,6 +77,7 @@ body::body(const char * nazwa)
         {
             std::cout << "Could not read list file \"" << nazwa << "\"" << std::endl;
         }
+        selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
     }
     // -- domyślnie ustawiamy dark mode --
     set_dark_mode(true);
@@ -126,6 +128,7 @@ void body::makeActions()
     openCalibrateSectionA->setText("Open calibrate section");
     darthModeA->setText("Darth Mode");
     isoTimeA->setText("Include isotime");
+    setRmsChannelsA->setText("Set channels for RMS calculation");
     darthModeA->setCheckable(true);
     isoTimeA->setCheckable(true);
     darthModeA->setChecked(true);
@@ -148,6 +151,8 @@ void body::makeActions()
     advancedM->addSeparator();
     advancedM->addAction(darthModeA);
     advancedM->addAction(isoTimeA);
+    advancedM->addSeparator();
+    advancedM->addAction(setRmsChannelsA);
     // -----------------------
     showIonDS->setText("Show I on dynamic spectrum");
     showVonDS->setText("Show V on dynamic spectrum");
@@ -278,6 +283,7 @@ void body::connectActionsInSuperBar()
     QObject::connect(openCalibrateSectionA, SIGNAL(triggered()), this, SLOT(openCALSection()));
     QObject::connect(darthModeA, SIGNAL(triggered()), this, SLOT(darkModeAction()));
     QObject::connect(isoTimeA, SIGNAL(triggered()), this, SLOT(isoTimeWrapperAction()));
+    QObject::connect(setRmsChannelsA, SIGNAL(triggered()), this, SLOT(showRmsSelector()));
     // -------
     QObject::connect(showIonDS, SIGNAL(triggered()), this, SLOT(choosePolIButton()));
     QObject::connect(showVonDS, SIGNAL(triggered()), this, SLOT(choosePolVButton()));
@@ -459,6 +465,31 @@ void body::otherCheckboxesWrapperButton()
 }
 
 //-------------------------------------------------------------------------------
+/*
+ *Below we will handle the RMS Selecting window
+ */
+void body::connectButtonsOnRmsSelection()
+{
+    QObject::connect(selectorOfRMS->perform, SIGNAL(clicked()), this, SLOT(setNewRMSChannels()));
+}
+
+void body::setNewRMSChannels()
+{
+    dataTable->setNewRMSChannels(selectorOfRMS->getValuesFromBoxes());
+    selectorOfRMS->setVisible(false);
+}
+
+void body::showRmsSelector()
+{
+    if(!dataTable->loadedData)
+    {
+        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        return;
+    }
+    selectorOfRMS->show();
+}
+
+//-------------------------------------------------------------------------------
 bool body::checkIfFits(const char * filename)
 {
     try
@@ -595,6 +626,7 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
     }
     dynspecWidget->setMapPressed(0,0);
     window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
+    selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --

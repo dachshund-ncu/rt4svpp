@@ -25,7 +25,8 @@ SOURCES += \
     UI/calsection.cpp \
     UI/heat_map_widget.cpp \
     UI/single_spec_widget.cpp \
-    UI/rms_sec_widget.cpp
+    UI/rms_sec_widget.cpp \
+    UI/rms_selector.cpp
 
 HEADERS += \
     UI/varcoefscalcwidget.h \
@@ -38,7 +39,8 @@ HEADERS += \
     UI/calsection.h \
     UI/heat_map_widget.h \
     UI/single_spec_widget.h \
-    UI/rms_sec_widget.h
+    UI/rms_sec_widget.h \
+    UI/rms_selector.h
 
 RESOURCES += \
     resources.qrc

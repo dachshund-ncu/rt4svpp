@@ -3,7 +3,7 @@
 // - metoda inicjująca klasę -
 spectral_container::spectral_container()
 {
-
+    rmsChannelsTab.resize(4);
 }
 
 
@@ -262,11 +262,18 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     // -------------------------
 
     // ---- RMS ----
-    std::vector < unsigned long int > rms_limits = {100, 400, (unsigned long int) 2048 - 400, (unsigned long int) 2048 - 100};
-    double rmsI = calculate_RMS(I, rms_limits);
-    double rmsV = calculate_RMS(V, rms_limits);
-    double rmsLHC = calculate_RMS(LHC, rms_limits);
-    double rmsRHC = calculate_RMS(RHC, rms_limits);
+    if(!rmsSet)
+    {
+        rmsChannelsTab[0] = 100;
+        rmsChannelsTab[1] = 400;
+        rmsChannelsTab[2] = (unsigned long int) 2048 - 400;
+        rmsChannelsTab[3] = (unsigned long int) 2048 - 100;
+        rmsSet = true;
+    }
+    double rmsI = calculate_RMS(I, rmsChannelsTab);
+    double rmsV = calculate_RMS(V, rmsChannelsTab);
+    double rmsLHC = calculate_RMS(LHC, rmsChannelsTab);
+    double rmsRHC = calculate_RMS(RHC, rmsChannelsTab);
     // -------------
 
     // ---- isotime ----
@@ -573,12 +580,18 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     }
 
     // -- liczymy RMS --
-    std::vector < unsigned long int > rms_limits = {100, 400, (unsigned long int) nchans - 400, (unsigned long int) nchans - 100};
-    double rmsI = calculate_RMS(i_tmp_lst, rms_limits);
-    double rmsV = calculate_RMS(v_tmp_lst, rms_limits);
-    double rmsLHC = calculate_RMS(lhc, rms_limits);
-    double rmsRHC = calculate_RMS(rhc, rms_limits);
-
+    if(!rmsSet)
+    {
+        rmsChannelsTab[0] = 100;
+        rmsChannelsTab[1] = 400;
+        rmsChannelsTab[2] = (unsigned long int) 2048 - 400;
+        rmsChannelsTab[3] = (unsigned long int) 2048 - 100;
+        rmsSet = true;
+    }
+    double rmsI = calculate_RMS(i_tmp_lst, rmsChannelsTab);
+    double rmsV = calculate_RMS(v_tmp_lst, rmsChannelsTab);
+    double rmsLHC = calculate_RMS(lhc, rmsChannelsTab);
+    double rmsRHC = calculate_RMS(rhc, rmsChannelsTab);
     // formatujemy nazwę źródła
     sourcename.erase(remove(sourcename.begin(), sourcename.end(), ' '), sourcename.end());
 
@@ -1098,4 +1111,12 @@ bool spectral_container::checkIfFlagged(std::string fileName, const std::vector<
 std::string spectral_container::getFileNameFromFullPath(std::string fileName)
 {
     return fileName.substr(fileName.find_last_of("/\\")+1);
+}
+
+void spectral_container::setNewRMSChannels(std::vector<int> chns)
+{
+    for(int i = 0; i < (int) chns.size(); i++)
+    {
+        rmsChannelsTab[i] = (unsigned long int) chns[i];
+    }
 }

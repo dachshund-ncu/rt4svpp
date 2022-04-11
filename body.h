@@ -24,6 +24,7 @@
 #include "UI/single_spec_widget.h"
 #include "UI/rms_sec_widget.h"
 #include "UI/varcoefscalcwidget.h"
+#include "UI/rms_selector.h"
 using namespace std;
 
 class body : public QObject
@@ -54,7 +55,7 @@ public:
     // -- do RMS section --
     Rms_sec_widget * rms_sec_w = new Rms_sec_widget(dataTable);
     // -- menu --
-    //just_new_menu * superMegaMenuBar = new just_new_menu();
+    rms_selector * selectorOfRMS = new rms_selector();
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
@@ -107,6 +108,7 @@ public:
     QAction * openCalibrateSectionA = new QAction(advancedM);
     QAction * darthModeA = new QAction(advancedM);
     QAction * isoTimeA = new QAction(advancedM);
+    QAction * setRmsChannelsA = new QAction(advancedM);
     // DYNAMIC SPECTRUM
     QAction * showIonDS = new QAction(dynSpecM);
     QAction * showVonDS = new QAction(dynSpecM);
@@ -423,6 +425,10 @@ public slots:
     void checkboxPolRmsWrapperButton();
     void otherCheckboxesWrapperAction();
     void otherCheckboxesWrapperButton();
+    // -- RMS SELECTOR --
+    void connectButtonsOnRmsSelection();
+    void setNewRMSChannels();
+    void showRmsSelector();
 };
 
 #endif // BODY_H
