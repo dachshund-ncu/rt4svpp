@@ -828,12 +828,12 @@ double spectral_container::calculate_RMS(std::vector < double > polarization, st
     double suma = 0.0;
 
     // - pętla -
-    for(unsigned long int i = limits[0]; i < limits[1]; i++)
+    for(unsigned long int i = limits[0]-1; i < limits[1]; i++)
     {
         suma = suma + polarization[i] * polarization[i];
         n = n + 1;
     }
-    for(unsigned long int i = limits[2]; i < limits[3]; i++)
+    for(unsigned long int i = limits[2]-1; i < limits[3]; i++)
     {
         suma = suma + polarization[i] * polarization[i];
         n = n + 1;
@@ -1119,4 +1119,20 @@ void spectral_container::setNewRMSChannels(std::vector<int> chns)
     {
         rmsChannelsTab[i] = (unsigned long int) chns[i];
     }
+}
+
+void spectral_container::recalculateRMS()
+{
+    spectraTableIERR.clear();
+    spectraTableVERR.clear();
+    spectraTableLHCERR.clear();
+    spectraTableRHCERR.clear();
+    for (int obsn = 0; obsn < (int) spectraTableI.size(); obsn++)
+    {
+        spectraTableIERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
+        spectraTableVERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
+        spectraTableLHCERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
+        spectraTableRHCERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
+    }
+
 }

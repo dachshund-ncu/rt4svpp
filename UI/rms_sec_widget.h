@@ -90,7 +90,6 @@ private:
     void setUpPlottables();
     void placeOnGrid();
     void connectElementsToSlots();
-    void replotGraphs();
     void autoscaleGraph(QCustomPlot * plot);
     std::vector < std::vector < double > > getIntegrateFromDataTable();
     int getChannel(QSpinBox * pole);
@@ -135,6 +134,7 @@ private slots:
 
 public:
     void darthMode(bool darthModeEnabled);
+    void replotGraphs();
 
 public slots:
     void closePopupWindowSlot();

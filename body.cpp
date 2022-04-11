@@ -478,6 +478,14 @@ void body::setNewRMSChannels()
 {
     dataTable->setNewRMSChannels(selectorOfRMS->getValuesFromBoxes());
     selectorOfRMS->setVisible(false);
+    dataTable->recalculateRMS();
+    // ----------
+    dynspecWidget->updateHeatMap();
+    if (rms_section_opened)
+    {
+        rms_sec_w->fillWithData();
+        rms_sec_w->replotGraphs();
+    }
 }
 
 void body::showRmsSelector()

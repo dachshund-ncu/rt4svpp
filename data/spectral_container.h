@@ -136,6 +136,7 @@ public:
     std::string getFileNameFromFullPath(std::string fileName);
     // -- ustawianie nowych kanałów RMS --
     void setNewRMSChannels(std::vector < int > chns);
+    void recalculateRMS();
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
