@@ -24,7 +24,6 @@
 #include "UI/single_spec_widget.h"
 #include "UI/rms_sec_widget.h"
 #include "UI/varcoefscalcwidget.h"
-#include "UI/just_new_menu.h"
 using namespace std;
 
 class body : public QObject
@@ -415,6 +414,15 @@ public slots:
     // -- isotime --
     void isoTimeWrapper();
     void isoTimeWrapperAction();
+    // -- RMS SECTION --
+    //void setIonRMSAction();
+    //void setVonRMSAction();
+    //void setLHConRMSAction();
+    //void setRHConRMSAction();
+    void checkboxPolRmsWrapperAction();
+    void checkboxPolRmsWrapperButton();
+    void otherCheckboxesWrapperAction();
+    void otherCheckboxesWrapperButton();
 };
 
 #endif // BODY_H

@@ -109,7 +109,7 @@ private slots:
     void changeInteractions();
     void showPointsSlot();
     void showLinesSlot();
-    void showIVLR();
+
 
     // cross-hair
     void crossHairRmsVsTime(QMouseEvent* event);
@@ -139,6 +139,7 @@ public:
 public slots:
     void closePopupWindowSlot();
     void fillWithData();
+    void showIVLR();
 };
 
 #endif // RMS_SEC_WIDGET_H

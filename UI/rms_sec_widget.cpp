@@ -158,6 +158,14 @@ void Rms_sec_widget::setUpPlottables()
     connect(intVsTime->yAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->yAxis2, SLOT(setRange(QCPRange)) );
     connect(spectrumOnPopupWindow->xAxis, SIGNAL(rangeChanged(QCPRange)), spectrumOnPopupWindow->xAxis2, SLOT(setRange(QCPRange)) );
     connect(spectrumOnPopupWindow->yAxis, SIGNAL(rangeChanged(QCPRange)), spectrumOnPopupWindow->yAxis2, SLOT(setRange(QCPRange)) );
+    // -- connecting axes between each other --
+    connect(RmsVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), tsysVsTime->xAxis, SLOT(setRange(QCPRange)) );
+    connect(RmsVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->xAxis, SLOT(setRange(QCPRange)) );
+    connect(tsysVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), RmsVsTime->xAxis, SLOT(setRange(QCPRange)) );
+    connect(tsysVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), intVsTime->xAxis, SLOT(setRange(QCPRange)) );
+    connect(intVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), RmsVsTime->xAxis, SLOT(setRange(QCPRange)) );
+    connect(intVsTime->xAxis, SIGNAL(rangeChanged(QCPRange)), tsysVsTime->xAxis, SLOT(setRange(QCPRange)) );
+
 
     // -- connecting crosshairs --
     QObject::connect(RmsVsTime, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(crossHairRmsVsTime(QMouseEvent*)));
@@ -794,19 +802,20 @@ void Rms_sec_widget::exportRmsVsTimeSlot()
 
 void Rms_sec_widget::exportTintVsTimeSlot()
 {
-    dataTable->exportTsysData();
-    string message = "Saved Tsys vs Time to\n" + dataTable->getFileNameForExportedTsys();
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
-}
-
-void Rms_sec_widget::exportTsysVsTimeSlot()
-{
     int min = getChannel(RmsIntStart);
     int max = getChannel(RmsIntEnd);
     dataTable->integrate4Pols(min, max, 0);
     // --- wiadomość końcowa ---
     string message = "";
     message = "Integrated over channels " + std::to_string(min) + " -> " + std::to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
+    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+
+}
+
+void Rms_sec_widget::exportTsysVsTimeSlot()
+{
+    dataTable->exportTsysData();
+    string message = "Saved Tsys vs Time to\n" + dataTable->getFileNameForExportedTsys();
     QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
 }
 

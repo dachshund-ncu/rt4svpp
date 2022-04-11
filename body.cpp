@@ -238,9 +238,8 @@ void body::makeActions()
     rmsSecM->addAction(showLinesA);
     rmsSecM->addAction(rectangleZoomA);
     rmsSecM->addAction(showCrosshairA);
-    rmsSecM->addSeparator();
-    rmsSecM->addAction(showSelSpectrumA);
     rmsSecM->addAction(rescaleA);
+    rmsSecM->addAction(showSelSpectrumA);
     rmsSecM->addSeparator();
     rmsSecM->addAction(exportRmsVsTimeA);
     rmsSecM->addAction(exportSintVsTimeA);
@@ -299,6 +298,40 @@ void body::connectActionsInSuperBar()
     QObject::connect(setDefaultRangeA, SIGNAL(triggered()), ssWidget, SLOT(setDefaultRangeSlot()));
     QObject::connect(eraseLastGraphA, SIGNAL(triggered()), ssWidget, SLOT(pop()));
     QObject::connect(exportSpectraFromGraphA, SIGNAL(triggered()), ssWidget, SLOT(savePlotsOnSingleSpectrumSlot()));
+    // -------
+    QObject::connect(stokesIA, SIGNAL(triggered()), this, SLOT(checkboxPolRmsWrapperAction()));
+    QObject::connect(stokesVA, SIGNAL(triggered()), this, SLOT(checkboxPolRmsWrapperAction()));
+    QObject::connect(stokesLHCA, SIGNAL(triggered()), this, SLOT(checkboxPolRmsWrapperAction()));
+    QObject::connect(stokesRHCA, SIGNAL(triggered()), this, SLOT(checkboxPolRmsWrapperAction()));
+
+    QObject::connect(rms_sec_w->IOnRms, SIGNAL(clicked()), this, SLOT(checkboxPolRmsWrapperButton()));
+    QObject::connect(rms_sec_w->VOnRms, SIGNAL(clicked()), this, SLOT(checkboxPolRmsWrapperButton()));
+    QObject::connect(rms_sec_w->LHCOnRms, SIGNAL(clicked()), this, SLOT(checkboxPolRmsWrapperButton()));
+    QObject::connect(rms_sec_w->RHCOnRms, SIGNAL(clicked()), this, SLOT(checkboxPolRmsWrapperButton()));
+
+    QObject::connect(showPointsA, SIGNAL(triggered()), this, SLOT(otherCheckboxesWrapperAction()));
+    QObject::connect(showLinesA, SIGNAL(triggered()), this, SLOT(otherCheckboxesWrapperAction()));
+    QObject::connect(rectangleZoomA, SIGNAL(triggered()), this, SLOT(otherCheckboxesWrapperAction()));
+    QObject::connect(showCrosshairA, SIGNAL(triggered()), this, SLOT(otherCheckboxesWrapperAction()));
+
+    QObject::connect(rms_sec_w->showPoints, SIGNAL(clicked()), this, SLOT(otherCheckboxesWrapperButton()));
+    QObject::connect(rms_sec_w->showLines, SIGNAL(clicked()), this, SLOT(otherCheckboxesWrapperButton()));
+    QObject::connect(rms_sec_w->rectZoom, SIGNAL(clicked()), this, SLOT(otherCheckboxesWrapperButton()));
+    QObject::connect(rms_sec_w->showCross, SIGNAL(clicked()), this, SLOT(otherCheckboxesWrapperButton()));
+
+    QObject::connect(showPointsA, SIGNAL(triggered()), rms_sec_w, SLOT(showPointsSlot()));
+    QObject::connect(showLinesA, SIGNAL(triggered()), rms_sec_w, SLOT(showLinesSlot()));
+    QObject::connect(rectangleZoomA, SIGNAL(triggered()), rms_sec_w, SLOT(changeInteractions()));
+    QObject::connect(showCrosshairA, SIGNAL(triggered()), rms_sec_w, SLOT(showCrosshairSlot()));
+
+    QObject::connect(showSelSpectrumA, SIGNAL(triggered()), rms_sec_w, SLOT(showPopupWindowSlot()));
+    QObject::connect(recalculateIntegrationA, SIGNAL(triggered()), rms_sec_w, SLOT(recalculateIntegrationSlot()));
+    QObject::connect(rescaleA, SIGNAL(triggered()), rms_sec_w, SLOT(rescaleGraphs()));
+
+    QObject::connect(exportRmsVsTimeA, SIGNAL(triggered()), rms_sec_w, SLOT(exportRmsVsTimeSlot()));
+    QObject::connect(exportSintVsTimeA, SIGNAL(triggered()), rms_sec_w, SLOT(exportTintVsTimeSlot()));
+    QObject::connect(exportTsysVsTimeA, SIGNAL(triggered()), rms_sec_w, SLOT(exportTsysVsTimeSlot()));
+    QObject::connect(exportAllParameA, SIGNAL(triggered()), rms_sec_w, SLOT(exportAllAboveSlot()));
 }
 
 void body::connectSomeButtons()
@@ -388,6 +421,44 @@ void body::setProperActionsChecked()
     showRHConDS->setChecked(dynspecWidget->polRHC);
 }
 
+/*
+ * These two are for controlling, if on RMS_Section checked boxes are
+ * consistent with menu
+ */
+void body::checkboxPolRmsWrapperAction()
+{
+    rms_sec_w->IOnRms->setChecked(stokesIA->isChecked());
+    rms_sec_w->VOnRms->setChecked(stokesVA->isChecked());
+    rms_sec_w->LHCOnRms->setChecked(stokesLHCA->isChecked());
+    rms_sec_w->RHCOnRms->setChecked(stokesRHCA->isChecked());
+    rms_sec_w->showIVLR();
+}
+void body::checkboxPolRmsWrapperButton()
+{
+    stokesIA->setChecked(rms_sec_w->IOnRms->isChecked());
+    stokesVA->setChecked(rms_sec_w->VOnRms->isChecked());
+    stokesLHCA->setChecked(rms_sec_w->LHCOnRms->isChecked());
+    stokesRHCA->setChecked(rms_sec_w->RHCOnRms->isChecked());
+    // -- no showIVLR(), cause it is already connected in the rms_sec_w widget! --
+}
+
+void body::otherCheckboxesWrapperAction()
+{
+    rms_sec_w->showPoints->setChecked(showPointsA->isChecked());
+    rms_sec_w->showLines->setChecked(showLinesA->isChecked());
+    rms_sec_w->rectZoom->setChecked(rectangleZoomA->isChecked());
+    rms_sec_w->showCross->setChecked(showCrosshairA->isChecked());
+}
+
+void body::otherCheckboxesWrapperButton()
+{
+    showPointsA->setChecked(rms_sec_w->showPoints->isChecked());
+    showLinesA->setChecked(rms_sec_w->showLines->isChecked());
+    rectangleZoomA->setChecked(rms_sec_w->rectZoom->isChecked());
+    showCrosshairA->setChecked(rms_sec_w->showCross->isChecked());
+}
+
+//-------------------------------------------------------------------------------
 bool body::checkIfFits(const char * filename)
 {
     try
@@ -403,7 +474,10 @@ bool body::checkIfFits(const char * filename)
 }
 
 
-// -------------------------------------------------------------------------------
+
+
+
+//-------------------------------------------------------------------------------
 
 // - wyswietla w programie sekcje "single spectrum"
 void body::display_single_spectrum()
