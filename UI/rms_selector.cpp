@@ -2,6 +2,7 @@
 
 rms_selector::rms_selector()
 {
+    this->setWindowTitle("Choose new RMS Channels");
     this->setVisible(false);
     setUpWidgets();
     this->setGeometry(300, 300, 300, 300);
@@ -74,4 +75,12 @@ void rms_selector::setValuesOfBoxes(std::vector<unsigned long int> values)
     rmsRange1Stop->setValue((int)values[1]);
     rmsRange2Start->setValue((int)values[2]);
     rmsRange2Stop->setValue((int)values[3]);
+}
+
+void rms_selector::setMaximumValues(int value)
+{
+    rmsRange1Start->setMaximum(value);
+    rmsRange1Stop->setMaximum(value);
+    rmsRange2Start->setMaximum(value);
+    rmsRange2Stop->setMaximum(value);
 }

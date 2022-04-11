@@ -78,6 +78,7 @@ body::body(const char * nazwa)
             std::cout << "Could not read list file \"" << nazwa << "\"" << std::endl;
         }
         selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
+        selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
     }
     // -- domyślnie ustawiamy dark mode --
     set_dark_mode(true);
@@ -627,6 +628,7 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
     dynspecWidget->setMapPressed(0,0);
     window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
     selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
+    selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --

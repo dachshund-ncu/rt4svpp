@@ -34,6 +34,7 @@ public:
     QLabel * arrow2 = new QLabel(this);
     // methods
     void setUpWidgets();
+    void setMaximumValues(int value);
 public slots:
     void cancelSlot();
     void show();
