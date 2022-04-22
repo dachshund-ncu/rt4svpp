@@ -913,7 +913,7 @@ std::vector < double > spectral_container::loadPOLfromAVR(std::vector < std::str
     }
 
     // zapełniamy resztę
-    int index_in_table = 23;
+    int index_in_table = 24;
     for (unsigned long int k = 0; k < 250; k++)
     {
         bufor = linesInFile[line_begin+k];
