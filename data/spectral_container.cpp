@@ -73,6 +73,9 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
 
     // ustawiamy flagę loaded
     loadedData = true;
+
+    // -- filling normalization coeffs --
+    fillNormalizationCoeffsWith1();
 }
 
 // - metoda czytająca listę plików -
@@ -114,6 +117,9 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     }
     // ustawiamy flagę loaded
     loadedData = true;
+
+    // -- filling normalization coeffs --
+    fillNormalizationCoeffsWith1();
 }
 
 
@@ -671,6 +677,10 @@ void spectral_container::clearAllTables()
 
     isotimeTable.clear();
 
+    normalizationCoeffsI.clear();
+    normalizationCoeffsV.clear();
+    normalizationCoeffsLHC.clear();
+    normalizationCoeffsRHC.clear();
 }
 
 // - sprawdza, czy wybrano psa -
@@ -1135,4 +1145,31 @@ void spectral_container::recalculateRMS()
         spectraTableRHCERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
     }
 
+}
+
+void spectral_container::fillNormalizationCoeffsWith1()
+{
+    normalizationCoeffsI.clear();
+    normalizationCoeffsV.clear();
+    normalizationCoeffsLHC.clear();
+    normalizationCoeffsRHC.clear();
+    for(unsigned long int i = 0; i < spectraTableI.size(); i++)
+    {
+        normalizationCoeffsI.push_back(1.0);
+        normalizationCoeffsV.push_back(1.0);
+        normalizationCoeffsLHC.push_back(1.0);
+        normalizationCoeffsRHC.push_back(1.0);
+    }
+}
+
+void spectral_container::setNormalizationCoeffs(int startingChan, int endingChan)
+{
+    normalizationCoeffsI.clear();
+    normalizationCoeffsV.clear();
+    normalizationCoeffsLHC.clear();
+    normalizationCoeffsRHC.clear();
+    normalizationCoeffsI = averagePolOverVelocity(startingChan, endingChan, spectraTableI);
+    normalizationCoeffsV = averagePolOverVelocity(startingChan, endingChan, spectraTableV);
+    normalizationCoeffsLHC = averagePolOverVelocity(startingChan, endingChan, spectraTableLHC);
+    normalizationCoeffsRHC = averagePolOverVelocity(startingChan, endingChan, spectraTableRHC);
 }

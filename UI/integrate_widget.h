@@ -19,7 +19,7 @@ class integrate_widget : public QWidget
 {
 public:
     // konstruktor
-    integrate_widget(QObject * parent = 0, const char * name = 0);
+    integrate_widget(QObject * parent = 0, const char * name = 0, const char * window_title = 0);
     // -- elementy interfejsu --
     // buttony
     QPushButton * make = new QPushButton(this);

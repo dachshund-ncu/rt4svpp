@@ -102,6 +102,7 @@ public:
     bool polRHC = false;
     // -- inne --
     bool firstPlotDone = false;
+    bool normalizationB = false;
 
 public:
     void darthMode(bool enabled = false);
@@ -153,13 +154,14 @@ private:
     unsigned long int searchForClickedY(double y);
     //void setMapPressed(unsigned long int x, unsigned long int y);
         void setCrosshair(unsigned long int x, unsigned long int y);
-        void plotSingleSpectrum(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
-        void plotLCS(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab, std::vector < double > & errtab);
-        void setLabelClicked(unsigned long int x, unsigned long int y, std::vector < std::vector < double > > & poltab);
+        void plotSingleSpectrum(unsigned long int x, unsigned long int y);
+        void plotLCS(unsigned long int x, unsigned long int y, std::vector < double > & errtab);
+        void setLabelClicked(unsigned long int x, unsigned long int y);
     // ogólne do skalowania wykresu etc.
     void rescaleGraph(QCustomPlot * plot);
     std::vector < std::vector < double > > * getPoltab();
     std::vector < double > * getErrtab();
+    std::vector < double > * getNormtab();
     void setDownPolButtons();
     // rotacja widma
     void rotateSpectrum(bool direction);

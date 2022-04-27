@@ -80,6 +80,11 @@ public:
     // kanały
     std::vector < unsigned long int > rmsChannelsTab;
     bool rmsSet = false;
+    // -- do normalizacji --
+    std::vector < double > normalizationCoeffsI;
+    std::vector < double > normalizationCoeffsV;
+    std::vector < double > normalizationCoeffsLHC;
+    std::vector < double > normalizationCoeffsRHC;
 
     // - metody -
     // metoda inicjująca
@@ -137,6 +142,8 @@ public:
     // -- ustawianie nowych kanałów RMS --
     void setNewRMSChannels(std::vector < int > chns);
     void recalculateRMS();
+    // -----------------------------------
+    void setNormalizationCoeffs(int startingChan, int endingChan);
 
 private:
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
@@ -211,6 +218,8 @@ private:
     void appendToFlaggedList(std::string flaggedFilename);
     std::vector < std::string > readFlaggedFiles();
     bool checkIfFlagged(std::string fileName, const std::vector < std::string > & flagTable);
+    // ----------------
+    void fillNormalizationCoeffsWith1();
 
 };
 

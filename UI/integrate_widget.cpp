@@ -1,7 +1,8 @@
 #include "integrate_widget.h"
 
-integrate_widget::integrate_widget(QObject * parent, const char * name)
+integrate_widget::integrate_widget(QObject * parent, const char * name, const char * window_title)
 {
+    this->setWindowTitle(window_title);
     setUpWidget(name);
 }
 

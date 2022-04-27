@@ -352,11 +352,11 @@ void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
     // ustawiamy crosshair
     setCrosshair(x,y);
     // ustawiamy widmo
-    plotSingleSpectrum(x,y, *poltab);
+    plotSingleSpectrum(x,y);
     // ustawiamy LCS
-    plotLCS(x,y, *poltab, *errtab);
+    plotLCS(x,y, *errtab);
     // ustalamy labele
-    setLabelClicked(x,y, *poltab);
+    setLabelClicked(x,y);
     // updatujemy graphy
     heatMapPlot->replot();
     spectrumPlot->replot();
@@ -429,20 +429,20 @@ void heat_map_widget::setCrosshair(unsigned long x, unsigned long y)
     rectangle->bottomRight->setCoords(double(x) + 0.5, dataTable->velocityTable[x][y] - 0.5*h);
 }
 
-void heat_map_widget::plotSingleSpectrum(unsigned long x, unsigned long y, std::vector < std::vector < double > > & poltab)
+void heat_map_widget::plotSingleSpectrum(unsigned long x, unsigned long y)
 {
     // skrowidz: x - epoka y - kanał
     // tutaj idziemy po kanałach, stała prędkość
     // -- będziemy na piechotkę przypisywać wartości do kontenerów --
     // widmo
     QVector <double> vels(rozmiarY), fluxes(rozmiarY);
-    for(int i = 0; i < rozmiarY; i++)
+    for(unsigned long int i = 0; i < rozmiarY; i++)
     {
         vels[i] = dataTable->velocityTable[x][minRangeVelIndex + i];
-        fluxes[i] = poltab[x][minRangeVelIndex + i];
+        fluxes[i] = heatMap->data()->cell(x - minObsNumber,i);// poltab[x][minRangeVelIndex + i];
     }
     QVector < double > flux(1) ,vel(1);
-    flux[0] = poltab[x][y];
+    flux[0] = heatMap->data()->cell(x - minObsNumber,y-minRangeVelIndex); //poltab[x][y];
     vel[0] = dataTable->velocityTable[x][y];
     // setujemy
     spectrumPlot->graph(0)->setData(vels, fluxes); // całe dane
@@ -452,32 +452,33 @@ void heat_map_widget::plotSingleSpectrum(unsigned long x, unsigned long y, std::
     rescaleGraph(spectrumPlot);
 }
 
-void heat_map_widget::plotLCS(unsigned long x, unsigned long y, std::vector<std::vector<double> > &poltab, std::vector<double> &errtab)
+void heat_map_widget::plotLCS(unsigned long x, unsigned long y,std::vector<double> &errtab)
 {
     // skrowidz: x - epoka y - kanał
     // tutaj idziemy po epokach, kanał stały
     // -- będziemy na piechotkę przypisywać wartości do kontenerów --
     QVector <double> epochs(rozmiarX), fluxes(rozmiarX), errors(rozmiarX);
-    for(int i = 0; i < rozmiarX; i++)
+    for(unsigned long int i = 0; i < rozmiarX; i++)
     {
         epochs[i] = dataTable->mjdTable[i + minObsNumber];
-        fluxes[i] = poltab[i + minObsNumber][y];
+        fluxes[i] = heatMap->data()->cell(i, y-minRangeVelIndex);//poltab[i + minObsNumber][y];
         errors[i] = errtab[i + minObsNumber];
     }
     QVector < double > flux(1) ,epoch(1);
-    flux[0] = poltab[x][y];
+    flux[0] = heatMap->data()->cell(x - minObsNumber,y-minRangeVelIndex);//poltab[x][y];
     epoch[0] = dataTable->mjdTable[x];
     // setujemy
     lcsPlot->graph(0)->setData(epochs, fluxes); // całe dane
     lcsPlot->graph(1)->setData(epoch, flux); // kropka
     errorBars->setDataPlottable(lcsPlot->graph(0));// errory
     errorBars->setData(errors); // errory
+    errorBars->setVisible(!normalizationB);
     lcsVline->start->setCoords(dataTable->mjdTable[x], -QCPRange::maxRange);
     lcsVline->end->setCoords(dataTable->mjdTable[x], QCPRange::maxRange);
     rescaleGraph(lcsPlot);
 }
 
-void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y, std::vector<std::vector<double> > &poltab)
+void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y)
 {
     // -- setujemy tekst do displayowania informacji --
     // --------------
@@ -522,7 +523,7 @@ void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y, std::vec
     std::ostringstream streamObj3;
     streamObj3 << std::fixed;
     streamObj3 << std::setprecision(3);
-    streamObj3 << poltab[x][y];
+    streamObj3 << heatMap->data()->cell(x - minObsNumber,y-minRangeVelIndex);//poltab[x][y];
     cocochanel_txt.append(streamObj3.str());
     cocochanel_txt.append(string("\n"));
     cocochanel_txt.append(string("Number: "));
@@ -563,20 +564,25 @@ void heat_map_widget::updateHeatMap()
     // bierzemy tablicę z konkretną polaryzacją
     std::vector < std::vector < double > > *poltab = getPoltab();
     std::vector < double > *errtab = getErrtab();
+    std::vector < double > *normtab = getNormtab();
     // zapełniamy heat mapę
     for (unsigned long int indexWX = 0; indexWX < rozmiarX; indexWX++)
     {
+        double normCoeff = (*normtab)[minObsNumber + indexWX];
         for (unsigned long int indexWY = 0; indexWY < rozmiarY; indexWY++)
         {
-            heatMap->data()->setCell(indexWX, indexWY, (*poltab)[minObsNumber+indexWX][minRangeVelIndex + indexWY]);
+            if(!normalizationB)
+                heatMap->data()->setCell(indexWX, indexWY, (*poltab)[minObsNumber+indexWX][minRangeVelIndex + indexWY]);
+            else
+                heatMap->data()->setCell(indexWX, indexWY, (*poltab)[minObsNumber+indexWX][minRangeVelIndex + indexWY] / normCoeff);
         }
     }
     // reskalujemy widmo dynamiczne
     scaleHeatMap();
     // robimy również update widm
-    plotSingleSpectrum(xIndex, yIndex,  *poltab);
-    plotLCS(xIndex, yIndex, *poltab, *errtab);
-    setLabelClicked(xIndex, yIndex, *poltab);
+    plotSingleSpectrum(xIndex, yIndex);
+    plotLCS(xIndex, yIndex, *errtab);
+    setLabelClicked(xIndex, yIndex);
     // robimy na koniec replot
     heatMapPlot->replot();
     colorbarWidget->replot();
@@ -612,6 +618,20 @@ std::vector < double > * heat_map_widget::getErrtab()
         return  &dataTable->spectraTableRHCERR;
     else
         return &dataTable->spectraTableIERR;
+}
+
+std::vector < double > * heat_map_widget::getNormtab()
+{
+    if(polI)
+        return &dataTable->normalizationCoeffsI;
+    else if(polV)
+        return &dataTable->normalizationCoeffsV;
+    else if (polLHC)
+        return &dataTable->normalizationCoeffsLHC;
+    else if (polRHC)
+        return  &dataTable->normalizationCoeffsRHC;
+    else
+        return &dataTable->normalizationCoeffsI;
 }
 
 void heat_map_widget::setMinVelOnHeatMap()

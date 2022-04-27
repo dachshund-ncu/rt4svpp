@@ -38,10 +38,11 @@ public:
     // NEW STUFF
     // ------------------------------
     vbox_mainw * left_hand_list = new vbox_mainw(this);
-    integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)");
-    integrate_widget * averOverVelocityWidget = new integrate_widget(this, "Aver Over Velocity (channels)");
-    integrate_widget * averOverTimeWidget = new integrate_widget(this, "Aver over Time (epochs)");
-    varCoefsCalcWidget * SpectralIndexWidget = new varCoefsCalcWidget(this, "Variability coefficients (epochs)");
+    integrate_widget * intWidget = new integrate_widget(this, "Integrate (channels)", "Integrate");
+    integrate_widget * averOverVelocityWidget = new integrate_widget(this, "Aver Over Velocity (channels)", "Aver over velocity");
+    integrate_widget * averOverTimeWidget = new integrate_widget(this, "Aver over Time (epochs)", "Aver over time");
+    integrate_widget * normalizationSelector = new integrate_widget(this, "Normalization channels", "Normalization");
+    varCoefsCalcWidget * SpectralIndexWidget = new varCoefsCalcWidget(this, "Variability coefficients (epochs)", "Var. coeffs");
     export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export Dynamic Spectrum");
     calsection * calibrateWidget = new calsection(this, "Calibrate");
     // -------------------------------
@@ -123,6 +124,8 @@ public:
     QAction * logScale = new QAction(dynSpecM);
     QAction * rotate_IVLR = new QAction(dynSpecM);
     QAction * resetDS = new QAction(dynSpecM);
+    QAction * normalize = new QAction(dynSpecM);
+    QAction * cancelNormalize = new QAction(dynSpecM);
     // SINGLE SPECTRUM
     QAction * exportAllSpectraA = new QAction(singSpecM);
     QAction * displayOnSingleSpecA = new QAction(singSpecM);
@@ -429,6 +432,11 @@ public slots:
     void connectButtonsOnRmsSelection();
     void setNewRMSChannels();
     void showRmsSelector();
+    // -- NORMALIZATION --
+    void showNormalizationWindow();
+    void hideNormalizationWindow();
+    void goWithNormalization();
+    void cancelNormalization();
 };
 
 #endif // BODY_H

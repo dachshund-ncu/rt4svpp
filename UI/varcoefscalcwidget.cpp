@@ -1,7 +1,8 @@
 #include "varcoefscalcwidget.h"
 
-varCoefsCalcWidget::varCoefsCalcWidget(QObject * parent, const char * name)
+varCoefsCalcWidget::varCoefsCalcWidget(QObject * parent, const char * name, const char * window_title)
 {
+    this->setWindowTitle(window_title);
     setUpWidget(name);
 }
 void varCoefsCalcWidget::setUpWidget(const char * name)

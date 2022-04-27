@@ -13,7 +13,7 @@ class varCoefsCalcWidget : public QWidget
     Q_OBJECT
 public:
     // konstruktor
-    varCoefsCalcWidget(QObject * parent = nullptr, const char * name = 0);
+    varCoefsCalcWidget(QObject * parent = nullptr, const char * name = 0, const char * window_title = 0);
     // -- elementy interfejsu --
     // buttony
     QPushButton * make = new QPushButton(this);

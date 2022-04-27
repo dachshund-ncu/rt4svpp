@@ -2,6 +2,7 @@
 
 calsection::calsection(QObject * parent, const char * name)
 {
+    this->setWindowTitle("Calibrate");
     setUpWidget(name);
 }
 

@@ -2,6 +2,7 @@
 
 export_dynamic_spectrum_widget::export_dynamic_spectrum_widget(QObject * parent, const char * name)
 {
+    this->setWindowTitle("Export file for dynamic spectrum");
     setUpWidgets(name);
 }
 

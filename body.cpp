@@ -168,10 +168,13 @@ void body::makeActions()
     logScale->setText("Set log color scale");
     rotate_IVLR->setText("Rotate L/RHC independently");
     resetDS->setText("Reset heat map");
+    normalize->setText("Normalize heat map");
+    cancelNormalize->setText("Cancel normalization");
     logScale->setCheckable(true);
     rotate_IVLR->setCheckable(true);
     logScale->setChecked(false);
     rotate_IVLR->setChecked(true);
+    cancelNormalize->setEnabled(false);
     // --
     dynSpecM->addAction(showIonDS);
     dynSpecM->addAction(showVonDS);
@@ -189,6 +192,9 @@ void body::makeActions()
     dynSpecM->addSeparator();
     dynSpecM->addAction(resetDS);
     dynSpecM->addAction(logScale);
+    dynSpecM->addSeparator();
+    dynSpecM->addAction(normalize);
+    dynSpecM->addAction(cancelNormalize);
     // -----------------------
     exportAllSpectraA->setText("Export all spectra to ASCII");
     displayOnSingleSpecA->setText("Display marked epoch on plot");
@@ -339,6 +345,11 @@ void body::connectActionsInSuperBar()
     QObject::connect(exportSintVsTimeA, SIGNAL(triggered()), rms_sec_w, SLOT(exportTintVsTimeSlot()));
     QObject::connect(exportTsysVsTimeA, SIGNAL(triggered()), rms_sec_w, SLOT(exportTsysVsTimeSlot()));
     QObject::connect(exportAllParameA, SIGNAL(triggered()), rms_sec_w, SLOT(exportAllAboveSlot()));
+
+    QObject::connect(normalize, SIGNAL(triggered()), this, SLOT(showNormalizationWindow()));
+    QObject::connect(cancelNormalize, SIGNAL(triggered()), this, SLOT(cancelNormalization()));
+    QObject::connect(normalizationSelector->cancel, SIGNAL(clicked()), this, SLOT(hideNormalizationWindow()));
+    QObject::connect(normalizationSelector->make, SIGNAL(clicked()), this, SLOT(goWithNormalization()));
 }
 
 void body::connectSomeButtons()
@@ -512,11 +523,47 @@ bool body::checkIfFits(const char * filename)
         return false;
     }
 }
+//-------------------------------------------------------------------------------
 
-
-
-
-
+//-------------------------------------------------------------------------------
+/*
+ * Below: normalization slots, connected to "normalize" and "cancelNormalize" menu entries
+ */
+void body::showNormalizationWindow()
+{
+    /*
+     * Shows simple window with channels, used for normalization
+     */
+    normalizationSelector->startingChannelInt->setText(std::to_string(dynspecWidget->yIndex).c_str());
+    normalizationSelector->endingChannelInt->setText(std::to_string(dynspecWidget->yIndex + 2).c_str());
+    normalizationSelector->setVisible(true);
+}
+void body::hideNormalizationWindow()
+{
+    /*
+     * Hides this normalization window
+     */
+    normalizationSelector->setVisible(false);
+}
+void body::goWithNormalization()
+{
+    dynspecWidget->normalizationB = true;
+    cancelNormalize->setEnabled(true);
+    // --
+    std::vector < int > chns = readMinMaxValuesFromChannels(*(normalizationSelector->startingChannelInt), *(normalizationSelector->endingChannelInt));
+    dataTable->setNormalizationCoeffs(chns[0], chns[1]);
+    // --
+    hideNormalizationWindow();
+    // --
+    dynspecWidget->updateHeatMap();
+}
+void body::cancelNormalization()
+{
+    dynspecWidget->normalizationB = false;
+    cancelNormalize->setEnabled(false);
+    // --
+    dynspecWidget->updateHeatMap();
+}
 //-------------------------------------------------------------------------------
 
 // - wyswietla w programie sekcje "single spectrum"
