@@ -74,6 +74,8 @@ void spectral_container::loadDataFromList(std::string listWithFilenames)
     // ustawiamy flagę loaded
     loadedData = true;
 
+    // -- bubblesorting --
+    bubbleSortEpochs();
     // -- filling normalization coeffs --
     fillNormalizationCoeffsWith1();
 }
@@ -118,6 +120,8 @@ void spectral_container::loadDataFromList(QStringList qtListaPlikow)
     // ustawiamy flagę loaded
     loadedData = true;
 
+    // -- bubblesortnig --
+    bubbleSortEpochs();
     // -- filling normalization coeffs --
     fillNormalizationCoeffsWith1();
 }
@@ -640,24 +644,79 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
 // - sortowanie bąbelkowe po epokach -
 void spectral_container::bubbleSortEpochs()
 {
+    /*
+     * This method bubble-sorts epochs, loaded previously
+     * it's sad, that this method needs update every time new container is added
+     * Maybe next time it will be better
+     * -> if loadedData is false, do nothing
+     * -> else bubblesort all
+     */
+    if(!loadedData)
+        return;
+    std::cout << "-----------------------" << std::endl;
+    std::cout << "----> Bubble-sorting epochs..." << std::endl;
+    // -- bubblesort begins --
+    for(unsigned long int i = 0; i < spectraTableI.size()-1; i++)
+    {
+        for(unsigned long int j = i+1; j < spectraTableI.size()-1; j++)
+        {
+            if (mjdTable[j] < mjdTable[i])
+            {
+                // -- 1-D containers --
+                // DOUBLE
+                swapD(mjdTable, i, j); // <--- CRITICAL: DATE
+                swapD(spectraTableIERR, i, j);
+                swapD(spectraTableVERR, i, j);
+                swapD(spectraTableLHCERR, i, j);
+                swapD(spectraTableRHCERR, i, j);
+                swapD(jdTable, i, j);
+                swapD(decyrTable, i, j);
+                swapD(tsysTable, i, j);
+                swapD(azTable, i, j);
+                swapD(elTable, i, j);
+                swapD(restFreqsTable, i, j);
+                swapD(bandWidthTable, i, j);
+                swapD(vlsrTable, i, j);
+                swapD(fileTypesTab, i, j);
+                swapD(AVRHeaders, i, j);
+                swapD(isotimeTable, i, j);
 
+                // -- 2-D containers --
+                swapD(spectraTableI, i, j);
+                swapD(spectraTableV, i, j);
+                swapD(spectraTableLHC, i, j);
+                swapD(spectraTableRHC, i, j);
+                swapD(velocityTable, i, j);
+                swapD(channelTable, i, j);
+                swapD(datetimeTable, i, j);
+            }
+        }
+    }
+    std::cout << "----> Done!" << std::endl;
+    std::cout << "-----------------------" << std::endl;
 }
 
 // - czyści tablice bez zwalniania pamięci -
 void spectral_container::clearAllTables()
 {
+    /*
+     * Clears containers, needed to reload etc...
+     * It should be specified, if containers are 2D or 1D
+     */
+    // -- 2D --
     spectraTableI.clear();
     spectraTableV.clear();
     spectraTableLHC.clear();
     spectraTableRHC.clear();
+    velocityTable.clear();
+    channelTable.clear();
+    datetimeTable.clear();
 
+    // -- 1D --
     spectraTableIERR.clear();
     spectraTableVERR.clear();
     spectraTableLHCERR.clear();
     spectraTableRHCERR.clear();
-
-    velocityTable.clear();
-    datetimeTable.clear();
     mjdTable.clear();
     jdTable.clear();
     decyrTable.clear();
@@ -665,18 +724,13 @@ void spectral_container::clearAllTables()
     azTable.clear();
     elTable.clear();
     zTable.clear();
-
     restFreqsTable.clear();
     bandWidthTable.clear();
     vlsrTable.clear();
-
     fileTypesTab.clear();
     fileNamesTab.clear();
-
     AVRHeaders.clear();
-
     isotimeTable.clear();
-
     normalizationCoeffsI.clear();
     normalizationCoeffsV.clear();
     normalizationCoeffsLHC.clear();

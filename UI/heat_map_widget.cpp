@@ -535,7 +535,7 @@ void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y)
 
 void heat_map_widget::rescaleGraph(QCustomPlot * plot)
 {
-    plot->rescaleAxes();
+    plot->rescaleAxes(true); // <-- TRUE is for only visible plottables
     double max_x, min_x, max_y, min_y;
     max_x = plot->xAxis->range().upper;
     min_x = plot->xAxis->range().lower;

@@ -220,6 +220,15 @@ private:
     bool checkIfFlagged(std::string fileName, const std::vector < std::string > & flagTable);
     // ----------------
     void fillNormalizationCoeffsWith1();
+    // ----------------
+    // --- for bubble sort ---
+    template <typename T> // we define simple template for index swapping
+    void swapD(std::vector < T > & tab, unsigned long int indexI, unsigned long int indexJ)
+    {
+        T tmp = tab[indexI];
+        tab[indexI] = tab[indexJ];
+        tab[indexJ] = tmp;
+    }
 
 };
 
