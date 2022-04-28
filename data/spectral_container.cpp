@@ -651,7 +651,7 @@ void spectral_container::bubbleSortEpochs()
      * -> if loadedData is false, do nothing
      * -> else bubblesort all
      */
-    if(!loadedData)
+    if(!loadedData || spectraTableI.size() < 2)
         return;
     std::cout << "-----------------------" << std::endl;
     std::cout << "----> Bubble-sorting epochs..." << std::endl;
