@@ -658,7 +658,7 @@ void spectral_container::bubbleSortEpochs()
     // -- bubblesort begins --
     for(unsigned long int i = 0; i < spectraTableI.size()-1; i++)
     {
-        for(unsigned long int j = i+1; j < spectraTableI.size()-1; j++)
+        for(unsigned long int j = i+1; j < spectraTableI.size(); j++)
         {
             if (mjdTable[j] < mjdTable[i])
             {
