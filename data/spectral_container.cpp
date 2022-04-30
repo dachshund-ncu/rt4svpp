@@ -680,6 +680,7 @@ void spectral_container::bubbleSortEpochs()
                 swapD(fileTypesTab, i, j);
                 swapD(AVRHeaders, i, j);
                 swapD(isotimeTable, i, j);
+                swapD(fileNamesTab, i, j);
 
                 // -- 2-D containers --
                 swapD(spectraTableI, i, j);
