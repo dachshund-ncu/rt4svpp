@@ -12,8 +12,15 @@ Release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeploy
 This tool is designed for NCU Institute of Astronomy employees and students - if you are not one of them, it is likely useless for you.
 
 ## Usage ##
+Best way to enjoy this app is to download it from repository:
+```bash
+curl -SsL https://dachshund-ncu.github.io/rt4svpp_ppa/dists/stable/KEY.gpg | sudo apt-key add -
+sudo curl -SsL -o /etc/apt/sources.list.d/rt4svpp.list https://dachshund-ncu.github.io/rt4svpp_ppa/rt4svpp.list
+sudo apt update
+sudo apt install rt4sv++
+```
 
-Just download suitable release and enjoy. .Deb release is now static and does not require depedencies. Only make sure, you use at least something based on ubuntu 18.04
+Also you can just download suitable release and enjoy it. .Deb release is now static and does not require depedencies. Only make sure, you use at least something based on ubuntu 18.04
 
 If you want to build it instead...
 
