@@ -4,6 +4,8 @@ TARGET = rt4sv++
 
 TEMPLATE = app
 
+QTPLUGIN += qsvg
+
 SOURCES += \
     UI/varcoefscalcwidget.cpp \
     body.cpp \
