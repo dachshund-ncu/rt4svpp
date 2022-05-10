@@ -39,14 +39,14 @@ CCFtar.extractall()
 print('-----> installing CFITSIO')
 # -- install CFITSIO --
 os.chdir(dirCFTSIO)
-os.system('./configure --prefix=/usr/local')
+os.system('./configure --prefix=/usr/local --enable-static')
 os.system('make')
 os.system('make install')
 
 print('-----> installing CCFITS')
 # -- install CCFITS--
 os.chdir('../' + dirCCF)
-os.system('./configure')
+os.system('./configure --enable-static')
 os.system('make')
 os.system('make install')
 # --------------------

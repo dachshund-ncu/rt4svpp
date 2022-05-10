@@ -124,16 +124,11 @@ void heat_map_widget::placeWidgets()
     grid->addWidget(leftLabel, 8,6);
     grid->addWidget(rightLabel, 8,8);
     // -- ustalamy column stretch --
-    grid->setColumnStretch(0,1);
-    grid->setColumnStretch(1,1);
-    grid->setColumnStretch(2,1);
-    grid->setColumnStretch(3,1);
-    grid->setColumnStretch(4,1);
-    grid->setColumnStretch(5,1);
-    grid->setColumnStretch(6,1);
-    grid->setColumnStretch(7,1);
-    grid->setColumnStretch(8,1);
-    grid->setColumnStretch(9,1);
+    for(int i = 0; i < grid->columnCount(); i++)
+        grid->setColumnStretch(i, 1);
+    for(int i = 0; i < grid->rowCount(); i++)
+        grid->setRowStretch(i, 1);
+
 }
 
 void heat_map_widget::managePlottables()
@@ -358,7 +353,9 @@ void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
     // ustalamy labele
     setLabelClicked(x,y);
     // updatujemy graphy
-    heatMapPlot->replot();
+    heatMapPlot->layer(QString::fromStdString("linex"))->replot();
+    heatMapPlot->layer(QString::fromStdString("liney"))->replot();
+    heatMapPlot->layer(QString::fromStdString("prectangle"))->replot();
     spectrumPlot->replot();
     lcsPlot->replot();
     // setujemy do zmiennych globalnych co jest kliknięte
@@ -523,6 +520,8 @@ void heat_map_widget::setLabelClicked(unsigned long x, unsigned long y)
     std::ostringstream streamObj3;
     streamObj3 << std::fixed;
     streamObj3 << std::setprecision(3);
+    if (heatMap->data()->cell(x - minObsNumber,y-minRangeVelIndex) > 1e6 )
+        streamObj3 << std::scientific;
     streamObj3 << heatMap->data()->cell(x - minObsNumber,y-minRangeVelIndex);//poltab[x][y];
     cocochanel_txt.append(streamObj3.str());
     cocochanel_txt.append(string("\n"));

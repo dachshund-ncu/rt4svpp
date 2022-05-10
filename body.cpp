@@ -663,16 +663,9 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
     //cout << fileName1.size() << endl;
     loaded_data = 1;
 
-    if (single_spectrum_opened == 1)
-    {
-        kill_single_spectrum();
-        display_single_spectrum();
-    }
-
-    if (dynamic_spectrum_opened == 1)
-    {
-        display_dynamic_spectrum();
-    }
+    dynspecWidget->resetHeatMap();
+    ssWidget->reset();
+    rms_sec_w->fillWithData();
 
     if (geometry_window_set == 0)
     {
@@ -1013,12 +1006,13 @@ void body::reload_slot()
         dataTable->loadDataFromList(tmpqstringlist);
         // -- zapełniamy danymi sekcję RMS --
         rms_sec_w->fillWithData();
-    }
-    // -- jeśli widmo dynamiczne było otwarte - updatujemy je --
-    if (dynamic_spectrum_opened)
-    {
+        // -- updatujemy widmo dynamiczne --
         dynspecWidget->setMapPressed(0,0);
-        display_dynamic_spectrum();
+        dynspecWidget->resetHeatMap();
+        // -- i również widmo zwykłe --
+        ssWidget->reset();
+        // -- i RMS section --
+        rms_sec_w->fillWithData();
     }
 }
 

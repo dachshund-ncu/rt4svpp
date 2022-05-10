@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     srand(time(NULL));
     Q_INIT_RESOURCE(resources);
-    FITS::setVerboseMode(true);
+    FITS::setVerboseMode(false);
     // -- zaczynamy program --
     QApplication program (argc, argv);
     program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));

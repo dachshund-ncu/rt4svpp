@@ -421,8 +421,15 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     }
     catch(...)
     {
-        table.readKey("AZ", az_str);
-        az = stod(az_str);
+        try
+        {
+            table.readKey("AZ", az_str);
+            az = stod(az_str);
+        }
+        catch(...)
+        {
+            az = 0.0;
+        }
     }
 
     // Z
@@ -430,10 +437,17 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     {
         table.readKey("Z", z);
     }
-        catch(...)
+    catch(...)
     {
-        table.readKey("Z", zstr);
-        z = stod(zstr);
+        try
+        {
+            table.readKey("Z", zstr);
+            z = stod(zstr);
+        }
+        catch(...)
+        {
+            z = 0.0;
+        }
     }
 
 
@@ -452,9 +466,8 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
         }
         catch(...)
         {
-            table.readKey("TSYS", tsysstr);
-            tsys1 = stod(tsysstr);
-            tsys2 = stod(tsysstr);
+            tsys1 = 0.0;
+            tsys2 = 0.0;
         }
 
     }
@@ -674,6 +687,7 @@ void spectral_container::bubbleSortEpochs()
                 swapD(tsysTable, i, j);
                 swapD(azTable, i, j);
                 swapD(elTable, i, j);
+                swapD(zTable, i, j);
                 swapD(restFreqsTable, i, j);
                 swapD(bandWidthTable, i, j);
                 swapD(vlsrTable, i, j);

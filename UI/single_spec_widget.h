@@ -55,6 +55,7 @@ private:
     void colorSpines(QCustomPlot * plot, QPen pendulum);
 public:
     void darthMode(bool enabled = false);
+    void reset();
 
 signals:
 

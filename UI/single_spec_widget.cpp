@@ -244,3 +244,13 @@ void single_spec_widget::colorSpines(QCustomPlot *plot, QPen pendulum)
     plot->yAxis->setLabelColor(pendulum.color());
     plot->yAxis2->setLabelColor(pendulum.color());
 }
+
+void single_spec_widget::reset()
+{
+    unsigned long int limit = epochsPlotted.size();
+    for(unsigned long int i = 0; i < limit; i++)
+    {
+        pop();
+    }
+    fillListWithObservations();
+}
