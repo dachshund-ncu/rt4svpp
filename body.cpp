@@ -26,7 +26,7 @@ body::body(const char * nazwa)
     Q_INIT_RESOURCE(resources);
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
-    window.setGeometry(300,300,300,720);
+    window.setGeometry(300,300,150,720);
     // -- ustawiamy tytul okna --
     window.setWindowTitle("RT4SV++");
     // -- setting up SUPER MEGA MENU BAR --

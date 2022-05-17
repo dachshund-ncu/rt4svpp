@@ -12,56 +12,52 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QtGui>
+#include <QSize>
 
-class vbox_mainw : public QWidget
+class vbox_mainw : public QToolBar
 {
 public:
     // konstruktor
     vbox_mainw(QObject *parent = 0, const char * name = 0);
 
-    QWidget * persistentButtons = new QWidget(this);
-
     // dzieci - buttony
     // -- load --
-    QPushButton * LoadAVRFiles = new QPushButton(this);
-    QPushButton * LoadFITSFiles = new QPushButton(this);
-    QPushButton * Reload = new QPushButton(this);
+    QAction * LoadAVRFiles = new QAction(this);
+    QAction * LoadFITSFiles = new QAction(this);
+    QAction * Reload = new QAction(this);
     // -- główne sekcje --
-    QPushButton * DynamicSpectrum = new QPushButton(this);
-    QPushButton * SingleSpectrum = new QPushButton(this);
-    QPushButton * RMSSection = new QPushButton(this);
+    QAction * DynamicSpectrum = new QAction(this);
+    QAction * SingleSpectrum = new QAction(this);
+    QAction * RMSSection = new QAction(this);
     // -- pomniejsze sekcje --
-    QPushButton * Integrate = new QPushButton(this);
-    QPushButton * AverOverVelocity = new QPushButton(this);
-    QPushButton * AverOverTime = new QPushButton(this);
-    QPushButton * SpectralIndex = new QPushButton(this);
-    QPushButton * ExportDynamicSpectrum = new QPushButton(this);
+    QAction * Integrate = new QAction(this);
+    QAction * AverOverVelocity = new QAction(this);
+    QAction * AverOverTime = new QAction(this);
+    QAction * SpectralIndex = new QAction(this);
+    QAction * ExportDynamicSpectrum = new QAction(this);
     // -- dół --
-    QPushButton * Calibrate =  new QPushButton(this);
-    QPushButton * Quit = new QPushButton(this);
+    QAction * Calibrate =  new QAction(this);
+    QAction * Quit = new QAction(this);
 
     // layouty
-    QGridLayout * VboxGrid = new QGridLayout(this);
-    QGridLayout * persistentGrid = new QGridLayout(persistentButtons);
-
-
-
+    //QGridLayout * VboxGrid = new QGridLayout(this);
+    //QGridLayout * persistentGrid = new QGridLayout(persistentButtons);
 
     // checkboxy
     QCheckBox * DarthMode = new QCheckBox("Darth Mode", this);
     QCheckBox * IsotimeInclude = new QCheckBox("Iso time", this);
 
     // labele
-    QLabel * LoadingSectionlabel = new QLabel(this);
-    QLabel * VisualSectionLabel = new QLabel(this);
-    QLabel * ExportAndAnalysisLabel = new QLabel(this);
-    QLabel * OthersLabel = new QLabel(this);
+    //QLabel * LoadingSectionlabel = new QLabel(this);
+    //QLabel * VisualSectionLabel = new QLabel(this);
+    //QLabel * ExportAndAnalysisLabel = new QLabel(this);
+    //QLabel * OthersLabel = new QLabel(this);
 
     bool setctionOpened = 0;
 
 public:
-    void appendWidget(QWidget * widget);
-    void deleteWidgetFromList(QWidget * widget);
+    //void appendWidget(QWidget * widget);
+    //void deleteWidgetFromList(QWidget * widget);
 public slots:
     // -- integrate --
     //void openInt();
