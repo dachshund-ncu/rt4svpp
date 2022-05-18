@@ -106,7 +106,7 @@ public:
     QAction * openAverOverTimeA = new QAction(advancedM);
     QAction * openSpindicateA = new QAction(advancedM);
     QAction * openExportDynSpectrumA = new QAction(advancedM);
-    QAction * openCalibrateSectionA = new QAction(advancedM);
+    //QAction * openCalibrateSectionA = new QAction(advancedM);
     QAction * darthModeA = new QAction(advancedM);
     QAction * isoTimeA = new QAction(advancedM);
     QAction * setRmsChannelsA = new QAction(advancedM);

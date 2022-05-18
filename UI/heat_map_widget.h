@@ -26,7 +26,7 @@ public:
     // grid
     QGridLayout * grid = new QGridLayout(this);
     // checkboxy
-    QVBoxLayout * checkboxesOnDynspec = new QVBoxLayout();
+    //QVBoxLayout * checkboxesOnDynspec = new QVBoxLayout();
     QCheckBox * setLogScale = new QCheckBox("Log scale", this);
     QCheckBox * rotateAllPols = new QCheckBox("Rotate IVLR", this);
     // buttony

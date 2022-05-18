@@ -126,7 +126,7 @@ void body::makeActions()
     openAverOverTimeA->setText("Aver over time");
     openSpindicateA->setText("Vatriability coefficients");
     openExportDynSpectrumA->setText("Export dynamic spectrum");
-    openCalibrateSectionA->setText("Open calibrate section");
+    //openCalibrateSectionA->setText("Open calibrate section");
     darthModeA->setText("Darth Mode");
     isoTimeA->setText("Include isotime");
     setRmsChannelsA->setText("Set channels for RMS calculation");
@@ -148,7 +148,7 @@ void body::makeActions()
     advancedM->addAction(openAverOverTimeA);
     advancedM->addAction(openSpindicateA);
     advancedM->addAction(openExportDynSpectrumA);
-    advancedM->addAction(openCalibrateSectionA);
+    //advancedM->addAction(openCalibrateSectionA);
     advancedM->addSeparator();
     advancedM->addAction(darthModeA);
     advancedM->addAction(isoTimeA);
@@ -287,7 +287,7 @@ void body::connectActionsInSuperBar()
     QObject::connect(openAverOverTimeA, SIGNAL(triggered()), this, SLOT(openAOTSection()));
     QObject::connect(openSpindicateA, SIGNAL(triggered()), this, SLOT(openSPINDSection()));
     QObject::connect(openExportDynSpectrumA, SIGNAL(triggered()), this, SLOT(openWDSection()));
-    QObject::connect(openCalibrateSectionA, SIGNAL(triggered()), this, SLOT(openCALSection()));
+    //QObject::connect(openCalibrateSectionA, SIGNAL(triggered()), this, SLOT(openCALSection()));
     QObject::connect(darthModeA, SIGNAL(triggered()), this, SLOT(darkModeAction()));
     QObject::connect(isoTimeA, SIGNAL(triggered()), this, SLOT(isoTimeWrapperAction()));
     QObject::connect(setRmsChannelsA, SIGNAL(triggered()), this, SLOT(showRmsSelector()));

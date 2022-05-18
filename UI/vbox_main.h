@@ -36,7 +36,6 @@ public:
     QAction * SpectralIndex = new QAction(this);
     QAction * ExportDynamicSpectrum = new QAction(this);
     // -- dół --
-    QAction * Calibrate =  new QAction(this);
     QAction * Quit = new QAction(this);
 
     // layouty

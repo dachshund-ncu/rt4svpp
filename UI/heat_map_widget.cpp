@@ -68,8 +68,9 @@ void heat_map_widget::setButtonsProperties()
     // -------------------------
     // -- checkboxy --
     rotateAllPols->setChecked(true);
+    setLogScale->setVisible(false);
+    rotateAllPols->setVisible(false);
     // -- button --
-
     Ibut->setCheckable(true);
     Vbut->setCheckable(true);
     LHCbut->setCheckable(true);
@@ -104,9 +105,9 @@ void heat_map_widget::placeWidgets()
     bottomDynSpecButtons->addWidget(saveEdition);
     bottomDynSpecButtons->addWidget(rotate_minus);
     bottomDynSpecButtons->addWidget(makeLcsButton);
-    checkboxesOnDynspec->addWidget(setLogScale);
-    checkboxesOnDynspec->addWidget(rotateAllPols);
-    bottomDynSpecButtons->addItem(checkboxesOnDynspec);
+//    checkboxesOnDynspec->addWidget(setLogScale);
+//    checkboxesOnDynspec->addWidget(rotateAllPols);
+//    bottomDynSpecButtons->addItem(checkboxesOnDynspec);
     // --
     topDynSpecButtons->setSpacing(1);
     bottomDynSpecButtons->setSpacing(1);

@@ -131,9 +131,9 @@ void vbox_mainw::makeProperLabelsForButtons()
 //    ExportDynamicSpectrum->setMaximumSize(butSizeX,butSizeY);
     //ExportDynamicSpectrum->setFlat(true);
     // --
-    Calibrate->setToolTip("Calibrate currently displayed data");
+    //Calibrate->setToolTip("Calibrate currently displayed data");
     //Calibrate->setText("Calibrate");
-    Calibrate->setIcon(QIcon(":/images/calibrateIcon.svg"));
+    //Calibrate->setIcon(QIcon(":/images/calibrateIcon.svg"));
 //    Calibrate->setIconSize(QSize(butSizeX,butSizeY));
 //    Calibrate->setMaximumSize(butSizeX,butSizeY);
     //Calibrate->setFlat(true);
@@ -189,7 +189,7 @@ void vbox_mainw::addEverythingToWidget()
     this->addAction(SpectralIndex);
     this->addAction(ExportDynamicSpectrum);
     this->addSeparator();
-    this->addAction(Calibrate);
+    //this->addAction(Calibrate);
     this->addAction(Quit);
 //    VboxGrid->addWidget(LoadingSectionlabel,    0,0, 1, 1);
 //    VboxGrid->addWidget(LoadAVRFiles,           0,0, 1, 1);
@@ -246,7 +246,7 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(AverOverTime, SIGNAL(triggered()), parent, SLOT(openAOTSection()));
     QObject::connect(SpectralIndex, SIGNAL(triggered()), parent, SLOT(openSPINDSection()));
     QObject::connect(Reload, SIGNAL(triggered()), parent, SLOT(reload_slot()));
-    QObject::connect(Calibrate, SIGNAL(triggered()), parent, SLOT(openCALSection()));
+    //QObject::connect(Calibrate, SIGNAL(triggered()), parent, SLOT(openCALSection()));
     QObject::connect(ExportDynamicSpectrum, SIGNAL(triggered()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(triggered()), parent, SLOT(open_rms_section_slot()));
     QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
