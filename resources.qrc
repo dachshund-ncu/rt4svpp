@@ -14,5 +14,9 @@
         <file>images/exportDynspecIcon.svg</file>
         <file>images/calibrateIcon.svg</file>
         <file>images/exitIcon.svg</file>
+        <file>images/IDSicon2.svg</file>
+        <file>images/VDSicon.svg</file>
+        <file>images/LHCDSicon.svg</file>
+        <file>images/RHDSicon.svg</file>
     </qresource>
 </RCC>

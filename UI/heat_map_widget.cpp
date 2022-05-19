@@ -20,45 +20,45 @@ heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * iso
 void heat_map_widget::setButtonsProperties()
 {
     // -- rozmiary --
-    yDownBorder->setMaximumSize(10000,30);
-    yUpBorder->setMaximumSize(10000,30);
-    xDownBorder->setMaximumSize(10000,30);
-    xUpBorder->setMaximumSize(10000,30);
-    Ibut->setMaximumSize(10000,30);
-    Vbut->setMaximumSize(10000,30);
-    LHCbut->setMaximumSize(10000,30);
-    RHCbut->setMaximumSize(10000,30);
-    flag->setMaximumSize(10000,10000);
-    makeLcsButton->setMaximumSize(10000,10000);
-    recreateIButton->setMaximumSize(10000,10000);
-    rotate->setMaximumSize(10000,10000);
-    rotate_minus->setMaximumSize(10000,10000);
-    saveEdition->setMaximumSize(10000,10000);
+//    yDownBorder->setMaximumSize(10000,30);
+//    yUpBorder->setMaximumSize(10000,30);
+//    xDownBorder->setMaximumSize(10000,30);
+//    xUpBorder->setMaximumSize(10000,30);
+//    Ibut->setMaximumSize(10000,30);
+//    Vbut->setMaximumSize(10000,30);
+//    LHCbut->setMaximumSize(10000,30);
+//    RHCbut->setMaximumSize(10000,30);
+//    flag->setMaximumSize(10000,10000);
+//    makeLcsButton->setMaximumSize(10000,10000);
+//    recreateIButton->setMaximumSize(10000,10000);
+//    rotate->setMaximumSize(10000,10000);
+//    rotate_minus->setMaximumSize(10000,10000);
+//    saveEdition->setMaximumSize(10000,10000);
 
-    yDownBorder->setMinimumSize(0,0);
-    yUpBorder->setMinimumSize(0,0);
-    xDownBorder->setMinimumSize(0,0);
-    xUpBorder->setMinimumSize(0,0);
-    Ibut->setMinimumSize(0,0);
-    Vbut->setMinimumSize(0,0);
-    LHCbut->setMinimumSize(0,0);
-    RHCbut->setMinimumSize(0,0);
-    flag->setMinimumSize(0,0);
-    makeLcsButton->setMinimumSize(0,0);
-    recreateIButton->setMinimumSize(0,0);
-    rotate->setMinimumSize(0,0);
-    rotate_minus->setMinimumSize(0,0);
-    saveEdition->setMinimumSize(0,0);
+//    yDownBorder->setMinimumSize(0,0);
+//    yUpBorder->setMinimumSize(0,0);
+//    xDownBorder->setMinimumSize(0,0);
+//    xUpBorder->setMinimumSize(0,0);
+//    Ibut->setMinimumSize(0,0);
+//    Vbut->setMinimumSize(0,0);
+//    LHCbut->setMinimumSize(0,0);
+//    RHCbut->setMinimumSize(0,0);
+//    flag->setMinimumSize(0,0);
+//    makeLcsButton->setMinimumSize(0,0);
+//    recreateIButton->setMinimumSize(0,0);
+//    rotate->setMinimumSize(0,0);
+//    rotate_minus->setMinimumSize(0,0);
+//    saveEdition->setMinimumSize(0,0);
     // -------------------------
     // -- teksty --
-    yDownBorder->setText("Down");
-    yUpBorder->setText("Up");
-    xDownBorder->setText("->|");
-    xUpBorder->setText("|<-");
-    Ibut->setText("I");
-    Vbut->setText("V");
-    LHCbut->setText("LHC");
-    RHCbut->setText("RHC");
+//    yDownBorder->setText("Down");
+//    yUpBorder->setText("Up");
+//    xDownBorder->setText("->|");
+//    xUpBorder->setText("|<-");
+//    Ibut->setText("I");
+//    Vbut->setText("V");
+//    LHCbut->setText("LHC");
+//    RHCbut->setText("RHC");
     flag->setText("Flag");
     makeLcsButton->setText("Make LCS");
     recreateIButton->setText("Recal IV");
@@ -66,6 +66,15 @@ void heat_map_widget::setButtonsProperties()
     rotate_minus->setText("Rotate-");
     saveEdition->setText("Save");
     // -------------------------
+    // -- action icons --
+    yDownBorder->setText("Down");
+    yUpBorder->setText("Up");
+    xDownBorder->setText("->|");
+    xUpBorder->setText("|<-");
+    Ibut->setIcon(QIcon(":/images/IDSicon2.svg"));
+    Vbut->setIcon(QIcon(":/images/VDSicon.svg"));
+    LHCbut->setIcon(QIcon(":/images/LHCDSicon.svg"));
+    RHCbut->setIcon(QIcon(":/images/RHDSicon.svg"));
     // -- checkboxy --
     rotateAllPols->setChecked(true);
     setLogScale->setVisible(false);
@@ -88,32 +97,53 @@ void heat_map_widget::processTextEdits()
 void heat_map_widget::placeWidgets()
 {
     // -- rozmieszczamy przyciski --
-    topDynSpecButtons->addWidget(Ibut);
-    topDynSpecButtons->addWidget(Vbut);
-    topDynSpecButtons->addWidget(LHCbut);
-    topDynSpecButtons->addWidget(RHCbut);
+//    topDynSpecButtons->addWidget(Ibut);
+//    topDynSpecButtons->addWidget(Vbut);
+//    topDynSpecButtons->addWidget(LHCbut);
+//    topDynSpecButtons->addWidget(RHCbut);
+//    // --
+//    topDynSpecButtons->addWidget(yDownBorder);
+//    topDynSpecButtons->addWidget(yUpBorder);
+//    topDynSpecButtons->addWidget(xDownBorder);
+//    topDynSpecButtons->addWidget(xUpBorder);
+    bottomToolBar->addAction(Ibut);
+    bottomToolBar->addAction(Vbut);
+    bottomToolBar->addAction(LHCbut);
+    bottomToolBar->addAction(RHCbut);
+    bottomToolBar->addSeparator();
+    bottomToolBar->addAction(yDownBorder);
+    bottomToolBar->addAction(yUpBorder);
+    bottomToolBar->addAction(xDownBorder);
+    bottomToolBar->addAction(xUpBorder);
+    bottomToolBar->addSeparator();
+    bottomToolBar->addAction(recreateIButton);
+    bottomToolBar->addAction(flag);
+    bottomToolBar->addSeparator();
+    bottomToolBar->addAction(rotate);
+    bottomToolBar->addAction(rotate_minus);
+    bottomToolBar->addWidget(numberOfRotatedChannelsTexted);
+    bottomToolBar->addSeparator();
+    bottomToolBar->addAction(saveEdition);
+    bottomToolBar->addSeparator();
+    bottomToolBar->addAction(makeLcsButton);
     // --
-    topDynSpecButtons->addWidget(yDownBorder);
-    topDynSpecButtons->addWidget(yUpBorder);
-    topDynSpecButtons->addWidget(xDownBorder);
-    topDynSpecButtons->addWidget(xUpBorder);
-    // --
-    bottomDynSpecButtons->addWidget(numberOfRotatedChannelsTexted);
-    bottomDynSpecButtons->addWidget(recreateIButton);
-    bottomDynSpecButtons->addWidget(flag);
-    bottomDynSpecButtons->addWidget(rotate);
-    bottomDynSpecButtons->addWidget(saveEdition);
-    bottomDynSpecButtons->addWidget(rotate_minus);
-    bottomDynSpecButtons->addWidget(makeLcsButton);
+//    bottomDynSpecButtons->addWidget(numberOfRotatedChannelsTexted);
+//    bottomDynSpecButtons->addWidget(recreateIButton);
+//    bottomDynSpecButtons->addWidget(flag);
+//    bottomDynSpecButtons->addWidget(rotate);
+//    bottomDynSpecButtons->addWidget(saveEdition);
+//    bottomDynSpecButtons->addWidget(rotate_minus);
+//    bottomDynSpecButtons->addWidget(makeLcsButton);
 //    checkboxesOnDynspec->addWidget(setLogScale);
 //    checkboxesOnDynspec->addWidget(rotateAllPols);
 //    bottomDynSpecButtons->addItem(checkboxesOnDynspec);
     // --
-    topDynSpecButtons->setSpacing(1);
+    //topDynSpecButtons->setSpacing(1);
     bottomDynSpecButtons->setSpacing(1);
     // --
-    onDynSpecButtons->addLayout(bottomDynSpecButtons);
-    onDynSpecButtons->addLayout(topDynSpecButtons);
+    //onDynSpecButtons->addLayout(bottomDynSpecButtons);
+    //onDynSpecButtons->addLayout(topDynSpecButtons);
+    //onDynSpecButtons->addWidget(bottomToolBar);
     // -- dodajemy do gridu --
     // -- umierszczamy ploty na gridzie --
     grid->addWidget(heatMapPlot, 1,0,7,6);
@@ -121,7 +151,8 @@ void heat_map_widget::placeWidgets()
     grid->addWidget(lcsPlot, 4,6,4,4);
     grid->addWidget(colorbarWidget, 0, 0, 1, 6);
     // -- przyciski --
-    grid->addLayout(onDynSpecButtons,8,0,1,6);
+    //grid->addLayout(onDynSpecButtons,8,0,1,6);
+    grid->addWidget(bottomToolBar,8,0,1,6);
     grid->addWidget(leftLabel, 8,6);
     grid->addWidget(rightLabel, 8,8);
     // -- ustalamy column stretch --
@@ -289,10 +320,10 @@ void heat_map_widget::connectForAxis()
     nextChanKey->setKey(QKeySequence(Qt::Key_Up));
     prevChanKey->setKey(QKeySequence(Qt::Key_Down));
     // -
-    QObject::connect(yDownBorder, SIGNAL(clicked()), this, SLOT(setMinVelOnHeatMap()));
-    QObject::connect(yUpBorder, SIGNAL(clicked()), this, SLOT(setMaxVelOnHeatMap()));
-    QObject::connect(xDownBorder, SIGNAL(clicked()), this, SLOT(setMinEpochOnHeatMap()));
-    QObject::connect(xUpBorder, SIGNAL(clicked()), this, SLOT(setMaxEpochOnHeatMap()));
+    QObject::connect(yDownBorder, SIGNAL(triggered()), this, SLOT(setMinVelOnHeatMap()));
+    QObject::connect(yUpBorder, SIGNAL(triggered()), this, SLOT(setMaxVelOnHeatMap()));
+    QObject::connect(xDownBorder, SIGNAL(triggered()), this, SLOT(setMinEpochOnHeatMap()));
+    QObject::connect(xUpBorder, SIGNAL(triggered()), this, SLOT(setMaxEpochOnHeatMap()));
     //-
     QObject::connect(yDownBorder_shrt, SIGNAL(activated()), this, SLOT(setMinVelOnHeatMap()));
     QObject::connect(yUpBorder_shrt, SIGNAL(activated()), this, SLOT(setMaxVelOnHeatMap()));
@@ -302,16 +333,16 @@ void heat_map_widget::connectForAxis()
     // - polaryzacje -
 
     // - rotacja -
-    QObject::connect(rotate, SIGNAL(clicked()), this, SLOT(rotatePlus()));
-    QObject::connect(rotate_minus, SIGNAL(clicked()), this, SLOT(rotateMinus()));
-    QObject::connect(saveEdition, SIGNAL(clicked()), this, SLOT(saveEditedSpectra()));
-    QObject::connect(recreateIButton, SIGNAL(clicked()), this, SLOT(recal()));
+    QObject::connect(rotate, SIGNAL(triggered()), this, SLOT(rotatePlus()));
+    QObject::connect(rotate_minus, SIGNAL(triggered()), this, SLOT(rotateMinus()));
+    QObject::connect(saveEdition, SIGNAL(triggered()), this, SLOT(saveEditedSpectra()));
+    QObject::connect(recreateIButton, SIGNAL(triggered()), this, SLOT(recal()));
     // - krzywa blasku -
-    QObject::connect(makeLcsButton, SIGNAL(clicked()), this, SLOT(makeLCS()));
+    QObject::connect(makeLcsButton, SIGNAL(triggered()), this, SLOT(makeLCS()));
     // - widmo dynamiczne -
 
     // - flagowanie -
-    QObject::connect(flag, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
+    QObject::connect(flag, SIGNAL(triggered()), this, SLOT(flagActualEpoch()));
     // - klikanie -
     QObject::connect(nextEpochKey, SIGNAL(activated()), this, SLOT(nextEpoch()));
     QObject::connect(prevEpochKey, SIGNAL(activated()), this, SLOT(prevEpoch()));

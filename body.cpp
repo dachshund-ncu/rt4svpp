@@ -166,7 +166,7 @@ void body::makeActions()
     flagA->setText("Flag");
     makeLCS->setText("Export light curve");
     logScale->setText("Set log color scale");
-    rotate_IVLR->setText("Rotate L/RHC independently");
+    rotate_IVLR->setText("Rotate L/RHC together");
     resetDS->setText("Reset heat map");
     normalize->setText("Normalize heat map");
     cancelNormalize->setText("Cancel normalization");
@@ -354,10 +354,10 @@ void body::connectActionsInSuperBar()
 
 void body::connectSomeButtons()
 {
-    QObject::connect(dynspecWidget->Ibut, SIGNAL(clicked()), this, SLOT(choosePolIButton()));
-    QObject::connect(dynspecWidget->Vbut, SIGNAL(clicked()), this, SLOT(choosePolVButton()));
-    QObject::connect(dynspecWidget->LHCbut, SIGNAL(clicked()), this, SLOT(choosePolLHCButton()));
-    QObject::connect(dynspecWidget->RHCbut, SIGNAL(clicked()), this, SLOT(choosePolRHCButton()));
+    QObject::connect(dynspecWidget->Ibut, SIGNAL(triggered()), this, SLOT(choosePolIButton()));
+    QObject::connect(dynspecWidget->Vbut, SIGNAL(triggered()), this, SLOT(choosePolVButton()));
+    QObject::connect(dynspecWidget->LHCbut, SIGNAL(triggered()), this, SLOT(choosePolLHCButton()));
+    QObject::connect(dynspecWidget->RHCbut, SIGNAL(triggered()), this, SLOT(choosePolRHCButton()));
 
     QObject::connect(dynspecWidget->setLogScale, SIGNAL(clicked()), this, SLOT(setLogScaleSlot()));
     QObject::connect(dynspecWidget->rotateAllPols, SIGNAL(clicked()), this, SLOT(setIVLRAction()));

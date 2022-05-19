@@ -1209,9 +1209,9 @@ void spectral_container::recalculateRMS()
     for (int obsn = 0; obsn < (int) spectraTableI.size(); obsn++)
     {
         spectraTableIERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
-        spectraTableVERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
-        spectraTableLHCERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
-        spectraTableRHCERR.push_back(calculate_RMS(spectraTableI[obsn], rmsChannelsTab));
+        spectraTableVERR.push_back(calculate_RMS(spectraTableV[obsn], rmsChannelsTab));
+        spectraTableLHCERR.push_back(calculate_RMS(spectraTableLHC[obsn], rmsChannelsTab));
+        spectraTableRHCERR.push_back(calculate_RMS(spectraTableRHC[obsn], rmsChannelsTab));
     }
 
 }

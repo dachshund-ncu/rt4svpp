@@ -30,11 +30,7 @@ public:
     QCheckBox * setLogScale = new QCheckBox("Log scale", this);
     QCheckBox * rotateAllPols = new QCheckBox("Rotate IVLR", this);
     // buttony
-    // -- bordery --
-    QPushButton * yDownBorder = new QPushButton(this);
-    QPushButton * yUpBorder = new QPushButton(this);
-    QPushButton * xDownBorder = new QPushButton(this);
-    QPushButton * xUpBorder = new QPushButton(this);
+
     //-
     QShortcut * yDownBorder_shrt = new QShortcut(this);
     QShortcut * yUpBorder_shrt = new QShortcut(this);
@@ -45,23 +41,30 @@ public:
     QShortcut * prevEpochKey = new QShortcut(this);
     QShortcut * nextChanKey = new QShortcut(this);
     QShortcut * prevChanKey = new QShortcut(this);
+    // -- toolbar: bottom --
+    QToolBar * bottomToolBar = new QToolBar(this);
     // -- polaryzacje --
-    QPushButton * Ibut = new QPushButton(this);
-    QPushButton * Vbut = new QPushButton(this);
-    QPushButton * LHCbut = new QPushButton(this);
-    QPushButton * RHCbut = new QPushButton(this);
+    QAction * Ibut = new QAction(this);
+    QAction * Vbut = new QAction(this);
+    QAction * LHCbut = new QAction(this);
+    QAction * RHCbut = new QAction(this);
+    // -- bordery --
+    QAction * yDownBorder = new QAction(this);
+    QAction * yUpBorder = new QAction(this);
+    QAction * xDownBorder = new QAction(this);
+    QAction * xUpBorder = new QAction(this);
     // -- pozostałe opcje --
-    QPushButton * flag = new QPushButton(this);
-    QPushButton * makeLcsButton = new QPushButton(this);
-    QPushButton * recreateIButton = new QPushButton(this);
+    QAction * flag = new QAction(this);
+    QAction * makeLcsButton = new QAction(this);
+    QAction * recreateIButton = new QAction(this);
     // -- rotacja widm --
-    QPushButton * rotate = new QPushButton(this);
-    QPushButton * rotate_minus = new QPushButton(this);
+    QAction * rotate = new QAction(this);
+    QAction * rotate_minus = new QAction(this);
     QTextEdit * numberOfRotatedChannelsTexted = new QTextEdit(this);
-    QPushButton * saveEdition = new QPushButton;
+    QAction * saveEdition = new QAction;
     // -- layouty --
-    QVBoxLayout * onDynSpecButtons = new QVBoxLayout();
-    QHBoxLayout * topDynSpecButtons = new QHBoxLayout();
+    //QVBoxLayout * onDynSpecButtons = new QVBoxLayout();
+    //QHBoxLayout * topDynSpecButtons = new QHBoxLayout();
     QHBoxLayout * bottomDynSpecButtons = new QHBoxLayout();
     // -- labele --
     QLabel * leftLabel = new QLabel(this);
