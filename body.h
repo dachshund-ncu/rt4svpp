@@ -42,6 +42,7 @@ public:
     integrate_widget * averOverVelocityWidget = new integrate_widget(this, "Aver Over Velocity (channels)", "Aver over velocity");
     integrate_widget * averOverTimeWidget = new integrate_widget(this, "Aver over Time (epochs)", "Aver over time");
     integrate_widget * normalizationSelector = new integrate_widget(this, "Normalization channels", "Normalization");
+    integrate_widget * lcsExtractorWidget = new integrate_widget(this, "Extraction channels", "Extract LC");
     varCoefsCalcWidget * SpectralIndexWidget = new varCoefsCalcWidget(this, "Variability coefficients (epochs)", "Var. coeffs");
     export_dynamic_spectrum_widget * exDynspWidget = new export_dynamic_spectrum_widget(this, "Export Dynamic Spectrum");
     calsection * calibrateWidget = new calsection(this, "Calibrate");
@@ -105,6 +106,7 @@ public:
     QAction * openAverOverVelA = new QAction(advancedM);
     QAction * openAverOverTimeA = new QAction(advancedM);
     QAction * openSpindicateA = new QAction(advancedM);
+    QAction * extractLCSA = new QAction(advancedM);
     QAction * openExportDynSpectrumA = new QAction(advancedM);
     //QAction * openCalibrateSectionA = new QAction(advancedM);
     QAction * darthModeA = new QAction(advancedM);
@@ -437,6 +439,10 @@ public slots:
     void hideNormalizationWindow();
     void goWithNormalization();
     void cancelNormalization();
+    // -- extracting light curves --
+    void showExtractionWindow();
+    void hideExtractionWindow();
+    void performExtraction();
 };
 
 #endif // BODY_H

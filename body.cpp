@@ -124,7 +124,8 @@ void body::makeActions()
     openIntegrationA->setText("Integrate");
     openAverOverVelA->setText("Aver over velocity");
     openAverOverTimeA->setText("Aver over time");
-    openSpindicateA->setText("Vatriability coefficients");
+    openSpindicateA->setText("Variability coefficients");
+    extractLCSA->setText("Extract light curve");
     openExportDynSpectrumA->setText("Export dynamic spectrum");
     //openCalibrateSectionA->setText("Open calibrate section");
     darthModeA->setText("Darth Mode");
@@ -147,6 +148,7 @@ void body::makeActions()
     advancedM->addAction(openAverOverVelA);
     advancedM->addAction(openAverOverTimeA);
     advancedM->addAction(openSpindicateA);
+    advancedM->addAction(extractLCSA);
     advancedM->addAction(openExportDynSpectrumA);
     //advancedM->addAction(openCalibrateSectionA);
     advancedM->addSeparator();
@@ -286,6 +288,7 @@ void body::connectActionsInSuperBar()
     QObject::connect(openAverOverVelA, SIGNAL(triggered()), this, SLOT(openAOVSection()));
     QObject::connect(openAverOverTimeA, SIGNAL(triggered()), this, SLOT(openAOTSection()));
     QObject::connect(openSpindicateA, SIGNAL(triggered()), this, SLOT(openSPINDSection()));
+    QObject::connect(extractLCSA, SIGNAL(triggered()), this, SLOT(showExtractionWindow()));
     QObject::connect(openExportDynSpectrumA, SIGNAL(triggered()), this, SLOT(openWDSection()));
     //QObject::connect(openCalibrateSectionA, SIGNAL(triggered()), this, SLOT(openCALSection()));
     QObject::connect(darthModeA, SIGNAL(triggered()), this, SLOT(darkModeAction()));
@@ -350,6 +353,10 @@ void body::connectActionsInSuperBar()
     QObject::connect(cancelNormalize, SIGNAL(triggered()), this, SLOT(cancelNormalization()));
     QObject::connect(normalizationSelector->cancel, SIGNAL(clicked()), this, SLOT(hideNormalizationWindow()));
     QObject::connect(normalizationSelector->make, SIGNAL(clicked()), this, SLOT(goWithNormalization()));
+
+    QObject::connect(lcsExtractorWidget->make, SIGNAL(clicked()), this, SLOT(performExtraction()));
+    QObject::connect(lcsExtractorWidget->cancel, SIGNAL(clicked()), this, SLOT(hideExtractionWindow()));
+
 }
 
 void body::connectSomeButtons()
@@ -563,6 +570,33 @@ void body::cancelNormalization()
     cancelNormalize->setEnabled(false);
     // --
     dynspecWidget->updateHeatMap();
+}
+//-------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------
+/*
+ * BELOW: slots, connected to the Light Curve Extraction widget
+ */
+void body::showExtractionWindow()
+{
+    lcsExtractorWidget->startingChannelInt->setText(std::to_string(dynspecWidget->yIndex+1 - 2).c_str());
+    lcsExtractorWidget->endingChannelInt->setText(std::to_string(dynspecWidget->yIndex+1 + 2).c_str());
+    lcsExtractorWidget->setVisible(true);
+}
+void body::hideExtractionWindow()
+{
+    lcsExtractorWidget->setVisible(false);
+}
+void body::performExtraction()
+{
+    std::vector < int > chns = readMinMaxValuesFromChannels(*(lcsExtractorWidget->startingChannelInt), *(lcsExtractorWidget->endingChannelInt));
+    if (chns[0] < 1) // -- failsafe in case of incorrect channel selection --
+    {
+        hideExtractionWindow();
+        return;
+    }
+        dataTable->extractLCS4Pol(chns[0], chns[1], left_hand_list->IsotimeInclude->isChecked());
+    hideExtractionWindow();
 }
 //-------------------------------------------------------------------------------
 

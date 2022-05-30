@@ -116,6 +116,9 @@ public:
     std::string getVIFileName(int begin_epoch, int end_epoch);
     std::string getFIFileName(int begin_epoch, int end_epoch);
     std::string getChi2RedFileName(int begin_epoch, int end_epoch);
+    // -- extracted lcs --
+    void extractLCS4Pol(int min_channel, int max_channel, bool isotimeInclude);
+    std::string getExtractedFileName(int min_channel, int max_channel);
     // -- rotacja widm --
     void rotate(int epoch, int nChans=1, bool direction = true, bool Irot=true, bool Vrot=true, bool LHCrot=true, bool RHCrot=true);
     void recalculateIfromPols(bool modified = true);
@@ -221,6 +224,13 @@ private:
     // ----------------
     void fillNormalizationCoeffsWith1();
     // ----------------
+    std::vector < std::vector < double > > extractLCSFromChannelRange(int min_channel, int max_channel, std::vector < double > & extractingVels);
+    std::vector < double > extractLCSSingleEpoch (int min_channel, int max_channel, unsigned long int epochIndex);
+    std::vector < double > fillChunk(int min_channel, int max_channel, unsigned long int epochIndex, std::vector < std::vector < double > > & poltab);
+    void sortChunks(std::vector < double > & Itab, std::vector < double > & Vtab, std::vector < double > & LHCtab, std::vector < double > & RHCtab, std::vector < double > & tabWVel);
+    std::vector < double > getMeanOf3Highest(std::vector < double > & Itab, std::vector < double > & Vtab, std::vector < double > & LHCtab, std::vector < double > & RHCtab, std::vector < double > & tabWVel);
+    double average3Last(std::vector< double > & tab);
+    void saveExtractingToFile (int min_channel, int max_channel, std::vector < std::vector < double > > & extractingResults, std::vector < std::vector < double > > & extractingErrors, std::vector < double > & extractingVels, bool isotimeInclude);
     // --- for bubble sort ---
     template <typename T> // we define simple template for index swapping
     void swapD(std::vector < T > & tab, unsigned long int indexI, unsigned long int indexJ)

@@ -28,7 +28,8 @@ SOURCES += \
     UI/heat_map_widget.cpp \
     UI/single_spec_widget.cpp \
     UI/rms_sec_widget.cpp \
-    UI/rms_selector.cpp
+    UI/rms_selector.cpp \
+    data/extractlcs.cpp
 
 HEADERS += \
     UI/varcoefscalcwidget.h \
