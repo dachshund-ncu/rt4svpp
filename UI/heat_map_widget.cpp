@@ -67,14 +67,23 @@ void heat_map_widget::setButtonsProperties()
     saveEdition->setText("Save");
     // -------------------------
     // -- action icons --
-    yDownBorder->setText("Down");
-    yUpBorder->setText("Up");
-    xDownBorder->setText("->|");
-    xUpBorder->setText("|<-");
+    yDownBorder->setIcon(QIcon(":/images/DOWNicon.svg"));
+    yDownBorder->setToolTip("Set actually selected channel's velocity as MINIMUM on heat map");
+    yUpBorder->setIcon(QIcon(":/images/UPicon.svg"));
+    yUpBorder->setToolTip("Set actually selected channel's velocity as MAXIMUM on heat map");
+    xDownBorder->setIcon(QIcon(":/images/LEFTicon.svg"));
+    xDownBorder->setToolTip("Set actually selected epoch as MINIMUM on heat map");
+    xUpBorder->setIcon(QIcon(":/images/RIGHTicon.svg"));
+    xUpBorder->setToolTip("Set actually selected epoch as MAXIMUM on heat map");
+    // --
     Ibut->setIcon(QIcon(":/images/IDSicon2.svg"));
     Vbut->setIcon(QIcon(":/images/VDSicon.svg"));
     LHCbut->setIcon(QIcon(":/images/LHCDSicon.svg"));
     RHCbut->setIcon(QIcon(":/images/RHDSicon.svg"));
+    Ibut->setToolTip("Show STOKES I");
+    Vbut->setToolTip("Show STOKES V");
+    LHCbut->setToolTip("Show STOKES LHC");
+    RHCbut->setToolTip("Show STOKES RHC");
     // -- checkboxy --
     rotateAllPols->setChecked(true);
     setLogScale->setVisible(false);
@@ -84,7 +93,6 @@ void heat_map_widget::setButtonsProperties()
     Vbut->setCheckable(true);
     LHCbut->setCheckable(true);
     RHCbut->setCheckable(true);
-
     Ibut->setChecked(true);
 }
 

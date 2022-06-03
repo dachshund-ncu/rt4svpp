@@ -595,8 +595,12 @@ void body::performExtraction()
         hideExtractionWindow();
         return;
     }
-        dataTable->extractLCS4Pol(chns[0], chns[1], left_hand_list->IsotimeInclude->isChecked());
+    dataTable->extractLCS4Pol(chns[0], chns[1], left_hand_list->IsotimeInclude->isChecked());
     hideExtractionWindow();
+    // -- message to the user --
+    string message = "";
+    message = "Extracted lifht curve from channels " + std::to_string(chns[0]) + " -> " + std::to_string(chns[1]) + "\n" + "Saved to " + dataTable->getExtractedFileName(chns[0], chns[1]);
+    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
 }
 //-------------------------------------------------------------------------------
 

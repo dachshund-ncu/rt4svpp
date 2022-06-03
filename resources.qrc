@@ -18,5 +18,9 @@
         <file>images/VDSicon.svg</file>
         <file>images/LHCDSicon.svg</file>
         <file>images/RHDSicon.svg</file>
+        <file>images/DOWNicon.svg</file>
+        <file>images/LEFTicon.svg</file>
+        <file>images/RIGHTicon.svg</file>
+        <file>images/UPicon.svg</file>
     </qresource>
 </RCC>
