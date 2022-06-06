@@ -22,6 +22,11 @@ sudo apt install rt4svpp
 
 Also you can just download suitable release and enjoy it. .Deb release is now static and does not require depedencies. Only make sure, you use at least something based on ubuntu 18.04
 
+
+### sample_data ###
+This directory contains a set of .fits files, that can be loaded into RT4SV++. These files are 6.7 GHz methanol maser observations, performed between 2009 and 2022 and are already published in [Szymczak et al. 2014](https://ui.adsabs.harvard.edu/abs/2014MNRAS.439..407S/abstract) and [Durjasz et al. 2022](https://ui.adsabs.harvard.edu/abs/2022arXiv220508759D/abstract)
+
+
 If you want to build it instead...
 
 
