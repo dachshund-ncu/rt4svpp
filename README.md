@@ -3,7 +3,7 @@ This tool is designed to view data from NCU 32m radio telescope.
 
 It comes with qt ui and makes use of qcustomplot library (https://www.qcustomplot.com/)
 
-Release is deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
+Releases before 1.35 were deployed with linuxdeployqt (https://github.com/probonopd/linuxdeployqt)
 
 
 
