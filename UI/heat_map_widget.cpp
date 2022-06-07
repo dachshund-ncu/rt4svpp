@@ -62,8 +62,6 @@ void heat_map_widget::setButtonsProperties()
     flag->setText("Flag");
     makeLcsButton->setText("Make LCS");
     recreateIButton->setText("Recal IV");
-    rotate->setText("Rotate+");
-    rotate_minus->setText("Rotate-");
     saveEdition->setText("Save");
     // -------------------------
     // -- action icons --
@@ -84,6 +82,16 @@ void heat_map_widget::setButtonsProperties()
     Vbut->setToolTip("Show STOKES V");
     LHCbut->setToolTip("Show STOKES LHC");
     RHCbut->setToolTip("Show STOKES RHC");
+    // --
+    flag->setIcon(QIcon(":/images/FLAGicon.svg"));
+    flag->setToolTip("Flag selected epoch. You need to RELOAD for the flagging to take effect");
+    rotate->setIcon(QIcon(":/images/Rotate_p_icon.svg"));
+    rotate->setToolTip("Rotate selected spectrum");
+    rotate_minus->setIcon(QIcon(":/images/Rotate_m_icon.svg"));
+    rotate_minus->setToolTip("Rotate selected spectrum, but in different direction");
+
+    rotate_minus->setText("Rotate-");
+
     // -- checkboxy --
     rotateAllPols->setChecked(true);
     setLogScale->setVisible(false);

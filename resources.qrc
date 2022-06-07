@@ -22,5 +22,8 @@
         <file>images/LEFTicon.svg</file>
         <file>images/RIGHTicon.svg</file>
         <file>images/UPicon.svg</file>
+        <file>images/FLAGicon.svg</file>
+        <file>images/Rotate_m_icon.svg</file>
+        <file>images/Rotate_p_icon.svg</file>
     </qresource>
 </RCC>
