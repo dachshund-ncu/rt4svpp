@@ -803,10 +803,12 @@ int heat_map_widget::readNumberOfRotatedChannels()
         return -1;
     }
 }
+
 void heat_map_widget::rotatePlus()
 {
     rotateSpectrum(true);
 }
+
 void heat_map_widget::rotateMinus()
 {
     rotateSpectrum(false);
@@ -1037,36 +1039,52 @@ void heat_map_widget::flagActualEpoch()
 
 void heat_map_widget::nextEpoch()
 {
-    if(xIndex+1 < dataTable->spectraTableI.size())
+    if(xIndex < maxObsNumber)
+    {
         xIndex++;
+    }
     else
-        xIndex = 0;
+    {
+        xIndex = minObsNumber;
+    }
     setMapPressed(xIndex, yIndex);
 }
 
 void heat_map_widget::prevEpoch()
 {
-    if(xIndex == 0)
-        xIndex = dataTable->spectraTableI.size()-1;
+    if(xIndex == minObsNumber)
+    {
+        xIndex = maxObsNumber;
+    }
     else
+    {
         xIndex--;
+    }
     setMapPressed(xIndex, yIndex);
 }
 
 void heat_map_widget::nextChan()
 {
-    if(yIndex+1 < dataTable->spectraTableI[xIndex].size())
+    if(yIndex < maxRangeVelIndex)
+    {
         yIndex++;
+    }
     else
-        yIndex = 0;
+    {
+        yIndex = minRangeVelIndex;
+    }
     setMapPressed(xIndex, yIndex);
 }
 
 void heat_map_widget::prevChan()
 {
-    if(yIndex == 0)
-        yIndex = dataTable->spectraTableI[xIndex].size()-1;
+    if(yIndex == minRangeVelIndex)
+    {
+        yIndex = maxRangeVelIndex;
+    }
     else
+    {
         yIndex--;
+    }
     setMapPressed(xIndex, yIndex);
 }

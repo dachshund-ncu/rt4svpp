@@ -12,7 +12,7 @@
 #include <ctime>
 using namespace CCfits;
 
-#define version 1.40
+#define version 1.41
 
 void onWelcome()
 {
