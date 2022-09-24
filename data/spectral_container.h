@@ -18,9 +18,12 @@ kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <QtWidgets>
-#include <CCfits/CCfits>
 #include <QMessageBox>
+//#include <QWidgets>
+#include <QProgressDialog>
+#include <QFileInfo>
+#include <QCoreApplication>
+#include <CCfits/CCfits>
 
 // -- definicja klasy --
 class spectral_container

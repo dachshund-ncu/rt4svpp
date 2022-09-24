@@ -14,6 +14,7 @@
 #include "libs/qcustomplot.h"
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QPushButton>
 #include <vector>
 #include <string>
 

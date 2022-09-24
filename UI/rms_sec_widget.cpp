@@ -349,7 +349,7 @@ void Rms_sec_widget::connectElementsToSlots()
 
     QObject::connect(flagOnPopupWindow, SIGNAL(clicked()), this, SLOT(flagActualEpoch()));
 
-    QObject::connect(showCross, SIGNAL(clicked()), this, SLOT(showCrosshairSlot()));
+    QObject::connect(this->showCross, SIGNAL(clicked()), this, SLOT(showCrosshairSlot()));
 }
 
 void Rms_sec_widget::setUpPopupWindow()
@@ -911,7 +911,7 @@ void Rms_sec_widget::setSelectionOnInt()
 void Rms_sec_widget::setSelectionForPlot(QCustomPlot *plotSelection, QCustomPlot *plot1, QCustomPlot *plot2)
 {
     // -- bierzemy selection --
-    QCPDataSelection selection = plotSelection->selectedGraphs().constFirst()->selection();
+    QCPDataSelection selection = plotSelection->selectedGraphs()[0]->selection();
     // -- zaznaczamy selection na graphah --
     for(int i = 0; i < plotSelection->graphCount(); i++)
         plotSelection->graph(i)->setSelection(selection);
@@ -928,7 +928,7 @@ void Rms_sec_widget::showPopupWindowSlot()
         return;
 
     // wyciągamy indeks (xD ile tego)
-    int index = RmsVsTime->selectedGraphs().constFirst()->selection().dataRange().begin();
+    int index = RmsVsTime->selectedGraphs()[0]->selection().dataRange().begin();
 
     if (index > (int) dataTable->spectraTableI.size()-1)
         return;

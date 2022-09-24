@@ -7,6 +7,7 @@
 #include <QtGui>
 #include <QWidget>
 #include <iostream>
+#include <QAction>
 #include "libs/qcustomplot.h"
 #include "data/spectral_container.h"
 // -- definiujemy klasę, która będzie używana późneij --
@@ -61,7 +62,7 @@ public:
     QAction * rotate = new QAction(this);
     QAction * rotate_minus = new QAction(this);
     QTextEdit * numberOfRotatedChannelsTexted = new QTextEdit(this);
-    QAction * saveEdition = new QAction;
+    QAction * saveEdition = new QAction(this);
     // -- layouty --
     //QVBoxLayout * onDynSpecButtons = new QVBoxLayout();
     //QHBoxLayout * topDynSpecButtons = new QHBoxLayout();

@@ -6,6 +6,14 @@
  */
 #include <QObject>
 #include <QWidget>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QVBoxLayout>
+#include <QTabWidget>
+#include <QList>
 #include "libs/qcustomplot.h"
 #include "data/spectral_container.h"
 
