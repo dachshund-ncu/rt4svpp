@@ -824,7 +824,7 @@ void heat_map_widget::saveEditedSpectra()
     }
     // -- okno do upewniania sie, ze na pewno chcesz --
     QMessageBox::StandardButton upewka;
-    upewka = QMessageBox::question(this, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectras (non - rotated versions will be stored at *noedt.DAT)?"), QMessageBox::Yes| QMessageBox::No);
+    upewka = QMessageBox::question(this, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectra?"), QMessageBox::Yes| QMessageBox::No);
     if (upewka == QMessageBox::No)
     {
         // -- jeśli klikniesz nie, nie pójdzie dalej --

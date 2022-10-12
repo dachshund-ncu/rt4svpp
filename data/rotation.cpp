@@ -92,12 +92,12 @@ void spectral_container::saveModifiedEpochs()
 
         if(!fileTypesTab[epoch-1])
         {
-            makeBackupOfFile(epoch - 1, false);
+            //makeBackupOfFile(epoch - 1, false);
             saveActualTablesToAVR(epoch - 1);
         }
         else
         {
-            makeBackupOfFile(epoch - 1, true);
+            //makeBackupOfFile(epoch - 1, true);
             saveActualTablesToFits(epoch - 1);
         }
 
