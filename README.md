@@ -25,7 +25,12 @@ Also you can just download suitable release and enjoy it. .Deb release is now st
 
 ## Usage ##
 ```bash
-rt4sv++ list_of_files
+rt4sv++ list_of_files [OPTIONS] 
+or 
+rt4sv++ [OPTIONS] 
+OPTIONS: 
+-h, --help      | Display this message 
+-v, --version   | Display version info 
 ```
 where list_of_files contains list of filenames of the .fits files you wish to load. 
 
