@@ -25,7 +25,7 @@ Also you can just download suitable release and enjoy it. .Deb release is now st
 
 ## Usage ##
 ```bash
-  rt4sv++ list_of_files
+rt4sv++ list_of_files
 ```
 where list_of_files contains list of filenames of the .fits files you wish to load. 
 
@@ -41,127 +41,71 @@ rt4sv++ list_of_files
 ## Compilation on Linux systems ##
 
 ### Needed Packages ###
+- g++
+- gfortran
+- QT5:
+  - qt5-default (before Ubuntu 21.04)
+  - qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools (Ubuntu 21.04 and after)
+- [CCFits](https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
+- [cfitsio](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html)
 
-g++
 
-qt5-default
+### How to install required packages? ###
+If you run something, based on Ubuntu LTS, you can use installation script: 
+```bash
+sudo python3 installReqs.py
+```
+Just remember to uncoment proper line for installing qt on yout distro (it can install **qt5-default** or **qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools**)
 
-CCFits and cfitsio libraries (https://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
-
-
-### How to install? ###
-
-If you run something, based on Ubuntu LTS, you can use installation script (sudo python3 installReqs.py)
-
-Or do everything manually:
-
+To install packages manually:
+```bash
+sudo apt install gfortran
 sudo apt install g++
-
+```
+```bash
 sudo apt install qt5-default
+```
+or
+```bash
+sudo apt install qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+```
 
-CCFits and cfitsio should be installed, according to the instructions provided by authors. Make sure, that installation directory is "/usr/local"
 
-< cfitsio >
+**cfitsio**
 * untar the files
 * in the main untared directory run ./configure --prefix=/usr/local/
 * run make
 * run sudo make install
 
 
-< CCfits >
+**CCfits**
 * unter the files
 * in the main untared directory run ./configure
 * run make
 * run make install
 
+## Compilation ##
+Just type
+```bash
+qmake
+make
+make clean
+```
+Output binary is called "rt4sv++".
 
-When ready, just type in main file catalogue "qmake", then "make". Compilation will start. Output binary is called "rt4sv++".
-It is good to type "make clean" after compilation is done.
-
-Sometimes it happens, that compilation is succesful, but the binary won't start - it is due linker being not able to find shared libraries. You can manually add search library to the linker by creating a new .conf file in /etc/ld.so.conf.d directory with one line:
-
-/usr/local
-
-then execude command:
-
-sudo ldconfig
-
-
-it should help
 
 ## Known problems ##
-
-### "My program does not want to compile" ###
-
-Check version of your g++ compiler (type "g++ --version" in command line). If it is not in at least version 8, try to install it (sudo apt install g++-8). Then, change three lines in "Makefile":
-
-
-From:
-
-CC            = gcc  
-
-CXX           = g++
-
-LINK          = g++
-
-
-
-To:
-
-CC            = gcc-8
-
-CXX           = g++-8
-
-LINK          = g++-8
-
-Compilation should run without problems now.
-
-
-### "I use old ubuntu/debian and i can not install g++-8" ###
-
-My advice: update your system. But, if you REALLY have to use it, try this solution:
-
-Install g++-4.8 (sudo apt install g++-4.8)
-
-Change five lines in Makefile:
-
-From:
-
-CC            = gcc  
-
-CXX           = g++
-
-LINK          = g++
-
-CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-
-CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-
-To:
-
-CC            = gcc-4.8
-
-CXX           = g++-4.8
-
-LINK          = g++-4.8
-
-CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -std=c++11 -fPIC $(DEFINES)
-
-CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT -std=c++11 -fPIC $(DEFINES)
-
-type "make"
-
-It should now run on your old system
-
-### I use fedora/red hat/arch/manjaro ###
-
-Just don't use them 
-
-Just joking.
-
-I do not use system-specific libraries and commands inside rt4sv++, so if you compile it for these systems - it should perform fine.
-
-### Will this run on Windows? ###
-
-Working on Windows with this program seems a bit non-natural to me - but since running it does not require terminal window, it can be done - you just need to compile it correctly. Best way is to download qt tools from qt site and use them to compile. Also remember, that you'll probably need to copy some dll files to executable directory to open it outside qtCreator.
-Also there is no point of building windows version, since it is also in the "Release" section now.
+### Compilation succesful, but app won't start ###
+Sometimes it happens, that compilation is succesful, but the binary won't start - it is due linker being not able to find shared libraries. You can manually add search library to the linker by creating a new .conf file in directory:
+```bash
+/etc/ld.so.conf.d 
+```
+This file should have only one line: a catalogue of CCFITS and CFITSIO install. If you followed carefully the steps, described above, it should be:
+```bash
+/usr/local
+```
+After creating this file, execute the command:
+```bash
+sudo ldconfig
+```
+Now the app should start
