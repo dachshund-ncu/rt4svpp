@@ -150,7 +150,27 @@ public:
 
 private:
     // --- additional for reading ---
-    std::string getAllHeaderInformation(CCfits::HDU & table);
+    std::string getAllHeaderInformation
+    (
+            double vlsr,
+            double freq_beg,
+            double freq_end,
+            double freq_rang,
+            double equinox,
+            double nchans,
+            double restfreq,
+            double az,
+            double z,
+            double tsys,
+            double dopp_vsu,
+            double dopp_vob,
+            double dopp_vto,
+            std::string sourcename,
+            std::string isotime,
+            std::string ra,
+            std::string dec,
+            std::string molecule
+            );
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS

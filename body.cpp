@@ -172,6 +172,7 @@ void body::makeActions()
     resetDS->setText("Reset heat map");
     normalize->setText("Normalize heat map");
     cancelNormalize->setText("Cancel normalization");
+    showCV->setText("Show details");
     logScale->setCheckable(true);
     rotate_IVLR->setCheckable(true);
     logScale->setChecked(false);
@@ -197,6 +198,8 @@ void body::makeActions()
     dynSpecM->addSeparator();
     dynSpecM->addAction(normalize);
     dynSpecM->addAction(cancelNormalize);
+    dynSpecM->addSeparator();
+    dynSpecM->addAction(showCV);
     // -----------------------
     exportAllSpectraA->setText("Export all spectra to ASCII");
     displayOnSingleSpecA->setText("Display marked epoch on plot");
@@ -308,6 +311,7 @@ void body::connectActionsInSuperBar()
     QObject::connect(logScale, SIGNAL(triggered()), this, SLOT(setLogScaleForAction()));
     QObject::connect(rotate_IVLR, SIGNAL(triggered()), this, SLOT(setIVLRCheckBox()));
     QObject::connect(resetDS, SIGNAL(triggered()), dynspecWidget, SLOT(resetHeatMap()));
+    QObject::connect(showCV, SIGNAL(triggered()), dynspecWidget->cv, SLOT(show()));
     // -------
     QObject::connect(exportAllSpectraA, SIGNAL(triggered()), ssWidget, SLOT(saveAllSpectraToGnuplotSlot()));
     QObject::connect(displayOnSingleSpecA, SIGNAL(triggered()), ssWidget, SLOT(add()));
