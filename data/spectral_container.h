@@ -149,6 +149,8 @@ public:
     void setNormalizationCoeffs(int startingChan, int endingChan);
 
 private:
+    // --- additional for reading ---
+    std::string getAllHeaderInformation(CCfits::HDU & table);
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS

@@ -646,7 +646,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsys);
     fileTypesTab.push_back(true);
-    AVRHeaders.push_back("");
+    AVRHeaders.push_back(getAllHeaderInformation(file.extension(1)));
     // nazwa źródła
     nameOfSource = sourcename;
 
@@ -1241,4 +1241,12 @@ void spectral_container::setNormalizationCoeffs(int startingChan, int endingChan
     normalizationCoeffsV = averagePolOverVelocity(startingChan, endingChan, spectraTableV);
     normalizationCoeffsLHC = averagePolOverVelocity(startingChan, endingChan, spectraTableLHC);
     normalizationCoeffsRHC = averagePolOverVelocity(startingChan, endingChan, spectraTableRHC);
+}
+
+std::string spectral_container::getAllHeaderInformation(CCfits::HDU & table)
+{
+    /*
+     * Returns the header information as a readable string
+     */
+    return "";
 }
