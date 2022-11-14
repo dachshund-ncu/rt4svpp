@@ -167,7 +167,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -287,7 +286,6 @@ Makefile: ui_class.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.con
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -367,7 +365,6 @@ Makefile: ui_class.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.con
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf:
-.qmake.stash:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf:
@@ -486,6 +483,7 @@ moc_body.cpp: libs/qcustomplot.h \
 		UI/export_dynamic_spectrum_widget.h \
 		UI/calsection.h \
 		UI/heat_map_widget.h \
+		UI/contentviewer.h \
 		UI/single_spec_widget.h \
 		UI/rms_sec_widget.h \
 		UI/varcoefscalcwidget.h \
@@ -502,6 +500,7 @@ moc_qcustomplot.cpp: libs/qcustomplot.h \
 
 moc_heat_map_widget.cpp: libs/qcustomplot.h \
 		data/spectral_container.h \
+		UI/contentviewer.h \
 		UI/heat_map_widget.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
@@ -551,6 +550,7 @@ body.o: body.cpp body.h \
 		UI/export_dynamic_spectrum_widget.h \
 		UI/calsection.h \
 		UI/heat_map_widget.h \
+		UI/contentviewer.h \
 		UI/single_spec_widget.h \
 		UI/rms_sec_widget.h \
 		UI/varcoefscalcwidget.h \
@@ -577,6 +577,7 @@ main.o: main.cpp body.h \
 		UI/export_dynamic_spectrum_widget.h \
 		UI/calsection.h \
 		UI/heat_map_widget.h \
+		UI/contentviewer.h \
 		UI/single_spec_widget.h \
 		UI/rms_sec_widget.h \
 		UI/varcoefscalcwidget.h \
@@ -621,7 +622,8 @@ calsection.o: UI/calsection.cpp UI/calsection.h
 
 heat_map_widget.o: UI/heat_map_widget.cpp UI/heat_map_widget.h \
 		libs/qcustomplot.h \
-		data/spectral_container.h
+		data/spectral_container.h \
+		UI/contentviewer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o heat_map_widget.o UI/heat_map_widget.cpp
 
 single_spec_widget.o: UI/single_spec_widget.cpp UI/single_spec_widget.h \

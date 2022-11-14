@@ -317,6 +317,7 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     tsysTable.push_back(tsystmp);
     fileTypesTab.push_back(false);
     AVRHeaders.push_back(getHeaderFromAVRFile(linesInFile));
+    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq - wst / 2.0, freq + wst / 2.0, wst, 2000, n_chans, freq, az, z, tsystmp, 0.0, 0.0, 0.0, srcname, isotime, "---------", "--------", "--------"));
     // srcname
     nameOfSource = srcname;
 
@@ -647,7 +648,8 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     isotimeTable.push_back(isotime);
     tsysTable.push_back(tsys);
     fileTypesTab.push_back(true);
-    AVRHeaders.push_back(getAllHeaderInformation(vlsr, freq_beg, freq_end, freq_rang, equinox, nchans, restfreq, az, z, tsys, dopp_vsu, dopp_vob, dopp_vto, sourcename, isotime, ra, dec, molecule));
+    AVRHeaders.push_back("");
+    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq_beg, freq_end, freq_rang, equinox, nchans, restfreq, az, z, tsys, dopp_vsu, dopp_vob, dopp_vto, sourcename, isotime, ra, dec, molecule));
     // nazwa źródła
     nameOfSource = sourcename;
 

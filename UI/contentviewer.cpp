@@ -2,8 +2,9 @@
 #include <QString>
 contentViewer::contentViewer(QWidget * parent = NULL)
 {
-    initializeLayout();
     this->setVisible(false);
+    this->setWindowTitle("Obs. properties");
+    initializeLayout();
 }
 
 void contentViewer::initializeLayout()

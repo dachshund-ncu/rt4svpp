@@ -45,6 +45,7 @@ public:
     // - pozostałe kontenery z danymi -
     // nagłówki plików avr
     std::vector < std::string > AVRHeaders; // nagłówki plików AVR (1-D), dla plików fits to będzie wypełnione pustymi stringami
+    std::vector < std::string > obsProtperties;
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
     std::vector < double >  jdTable; // 1D kontener z epokami (jd)

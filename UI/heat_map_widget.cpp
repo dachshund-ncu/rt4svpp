@@ -409,7 +409,7 @@ void heat_map_widget::setMapPressed(unsigned long x, unsigned long y)
     // setujemy do zmiennych globalnych co jest kliknięte
     xIndex = x;
     yIndex = y;
-    cv->setContent(dataTable->AVRHeaders[xIndex]);
+    cv->setContent(dataTable->obsProtperties[xIndex]);
 }
 
 // metody pomocnicze do klikałke
