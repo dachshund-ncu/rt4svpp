@@ -25,7 +25,7 @@ Also you can just download suitable release and enjoy it. .Deb release is now st
 
 ## Usage ##
 ```bash
-rt4sv++ list_of_files [OPTIONS] 
+rt4sv++ list_of_files
 or 
 rt4sv++ [OPTIONS] 
 OPTIONS: 
