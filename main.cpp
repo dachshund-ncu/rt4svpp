@@ -24,9 +24,9 @@ void onHelp()
 {
     std::cout << "-----> RT4SV++ help: " << std::endl;
     std::cout << "-----> Usage: " << std::endl;
-    std::cout << "       rt4sv++ list_of_files [OPTIONS] " << std::endl;
+    std::cout << "       rt4sv++ list_of_files" << std::endl;
     std::cout << "       or " << std::endl;
-    std::cout << "       rt4sv++ [OPTIONS] " << std::endl;
+    std::cout << "       rt4sv++ [OPTIONS]" << std::endl;
     std::cout << "       OPTIONS: " << std::endl;
     std::cout << "       -h, --help      | Display this message " << std::endl;
     std::cout << "       -v, --version   | Display version info " << std::endl;
