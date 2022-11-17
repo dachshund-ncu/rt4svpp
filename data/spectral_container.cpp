@@ -186,7 +186,15 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     // -----------------------
 
     // ------ RA i DEC -------
-    // nie zbieramy na razie informacji o RA i DEC
+    eeeel.clear();
+    eeeel.str(linesInFile[1]);
+    std::vector < double > raDec;
+    while(eeeel >> bufor_double)
+    {
+        raDec.push_back(bufor_double);
+    }
+    std::string raStr = constructRASTR(raDec[0], raDec[1], raDec[2]);
+    std::string decStr = constructDECSTR(raDec[3], raDec[4], raDec[5]);
     // -----------------------
 
     // -- restfreq, vlsr i nazwa źródła --
@@ -317,6 +325,7 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     tsysTable.push_back(tsystmp);
     fileTypesTab.push_back(false);
     AVRHeaders.push_back(getHeaderFromAVRFile(linesInFile));
+    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq - wst / 2.0, freq + wst / 2.0, wst, 2000, n_chans, freq, az, z, tsystmp, 0.0, 0.0, 0.0, srcname, isotime, raStr, decStr, "--------"));
     // srcname
     nameOfSource = srcname;
 
@@ -332,7 +341,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     double vlsr, freq_beg, freq_mid, freq_end, freq_rang, equinox, nchans, restfreq, el, az, z, tsys1, tsys2, dopp_vsu, dopp_vob, dopp_vto;
     //double year, month, day, hour, min,sec;
     std::string zstr, tsysstr, vlsr_str, freq_beg_str, freq_mid_str, freq_end_str, freq_rang_str, equinox_str, nchans_str, restfreq_str, el_str, az_str, z_str, tsys1_str, tsys2_str, dopp_vsu_str, dopp_vob_str, dopp_vto_str;
-    std::string sourcename, isotime, ra, dec;
+    std::string sourcename, isotime, ra, dec, molecule;
 
     // Czytamy plik fits
     CCfits::ExtHDU & table = file.extension(1);
@@ -509,6 +518,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     table.readKey("DATE-OBS", isotime);
     table.readKey("SRC_RA", ra);
     table.readKey("SRC_DEC", dec);
+    table.readKey("MOLECULE", molecule);
 
     // -- obliczamy kilka rzeczy --
     // elewacja
@@ -647,6 +657,7 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
     tsysTable.push_back(tsys);
     fileTypesTab.push_back(true);
     AVRHeaders.push_back("");
+    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq_beg, freq_end, freq_rang, equinox, nchans, restfreq, az, z, tsys, dopp_vsu, dopp_vob, dopp_vto, sourcename, isotime, ra, dec, molecule));
     // nazwa źródła
     nameOfSource = sourcename;
 
@@ -1241,4 +1252,74 @@ void spectral_container::setNormalizationCoeffs(int startingChan, int endingChan
     normalizationCoeffsV = averagePolOverVelocity(startingChan, endingChan, spectraTableV);
     normalizationCoeffsLHC = averagePolOverVelocity(startingChan, endingChan, spectraTableLHC);
     normalizationCoeffsRHC = averagePolOverVelocity(startingChan, endingChan, spectraTableRHC);
+}
+
+std::string spectral_container::getAllHeaderInformation(double vlsr, double freq_beg, double freq_end, double freq_rang, double equinox, double nchans, double restfreq, double az, double z, double tsys, double dopp_vsu, double dopp_vob, double dopp_vto, std::string sourcename, std::string isotime, std::string ra, std::string dec, std::string molecule)
+{
+    /*
+     * Returns a string, that represents a header of the FITS file
+     */
+    std::string returnedStr = "";
+    returnedStr += "OBJECT = " + sourcename + "\n";
+    returnedStr += "EQUINOX = " + std::to_string(equinox) + "\n";
+    returnedStr += "SRC_RA = " + ra + "\n";
+    returnedStr += "SRC_DEC = " + dec + "\n";
+    returnedStr += "DATE-OBS = " + isotime + "\n";
+    returnedStr += "FREQ = " + std::to_string(restfreq) + "\n";
+    returnedStr += "FRQ_BEG = " + std::to_string(freq_beg) + "\n";
+    returnedStr += "FRQ_END = " + std::to_string(freq_end) + "\n";
+    returnedStr += "FRQ_RANG = " + std::to_string(freq_rang) + "\n";
+    returnedStr += "VSYS = " + std::to_string(vlsr) + "\n";
+    returnedStr += "DOPP_VSU = " + std::to_string(dopp_vsu) + "\n";
+    returnedStr += "DOPP_VOB = " + std::to_string(dopp_vob) + "\n";
+    returnedStr += "DOPP_VTO = " + std::to_string(dopp_vto) + "\n";
+    returnedStr += "MOLECULE = " + molecule + "\n";
+    returnedStr += "AZ = " + std::to_string(az) + "\n";
+    returnedStr += "Z = " + std::to_string(z) + "\n";
+    returnedStr += "TSYS = " + std::to_string(tsys) + "\n";
+    return returnedStr;
+}
+
+std::string spectral_container::makeProperFormatNumber(double number)
+{
+    std::string returnedStr = "";
+    if( number < 10 )
+    {
+        returnedStr += "0";
+        returnedStr += std::to_string((int)number);
+    }
+    else
+    {
+        returnedStr += std::to_string((int)number);
+    }
+    return returnedStr;
+}
+
+std::string spectral_container::constructRASTR(double rah, double ram, double ras)
+{
+    std::string returnedStr = "";
+    returnedStr += makeProperFormatNumber(rah);
+    returnedStr += "h";
+    returnedStr += makeProperFormatNumber(ram);
+    returnedStr += "m";
+    returnedStr += makeProperFormatNumber(ras);
+    returnedStr += "s";
+    return returnedStr;
+}
+
+std::string spectral_container::constructDECSTR(double decd, double decm, double decs)
+{
+    std::string returnedStr = "";
+    if(decd < 0)
+    {
+        decd *= -1;
+        returnedStr += "-";
+    }
+    returnedStr += makeProperFormatNumber(decd);
+    returnedStr += "d";
+    returnedStr += makeProperFormatNumber(decm);
+    returnedStr += "m";
+    returnedStr += makeProperFormatNumber(decs);
+    returnedStr += "s";
+    return returnedStr;
 }

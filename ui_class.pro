@@ -29,7 +29,8 @@ SOURCES += \
     UI/single_spec_widget.cpp \
     UI/rms_sec_widget.cpp \
     UI/rms_selector.cpp \
-    data/extractlcs.cpp
+    data/extractlcs.cpp \
+    UI/contentviewer.cpp
 
 HEADERS += \
     UI/varcoefscalcwidget.h \
@@ -43,7 +44,8 @@ HEADERS += \
     UI/heat_map_widget.h \
     UI/single_spec_widget.h \
     UI/rms_sec_widget.h \
-    UI/rms_selector.h
+    UI/rms_selector.h \
+    UI/contentviewer.h
 
 RESOURCES += \
     resources.qrc

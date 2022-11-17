@@ -45,6 +45,7 @@ public:
     // - pozostałe kontenery z danymi -
     // nagłówki plików avr
     std::vector < std::string > AVRHeaders; // nagłówki plików AVR (1-D), dla plików fits to będzie wypełnione pustymi stringami
+    std::vector < std::string > obsProtperties;
     // czas
     std::vector < double >  mjdTable; // 1D kontener z epokami (mjd)
     std::vector < double >  jdTable; // 1D kontener z epokami (jd)
@@ -149,6 +150,31 @@ public:
     void setNormalizationCoeffs(int startingChan, int endingChan);
 
 private:
+    // --- additional for reading ---
+    std::string getAllHeaderInformation
+    (
+            double vlsr,
+            double freq_beg,
+            double freq_end,
+            double freq_rang,
+            double equinox,
+            double nchans,
+            double restfreq,
+            double az,
+            double z,
+            double tsys,
+            double dopp_vsu,
+            double dopp_vob,
+            double dopp_vto,
+            std::string sourcename,
+            std::string isotime,
+            std::string ra,
+            std::string dec,
+            std::string molecule
+            );
+    std::string constructRASTR(double rah, double ram, double ras);
+    std::string constructDECSTR(double decd, double decm, double decs);
+    std::string makeProperFormatNumber(double number);
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS

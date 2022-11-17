@@ -9,6 +9,7 @@
 #include <iostream>
 #include "libs/qcustomplot.h"
 #include "data/spectral_container.h"
+#include "UI/contentviewer.h"
 // -- definiujemy klasę, która będzie używana późneij --
 
 class heat_map_widget : public QWidget
@@ -106,6 +107,9 @@ public:
     // -- inne --
     bool firstPlotDone = false;
     bool normalizationB = false;
+
+    // -- custom widgets --
+    contentViewer * cv = new contentViewer(this);
 
 public:
     void darthMode(bool enabled = false);

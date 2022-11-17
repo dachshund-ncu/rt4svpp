@@ -128,6 +128,7 @@ public:
     QAction * resetDS = new QAction(dynSpecM);
     QAction * normalize = new QAction(dynSpecM);
     QAction * cancelNormalize = new QAction(dynSpecM);
+    QAction * showCV = new QAction(dynSpecM);
     // SINGLE SPECTRUM
     QAction * exportAllSpectraA = new QAction(singSpecM);
     QAction * displayOnSingleSpecA = new QAction(singSpecM);
