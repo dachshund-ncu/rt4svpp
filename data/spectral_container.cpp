@@ -186,7 +186,15 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     // -----------------------
 
     // ------ RA i DEC -------
-    // nie zbieramy na razie informacji o RA i DEC
+    eeeel.clear();
+    eeeel.str(linesInFile[1]);
+    std::vector < double > raDec;
+    while(eeeel >> bufor_double)
+    {
+        raDec.push_back(bufor_double);
+    }
+    std::string raStr = constructRASTR(raDec[0], raDec[1], raDec[2]);
+    std::string decStr = constructDECSTR(raDec[3], raDec[4], raDec[5]);
     // -----------------------
 
     // -- restfreq, vlsr i nazwa źródła --
@@ -317,7 +325,7 @@ void spectral_container::loadSingleSpectrum(std::ifstream &file, int index_of_fi
     tsysTable.push_back(tsystmp);
     fileTypesTab.push_back(false);
     AVRHeaders.push_back(getHeaderFromAVRFile(linesInFile));
-    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq - wst / 2.0, freq + wst / 2.0, wst, 2000, n_chans, freq, az, z, tsystmp, 0.0, 0.0, 0.0, srcname, isotime, "---------", "--------", "--------"));
+    obsProtperties.push_back(getAllHeaderInformation(vlsr, freq - wst / 2.0, freq + wst / 2.0, wst, 2000, n_chans, freq, az, z, tsystmp, 0.0, 0.0, 0.0, srcname, isotime, raStr, decStr, "--------"));
     // srcname
     nameOfSource = srcname;
 
@@ -1269,5 +1277,49 @@ std::string spectral_container::getAllHeaderInformation(double vlsr, double freq
     returnedStr += "AZ = " + std::to_string(az) + "\n";
     returnedStr += "Z = " + std::to_string(z) + "\n";
     returnedStr += "TSYS = " + std::to_string(tsys) + "\n";
+    return returnedStr;
+}
+
+std::string spectral_container::makeProperFormatNumber(double number)
+{
+    std::string returnedStr = "";
+    if( number < 10 )
+    {
+        returnedStr += "0";
+        returnedStr += std::to_string((int)number);
+    }
+    else
+    {
+        returnedStr += std::to_string((int)number);
+    }
+    return returnedStr;
+}
+
+std::string spectral_container::constructRASTR(double rah, double ram, double ras)
+{
+    std::string returnedStr = "";
+    returnedStr += makeProperFormatNumber(rah);
+    returnedStr += "h";
+    returnedStr += makeProperFormatNumber(ram);
+    returnedStr += "m";
+    returnedStr += makeProperFormatNumber(ras);
+    returnedStr += "s";
+    return returnedStr;
+}
+
+std::string spectral_container::constructDECSTR(double decd, double decm, double decs)
+{
+    std::string returnedStr = "";
+    if(decd < 0)
+    {
+        decd *= -1;
+        returnedStr += "-";
+    }
+    returnedStr += makeProperFormatNumber(decd);
+    returnedStr += "d";
+    returnedStr += makeProperFormatNumber(decm);
+    returnedStr += "m";
+    returnedStr += makeProperFormatNumber(decs);
+    returnedStr += "s";
     return returnedStr;
 }

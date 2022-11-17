@@ -172,6 +172,9 @@ private:
             std::string dec,
             std::string molecule
             );
+    std::string constructRASTR(double rah, double ram, double ras);
+    std::string constructDECSTR(double decd, double decm, double decs);
+    std::string makeProperFormatNumber(double number);
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS
