@@ -282,6 +282,22 @@ void heat_map_widget::managePlottables()
     rectangle->setPen(pen);
     // ---------------
 
+    // -- optimalizations --
+    heatMapPlot->setNoAntialiasingOnDrag(true);
+    heatMapPlot->setNotAntialiasedElement(QCP::aeAll);
+    heatMapPlot->setPlottingHints(QCP::phFastPolylines);
+
+    spectrumPlot->setNoAntialiasingOnDrag(true);
+    spectrumPlot->setNotAntialiasedElement(QCP::aeAll);
+    spectrumPlot->setPlottingHints(QCP::phFastPolylines);
+
+    lcsPlot->setNoAntialiasingOnDrag(true);
+    lcsPlot->setNotAntialiasedElement(QCP::aeAll);
+    lcsPlot->setPlottingHints(QCP::phFastPolylines);
+
+    colorbarWidget->setNoAntialiasingOnDrag(true);
+    colorbarWidget->setNotAntialiasedElement(QCP::aeAll);
+    colorbarWidget->setPlottingHints(QCP::phFastPolylines);
 }
 
 void heat_map_widget::setLabelTexts()
@@ -319,8 +335,9 @@ void heat_map_widget::connectForAxis()
     connect(lcsPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), lcsPlot->yAxis2, SLOT(setRange(QCPRange)));
     // colorbar
     connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMap, SLOT(setDataRange(QCPRange)));
-    connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMapPlot, SLOT(replot()));
-
+    //connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), heatMapPlot, SLOT(replot()));
+    //heatMapPlot->layer(QString::fromStdString("pixmap"))->replot()
+    connect(colorbar, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(replotPixLayer()));
     // klikałke
     QObject::connect(heatMapPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(pressMap(QMouseEvent*)) );
 
@@ -992,7 +1009,7 @@ void heat_map_widget::setDarkMode()
 {
     // -- odpowiednie długopisy --
     QPen dataPen(QColor(135,206,250));
-    dataPen.setWidth(2);
+    dataPen.setWidth(1);
     QPen errorPen(QColor(128,128,128));
     QPen dotPen(Qt::magenta);
     // -- kolorujemy wykresy --
@@ -1007,7 +1024,7 @@ void heat_map_widget::setLightMode()
 {
     // -- odpowiednie długopisy --
     QPen dataPen(QColor(0,0,255)); // graph
-    dataPen.setWidth(2);
+    dataPen.setWidth(1);
     QPen errorPen(QColor(105,105,105)); // errorbary
     QPen dotPen(QColor(182,26,26));
     // -- kolorujemy wykresy --
@@ -1088,4 +1105,12 @@ void heat_map_widget::prevChan()
         yIndex--;
     }
     setMapPressed(xIndex, yIndex);
+}
+
+void heat_map_widget::replotPixLayer()
+{
+    /*
+     * Simply replots the pixmap layer of the heat map widget
+     */
+    heatMapPlot->layer(QString::fromStdString("pixmap"))->replot();
 }

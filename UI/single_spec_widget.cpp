@@ -129,7 +129,7 @@ void single_spec_widget::addSpectrumToPlot(int epochNo)
     // -- kolor (losowy xD) --
     QPen pen;
     pen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-    pen.setWidth(2);
+    pen.setWidth(1);
     SingleSpectrumWidget->graph(epochsPlotted.size())->setPen(pen);
     // -- reskalujemy --
     if (epochsPlotted.size() == 0)

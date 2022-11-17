@@ -118,6 +118,7 @@ public:
 
 public slots:
     void resetHeatMap();
+    void replotPixLayer();
 
 public slots:
     void updateHeatMap();
