@@ -551,34 +551,6 @@ void spectral_container::loadSingleSpectrum(CCfits::FITS & file, int index_of_fi
         rhc[(int) nchans - 1 - i] = 0.0;
     }
 
-    /*
-    // -- deklarujemy tablice z częstotliwościami i prędkościami --
-    std::vector < double > freqs((int) nchans), vels((int) nchans);
-    // -- krok częstotliwości --
-    double freq_step = freq_rang / nchans;
-    // prędkość światła
-    double c = 299792.458;
-
-    // DOPPLER TRACKING
-    // całkowita prędkość w kierunku źródła
-
-    // beta
-    double beta = overall_velocity / c;
-    // gamma
-    double gamma = 1.0 / sqrt(1.0 - beta * beta);
-    // fcentr
-    double fcentr = restfreq * (gamma * (1.0 - beta));
-    // fbeg
-    freq_beg = fcentr - (freq_rang / 2.0);
-    // ----------------
-
-    // -- generujemy tablice prędkości --
-    for (int i = 0; i < nchans; i++)
-    {
-        freqs[i] = (freq_beg + i*freq_step);
-        vels[i] = - c * ( (freqs[i] / restfreq) - 1.0);
-    }
-    */
     double overall_velocity = vlsr + dopp_vto;
     std::vector < std::vector < double > > freqsAndVels;
     freqsAndVels = doppler_track(overall_velocity, restfreq, freq_rang, nchans);
@@ -706,6 +678,7 @@ void spectral_container::bubbleSortEpochs()
                 swapD(AVRHeaders, i, j);
                 swapD(isotimeTable, i, j);
                 swapD(fileNamesTab, i, j);
+                swapD(obsProtperties, i, j);
 
                 // -- 2-D containers --
                 swapD(spectraTableI, i, j);
