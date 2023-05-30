@@ -13,10 +13,28 @@ This tool is designed for NCU Institute of Astronomy employees and students - if
 
 ## Obtaining ##
 Best way to enjoy this app is to download it from repository:
+
+### using CURL
 ```bash
 curl -SsL https://dachshund-ncu.github.io/rt4svpp_ppa/dists/stable/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/rt4svpp-keyring.gpg
+```
+```bash
 sudo curl -SsL -o /etc/apt/sources.list.d/rt4svpp.list https://dachshund-ncu.github.io/rt4svpp_ppa/rt4svpp.list
+```
+
+### using WGET
+```bash
+wget -q https://dachshund-ncu.github.io/rt4svpp_ppa/dists/stable/KEY.gpg -O- | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/rt4svpp-keyring.gpg
+```
+```bash
+sudo wget https://dachshund-ncu.github.io/rt4svpp_ppa/rt4svpp.list -O /etc/apt/sources.list.d/rt4svpp.list
+```
+
+### Then type
+```bash
 sudo apt update
+```
+```bash
 sudo apt install rt4svpp
 ```
 
