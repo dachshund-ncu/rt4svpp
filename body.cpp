@@ -21,8 +21,9 @@
 using namespace std;
 using namespace CCfits;
 // -- konstruktor klasy programu --
-body::body(const char * nazwa)
+body::body(QWidget *parent, const char * nazwa)
 {
+    customizeApperance();
     Q_INIT_RESOURCE(resources);
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
@@ -84,7 +85,80 @@ body::body(const char * nazwa)
     set_dark_mode(true);
     // -- pokazujemy okno --
     window.setVisible(true);
-    window.show();
+    this->show();
+}
+
+void body::customizeApperance()
+{
+    /*
+     * Aims to customize apperance of the main window of the app
+     */
+    QString styleSheet_widget = R"(
+        QWidget {
+            background-color: #121212;
+            border-radius: 4px; /* border radius */
+        }
+    )";
+    QString styleSheet_mw = R"(
+        QWidget {
+            background-color: #121212;
+            border-radius: 4px; /* border radius */
+        }
+    )";
+    QString menuSS = R"(
+        QMenuBar {
+            background-color: transparent;
+        }
+        QMenuBar::item {
+            background-color: transparent;
+            padding: 8px; /* padding */
+            border-radius: 4px; /* border radius */
+        }
+        QMenuBar::item:selected {
+            background-color: rgba(255,255,255,45);
+        }
+        QMenu {
+            background-color: transparent;
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 12px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+        QAction{
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+        QMenu::item {
+            padding: 8px 12px;
+            border-radius: 4px; /* border radius */
+        }
+        QMenu::item:selected {
+            background-color: rgba(255,255,255,45);
+        }
+        QMenu::item:checked {
+            background-color: #E91E63;
+        }
+    )";
+
+
+    this->setCentralWidget(&window);
+    this->window.setStyleSheet(styleSheet_widget);
+    this->setStyleSheet(styleSheet_mw);
+
+    superMegaMenuBar->setStyleSheet(menuSS);
+    filesM->setStyleSheet(menuSS);
+    advancedM->setStyleSheet(menuSS);
+    dynSpecM->setStyleSheet(menuSS);
+    singSpecM->setStyleSheet(menuSS);
+    rmsSecM->setStyleSheet(menuSS);
+
+
 }
 
 void body::setCheckedProperButtons()
@@ -724,13 +798,14 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
 void body::load_time_series_AVR()
 {
-    QFileDialog dialog(&window,tr("Select AVR files"), tr(""), tr("AVR files (*AVR.DAT);;All Files (*);;FITS files(*fits)"));
+    QFileDialog dialog(nullptr, tr("Select AVR files"), tr(""), tr("AVR files (*AVR.DAT);;All Files (*);;FITS files(*fits)"));
     loadTimeSeriesWrapper(&dialog);
 }
 
 void body::load_time_series_FITS()
 {
-    QFileDialog dialog(&window,tr("Select FITS files"), tr(""), tr("FITS files(*fits);;All Files (*);;AVR files (*AVR.DAT)"));
+    QFileDialog dialog(nullptr, tr("Select FITS files"), tr(""), tr("FITS files(*fits);;All Files (*);;AVR files (*AVR.DAT)"));
+//    dialog.setObjectName("loadFitsFiles");
     loadTimeSeriesWrapper(&dialog);
 }
 

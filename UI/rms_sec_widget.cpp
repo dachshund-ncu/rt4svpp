@@ -13,6 +13,49 @@ Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
     setUpPopupWindow();
 }
 
+void Rms_sec_widget::customizeApperance()
+{
+    /*
+     * Customizes apperance of this widget
+     */
+    QString toolBarSS = R"(
+        QWidget {
+            background-color: transparent;
+        }
+        QLabel {
+            background-color: transparent;
+        }
+        QToolButton {
+            background-color: transparent; /* background color */
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+
+        QToolButton:hover {
+            background-color: rgba(255,255,255,45);
+        }
+        QToolButton:pressed {
+            background-color: rgba(255,255,255,120);
+        }
+        QToolButton:checked {
+            background-color: rgba(255,255,255,120);
+        }
+        QToolTip {
+            background-color: #141414;
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+    )";
+//    this->plotSettings->setStyleSheet(toolBarSS);
+}
 void Rms_sec_widget::setUpButtons()
 {
     // -- rozmiary --

@@ -74,14 +74,14 @@ int main(int argc, char *argv[])
             }
             else // everything else
             {
-                body * okno = new body(arg.c_str());
+                body * okno = new body(nullptr, arg.c_str());
                 break;
             }
         }
     }
     else
     {
-        body * okno = new body("");
+        body * okno = new body(nullptr, "");
     }
     return program.exec();
 }

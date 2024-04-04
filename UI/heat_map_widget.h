@@ -10,9 +10,10 @@
 #include "libs/qcustomplot.h"
 #include "data/spectral_container.h"
 #include "UI/contentviewer.h"
+#include "UI/custom_ui_elements.h"
 // -- definiujemy klasę, która będzie używana późneij --
 
-class heat_map_widget : public QWidget
+class heat_map_widget : public customWidget
 {
     Q_OBJECT
 
@@ -21,7 +22,7 @@ public:
     spectral_container * dataTable = new spectral_container;
     QCheckBox * isotime = new QCheckBox();
     // konstruktor
-    heat_map_widget(spectral_container * dataTable, QCheckBox * isotime);
+    explicit heat_map_widget(spectral_container * dataTable, QCheckBox * isotime);
 
     // główne miejsca
     // grid
@@ -181,6 +182,7 @@ private:
     void colorGraphs(QPen dataPen, QPen errorPen, QPen dotPen);
     void colorCanvas(QPen background, QPen spines);
     void colorSpines(QCustomPlot * plot, QPen pendulum);
+    void customizeApperance();
 
 };
 

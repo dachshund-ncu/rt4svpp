@@ -8,8 +8,9 @@
 #include <QWidget>
 #include "libs/qcustomplot.h"
 #include "data/spectral_container.h"
+#include "UI/custom_ui_elements.h"
 
-class Rms_sec_widget : public QWidget
+class Rms_sec_widget : public customWidget
 {
     Q_OBJECT
 public:
@@ -103,6 +104,7 @@ private:
     void fillPopupWindowWithData(int index);
     void setLabelOnPopupWindow(int index);
     void clearGraphSelections();
+    void customizeApperance();
 
 private slots:
     void changeInteractions();

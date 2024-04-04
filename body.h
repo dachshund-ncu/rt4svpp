@@ -25,15 +25,16 @@
 #include "UI/rms_sec_widget.h"
 #include "UI/varcoefscalcwidget.h"
 #include "UI/rms_selector.h"
+#include "UI/custom_ui_elements.h"
 using namespace std;
 
-class body : public QObject
+class body : public QMainWindow
 {
 
     Q_OBJECT
 
 public:
-    body(const char * nazwa);
+    body(QWidget *parent = nullptr, const char * nazwa = "");
 
     // NEW STUFF
     // ------------------------------
@@ -61,7 +62,7 @@ public:
     // END OF NEW STUFF
 
     // -- deklarujemy obiekty w programie  --
-    QWidget window; // okno
+    customWidget window; // okno
     QGridLayout * grid = new QGridLayout(&window); // siatka
     // --------------------------------------
 
@@ -238,6 +239,7 @@ public:
 private:
     bool checkIfFits(const char * filename);
     void setCheckedProperButtons();
+    void customizeApperance();
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --

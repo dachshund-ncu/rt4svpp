@@ -4,6 +4,7 @@
 // -- od razu ustala wskaźnik na kontener z danymi --
 heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * isotime)
 {
+
     this->setVisible(false);
     this->dataTable = dataTable;
     this->isotime = isotime;
@@ -14,7 +15,71 @@ heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * iso
     setLabelTexts();
     connectForAxis();
     setDownPolButtons();
+    customizeApperance();
     //this->setGeometry(200,200, 1366, 720);
+}
+
+void heat_map_widget::customizeApperance()
+{
+//    setAutoFillBackground(false);
+//    setAttribute(Qt::WA_StyledBackground);
+//    QString styleSheet = R"(
+//        background-color: rgba(255,255,255, 9);
+//        heat_map_widget {
+//            background-color: rgba(255,255,255, 9);
+//        }
+//        QWidget {
+//            background-color: transparent;
+//            border-radius: 4px; /* border radius */
+//        }
+//        QLabel {
+//            background-color: transparent;
+//        }
+//    )";
+//    setStyleSheet(styleSheet);
+        QString toolBarSS = R"(
+            QWidget {
+                background-color: transparent;
+            }
+            QLabel {
+                background-color: transparent;
+                color: white; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QToolButton {
+                background-color: transparent; /* background color */
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QToolButton:hover {
+                background-color: rgba(255,255,255,45);
+            }
+            QToolButton:pressed {
+                background-color: rgba(255,255,255,120);
+            }
+            QToolButton:checked {
+                background-color: rgba(255,255,255,120);
+            }
+            QToolTip {
+                background-color: #141414;
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+        )";
+        this->bottomToolBar->setStyleSheet(toolBarSS);
+        this->leftLabel->setStyleSheet(toolBarSS);
+        this->rightLabel->setStyleSheet(toolBarSS);
 }
 
 void heat_map_widget::setButtonsProperties()

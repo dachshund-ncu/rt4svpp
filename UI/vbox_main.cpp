@@ -4,6 +4,45 @@
 vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 {
     this->setOrientation(Qt::Vertical);
+    QString styleSheet = R"(
+
+        QWidget {
+            margin-left: 0px;
+            background-color: rgba(255,255,255,45);
+            border-radius: 8px; /* border radius */
+        }
+        QToolButton {
+            background-color: transparent; /* background color */
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 8px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+
+        QToolButton:hover {
+            background-color: rgba(255,255,255,45);
+        }
+        QToolButton:pressed {
+            background-color: rgba(255,255,255,120);
+        }
+        QToolButton:checked {
+            background-color: rgba(255,255,255,120);
+        }
+        QToolTip {
+            background-color: #141414;
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+    )";
+
+    this->setStyleSheet(styleSheet);
+
     QSize *sz = new QSize(40,40);
     this->setIconSize(*sz);
     makeProperSizeForButtons();

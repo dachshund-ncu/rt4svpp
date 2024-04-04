@@ -16,8 +16,8 @@
 #include <QListWidgetItem>
 #include <vector>
 #include <string>
-
-class single_spec_widget : public QWidget
+#include "UI/custom_ui_elements.h"
+class single_spec_widget : public customWidget
 {
     Q_OBJECT
 public:
