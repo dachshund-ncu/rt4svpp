@@ -9,7 +9,7 @@ public:
         setAttribute(Qt::WA_StyledBackground);
         QString styleSheet = R"(
             QWidget {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
                 border-radius: 8px; /* border radius */
             }
             QPushButton {
@@ -23,13 +23,13 @@ public:
             }
 
             QPushButton:hover {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
             }
             QPushButton:pressed {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QPushButton:checked {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QToolButton {
                 background-color: transparent; /* background color */
@@ -42,13 +42,13 @@ public:
             }
 
             QToolButton:hover {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
             }
             QToolButton:pressed {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QToolButton:checked {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QToolTip {
                 background-color: #141414;
@@ -60,7 +60,7 @@ public:
                 font-family: silka;
             }
             QTextEdit {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
                 color: white; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
@@ -96,25 +96,25 @@ public:
                 color: white; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
-                border-radius: 4px; /* border radius */
+                border-radius: 8px; /* border radius */
                 text-align: left;
                 font-family: silka;
                 padding: 8px 12px;
                 min-width: 100px;
             }
             QTabBar::tab:selected {
-                background-color: rgba(255,255,255,45);
+                background-color: #C2185B;
                 color: white; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
-                border-radius: 4px; /* border radius */
+                border-radius: 8px; /* border radius */
                 text-align: left;
                 font-family: silka;
                 padding: 8px 12px;
                 min-width: 100px;
             }
             QListWidget {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
             }
             QListWidget::item {
                 background-color: transparent;
@@ -126,10 +126,10 @@ public:
                 border-radius: 4px; /* border radius */
             }
             QListWidget::item:hover {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
             }
             QListWidget::item:selected {
-                background-color: #E91E63;
+                background-color: #C2185B;
             }
         )";
         this->setStyleSheet(styleSheet);

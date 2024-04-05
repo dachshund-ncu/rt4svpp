@@ -142,7 +142,7 @@ void body::customizeApperance()
             background-color: rgba(255,255,255,45);
         }
         QMenu::item:checked {
-            background-color: #E91E63;
+            background-color: #C2185B;
         }
     )";
 

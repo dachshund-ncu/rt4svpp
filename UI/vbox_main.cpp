@@ -8,7 +8,7 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 
         QWidget {
             margin-left: 0px;
-            background-color: rgba(255,255,255,45);
+            background-color: rgba(255,255,255,9%);
             border-radius: 8px; /* border radius */
         }
         QToolButton {
@@ -22,13 +22,13 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
         }
 
         QToolButton:hover {
-            background-color: rgba(255,255,255,45);
+            background-color: rgba(255,255,255,9%);
         }
         QToolButton:pressed {
-            background-color: rgba(255,255,255,120);
+            background-color: rgba(255,255,255,18%);
         }
         QToolButton:checked {
-            background-color: rgba(255,255,255,120);
+            background-color: rgba(255,255,255,18%);
         }
         QToolTip {
             background-color: #141414;
