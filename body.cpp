@@ -115,7 +115,7 @@ void body::customizeApperance()
             border-radius: 4px; /* border radius */
         }
         QMenuBar::item:selected {
-            background-color: rgba(255,255,255,45);
+            background-color: rgba(255,255,255,9%);
         }
         QMenu {
             background-color: transparent;
@@ -139,7 +139,7 @@ void body::customizeApperance()
             border-radius: 4px; /* border radius */
         }
         QMenu::item:selected {
-            background-color: rgba(255,255,255,45);
+            background-color: rgba(255,255,255,9%);
         }
         QMenu::item:checked {
             background-color: #C2185B;

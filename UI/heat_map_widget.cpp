@@ -59,13 +59,13 @@ void heat_map_widget::customizeApperance()
             }
 
             QToolButton:hover {
-                background-color: rgba(255,255,255,45);
+                background-color: rgba(255,255,255,9%);
             }
             QToolButton:pressed {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QToolButton:checked {
-                background-color: rgba(255,255,255,120);
+                background-color: rgba(255,255,255,18%);
             }
             QToolTip {
                 background-color: #141414;

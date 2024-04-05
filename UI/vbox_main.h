@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QtGui>
 #include <QSize>
-
+#include "UI/custom_ui_elements.h"
 class vbox_mainw : public QToolBar
 {
 public:
@@ -30,11 +30,13 @@ public:
     QAction * SingleSpectrum = new QAction(this);
     QAction * RMSSection = new QAction(this);
     // -- pomniejsze sekcje --
-    QAction * Integrate = new QAction(this);
-    QAction * AverOverVelocity = new QAction(this);
-    QAction * AverOverTime = new QAction(this);
-    QAction * SpectralIndex = new QAction(this);
-    QAction * ExportDynamicSpectrum = new QAction(this);
+    spacer * spacer1 = new spacer();
+    spacer * spacer2 = new spacer();
+//    QAction * Integrate = new QAction(this);
+//    QAction * AverOverVelocity = new QAction(this);
+//    QAction * AverOverTime = new QAction(this);
+//    QAction * SpectralIndex = new QAction(this);
+//    QAction * ExportDynamicSpectrum = new QAction(this);
     // -- dół --
     QAction * Quit = new QAction(this);
 

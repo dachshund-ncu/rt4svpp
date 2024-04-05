@@ -2,6 +2,8 @@
 #define CUSTOM_UI_ELEMENTS_H
 
 #include <QWidget>
+#include <QSizePolicy>
+
 class customWidget : public QWidget
 {
 public:
@@ -133,6 +135,22 @@ public:
             }
         )";
         this->setStyleSheet(styleSheet);
+    }
+};
+
+
+
+class spacer : public QWidget {
+public:
+    spacer() {
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QString styleSheet = R"(
+            QWidget {
+                background-color: transparent;
+                border-radius: 8px; /* border radius */
+            }
+        )";
+        setStyleSheet(styleSheet);
     }
 };
 

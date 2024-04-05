@@ -135,37 +135,37 @@ void vbox_mainw::makeProperLabelsForButtons()
 //    RMSSection->setMaximumSize(butSizeX,butSizeY);
     //RMSSection->setFlat(true);
     // --
-    Integrate->setToolTip("Integrate time series");
+//    Integrate->setToolTip("Integrate time series");
     //Integrate->setText("Integrate time series");
-    Integrate->setIcon(QIcon(":/images/integrateIcon.svg"));
+//    Integrate->setIcon(QIcon(":/images/integrateIcon.svg"));
 //    Integrate->setIconSize(QSize(butSizeX,butSizeY));
 //    Integrate->setMaximumSize(butSizeX,butSizeY);
     //Integrate->setFlat(true);
     // --
-    AverOverVelocity->setToolTip("Average time series over velocity");
+//    AverOverVelocity->setToolTip("Average time series over velocity");
     //AverOverVelocity->setText("Aver over velocity");
-    AverOverVelocity->setIcon(QIcon(":/images/averOverVelIcon.svg"));
+//    AverOverVelocity->setIcon(QIcon(":/images/averOverVelIcon.svg"));
 //    AverOverVelocity->setIconSize(QSize(butSizeX,butSizeY));
 //    AverOverVelocity->setMaximumSize(butSizeX,butSizeY);
     //AverOverVelocity->setFlat(true);
     // --
-    AverOverTime->setToolTip("Average velocity series over time");
+//    AverOverTime->setToolTip("Average velocity series over time");
     //AverOverTime->setText("Aver over time");
-    AverOverTime->setIcon(QIcon(":/images/averOverTimeIcon.svg"));
+//    AverOverTime->setIcon(QIcon(":/images/averOverTimeIcon.svg"));
 //    AverOverTime->setIconSize(QSize(butSizeX,butSizeY));
 //    AverOverTime->setMaximumSize(butSizeX,butSizeY);
     //AverOverTime->setFlat(true);
     // --
-    SpectralIndex->setToolTip("Calculate variability coefficients (VI, FI, CHi2Red)");
+//    SpectralIndex->setToolTip("Calculate variability coefficients (VI, FI, CHi2Red)");
     //SpectralIndex->setText("Var coeffs");
-    SpectralIndex->setIcon(QIcon(":/images/chiRedIcon.svg"));
+//    SpectralIndex->setIcon(QIcon(":/images/chiRedIcon.svg"));
 //    SpectralIndex->setIconSize(QSize(butSizeX,butSizeY));
 //    SpectralIndex->setMaximumSize(butSizeX,butSizeY);
     //SpectralIndex->setFlat(true);
     // --
-    ExportDynamicSpectrum->setToolTip("Export Dynamic spectrum file");
+//    ExportDynamicSpectrum->setToolTip("Export Dynamic spectrum file");
     //ExportDynamicSpectrum->setText("Export Dynamic spectrum file");
-    ExportDynamicSpectrum->setIcon(QIcon(":/images/exportDynspecIcon.svg"));
+//    ExportDynamicSpectrum->setIcon(QIcon(":/images/exportDynspecIcon.svg"));
 //    ExportDynamicSpectrum->setIconSize(QSize(butSizeX,butSizeY));
 //    ExportDynamicSpectrum->setMaximumSize(butSizeX,butSizeY);
     //ExportDynamicSpectrum->setFlat(true);
@@ -217,17 +217,19 @@ void vbox_mainw::addEverythingToWidget()
     this->addAction(LoadAVRFiles);
     this->addAction(LoadFITSFiles);
     this->addAction(Reload);
-    this->addSeparator();
+//    this->addSeparator();
+    this->addWidget(spacer1);
     this->addAction(DynamicSpectrum);
     this->addAction(SingleSpectrum);
     this->addAction(RMSSection);
-    this->addSeparator();
-    this->addAction(Integrate);
-    this->addAction(AverOverVelocity);
-    this->addAction(AverOverTime);
-    this->addAction(SpectralIndex);
-    this->addAction(ExportDynamicSpectrum);
-    this->addSeparator();
+//    this->addSeparator();
+    this->addWidget(spacer2);
+//    this->addAction(Integrate);
+//    this->addAction(AverOverVelocity);
+//    this->addAction(AverOverTime);
+//    this->addAction(SpectralIndex);
+//    this->addAction(ExportDynamicSpectrum);
+//    this->addSeparator();
     //this->addAction(Calibrate);
     this->addAction(Quit);
 //    VboxGrid->addWidget(LoadingSectionlabel,    0,0, 1, 1);
@@ -278,15 +280,15 @@ void vbox_mainw::connectToSlots(QObject *parent)
     QObject::connect(Quit, SIGNAL(triggered()), qApp, SLOT(quit()), Qt::QueuedConnection);
     QObject::connect(LoadAVRFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_AVR()));
     QObject::connect(LoadFITSFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_FITS()));
-    QObject::connect(Integrate, SIGNAL(triggered()), parent, SLOT(openIntegrateSection()));
+//    QObject::connect(Integrate, SIGNAL(triggered()), parent, SLOT(openIntegrateSection()));
     QObject::connect(SingleSpectrum, SIGNAL(triggered()), parent, SLOT(display_single_spectrum()));
     QObject::connect(DynamicSpectrum, SIGNAL(triggered()), parent, SLOT(display_dynamic_spectrum()));
-    QObject::connect(AverOverVelocity, SIGNAL(triggered()), parent, SLOT(openAOVSection()));
-    QObject::connect(AverOverTime, SIGNAL(triggered()), parent, SLOT(openAOTSection()));
-    QObject::connect(SpectralIndex, SIGNAL(triggered()), parent, SLOT(openSPINDSection()));
+//    QObject::connect(AverOverVelocity, SIGNAL(triggered()), parent, SLOT(openAOVSection()));
+//    QObject::connect(AverOverTime, SIGNAL(triggered()), parent, SLOT(openAOTSection()));
+//    QObject::connect(SpectralIndex, SIGNAL(triggered()), parent, SLOT(openSPINDSection()));
     QObject::connect(Reload, SIGNAL(triggered()), parent, SLOT(reload_slot()));
     //QObject::connect(Calibrate, SIGNAL(triggered()), parent, SLOT(openCALSection()));
-    QObject::connect(ExportDynamicSpectrum, SIGNAL(triggered()), parent, SLOT(openWDSection()));
+//    QObject::connect(ExportDynamicSpectrum, SIGNAL(triggered()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(triggered()), parent, SLOT(open_rms_section_slot()));
     QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
 }
