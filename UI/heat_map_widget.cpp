@@ -59,13 +59,13 @@ void heat_map_widget::customizeApperance()
             }
 
             QToolButton:hover {
-                background-color: rgba(255,255,255,9%);
+                background-color: rgba(255,255,255,5%);
             }
             QToolButton:pressed {
-                background-color: rgba(255,255,255,18%);
+                background-color: rgba(255,255,255,10%);
             }
             QToolButton:checked {
-                background-color: rgba(255,255,255,18%);
+                background-color: rgba(255,255,255,10%);
             }
             QToolTip {
                 background-color: #141414;
@@ -77,6 +77,17 @@ void heat_map_widget::customizeApperance()
                 font-family: silka;
             }
         )";
+        QString widget_ss = R"(
+            QWidget {
+                background-color: rgba(255,255,255,5%);
+            }
+        )";
+
+//        heatMapWidget_w->setAttribute()
+        heatMapWidget_w->setStyleSheet(widget_ss);
+        colorbarWidget_w->setStyleSheet(widget_ss);
+        spectrum_w->setStyleSheet(widget_ss);
+        lcs_w->setStyleSheet(widget_ss);
         this->bottomToolBar->setStyleSheet(toolBarSS);
         this->leftLabel->setStyleSheet(toolBarSS);
         this->rightLabel->setStyleSheet(toolBarSS);
@@ -225,12 +236,17 @@ void heat_map_widget::placeWidgets()
     //onDynSpecButtons->addLayout(bottomDynSpecButtons);
     //onDynSpecButtons->addLayout(topDynSpecButtons);
     //onDynSpecButtons->addWidget(bottomToolBar);
+
+    heatMapLayout->addWidget(heatMapPlot);
+    colorbarLayout->addWidget(colorbarWidget);
+    spectrumLayout->addWidget(spectrumPlot);
+    lcsLayout->addWidget(lcsPlot);
     // -- dodajemy do gridu --
     // -- umierszczamy ploty na gridzie --
-    grid->addWidget(heatMapPlot, 1,0,7,6);
-    grid->addWidget(spectrumPlot, 0,6,4,4);
-    grid->addWidget(lcsPlot, 4,6,4,4);
-    grid->addWidget(colorbarWidget, 0, 0, 1, 6);
+    grid->addWidget(heatMapWidget_w, 1,0,7,6);
+    grid->addWidget(spectrum_w, 0,6,4,4);
+    grid->addWidget(lcs_w, 4,6,4,4);
+    grid->addWidget(colorbarWidget_w, 0, 0, 1, 6);
     // -- przyciski --
     //grid->addLayout(onDynSpecButtons,8,0,1,6);
     grid->addWidget(bottomToolBar,8,0,1,6);
@@ -1081,8 +1097,8 @@ void heat_map_widget::setDarkMode()
     colorGraphs(dataPen, errorPen, dotPen);
     // ------------------------
     QPen spinesPen(Qt::white);
-//    QPen background(Qt::transparent);
-    QPen background(QColor(255,255,255, 9));
+    QPen background(Qt::transparent);
+//    QPen background(QColor(255,255,255, 9));
     colorCanvas(background, spinesPen);
 }
 

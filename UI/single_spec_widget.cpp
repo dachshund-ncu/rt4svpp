@@ -6,7 +6,18 @@ single_spec_widget::single_spec_widget(spectral_container * dataTable) : dataTab
     placeEverythingTogether();
     connectEv();
     setUpGraphs();
+    customizeApperance();
     this->setGeometry(300,300, 1260, 720);
+}
+
+void single_spec_widget::customizeApperance()
+{
+    QString widget_ss = R"(
+        QWidget {
+            background-color: rgba(255,255,255,5%);
+        }
+    )";
+    singleSpectrumWidget_w->setStyleSheet(widget_ss);
 }
 
 void single_spec_widget::setUpButtons()
@@ -32,8 +43,9 @@ void single_spec_widget::setUpButtons()
 
 void single_spec_widget::placeEverythingTogether()
 {
+    singleSpectrumWidget__layout->addWidget(SingleSpectrumWidget);
     // -- dodajemy widgety do grida --
-    grid->addWidget(SingleSpectrumWidget, 0,0,18,4);
+    grid->addWidget(singleSpectrumWidget_w, 0,0,18,4);
     grid->addWidget(savePlotsOnSingleSpectrum, 0,4,1,1);
     grid->addWidget(displayPlotOnSingleSpectrum, 1,4,1,1);
     grid->addWidget(setDefaultRangeButton, 2,4,1,1);
@@ -195,7 +207,7 @@ void single_spec_widget::darthMode(bool enabled)
 void single_spec_widget::setDarkMode()
 {
     QPen spinesPen(Qt::white);
-    QPen background(Qt::black);
+    QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
 }
 

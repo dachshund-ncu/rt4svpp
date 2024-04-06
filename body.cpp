@@ -181,8 +181,8 @@ void body::createMenuEntries()
 void body::makeActions()
 {
     // -----------------------
-    loadAVRFile->setText("Load AVR file");
-    loadFITSFile->setText("Load FITS file");
+    loadAVRFile->setText("Load AVR files");
+    loadFITSFile->setText("Load FITS files");
     reload->setText("Reload");
     quit->setText("Quit");
     // --
@@ -588,7 +588,8 @@ void body::showRmsSelector()
 {
     if(!dataTable->loadedData)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
+//        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
         return;
     }
     selectorOfRMS->show();
@@ -678,7 +679,7 @@ void body::performExtraction()
     // -- message to the user --
     string message = "";
     message = "Extracted lifht curve from channels " + std::to_string(chns[0]) + " -> " + std::to_string(chns[1]) + "\n" + "Saved to " + dataTable->getExtractedFileName(chns[0], chns[1]);
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 }
 //-------------------------------------------------------------------------------
 
@@ -689,7 +690,8 @@ void body::display_single_spectrum()
     // -- obwarowanie warunkami --
     if (!dataTable->loadedData)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
+        left_hand_list->SingleSpectrum->setChecked(false);
         return;
     }
     if (dynamic_spectrum_opened)
@@ -824,7 +826,7 @@ void body::integrate_time_series()
     string message = "";
     message = "Integrated over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
     closeIntegrateSection();
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 }
 
 
@@ -833,7 +835,8 @@ void body::display_dynamic_spectrum()
 {
     if (!dataTable->loadedData)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
+        left_hand_list->DynamicSpectrum->setChecked(false);
         return;
     }
     if (single_spectrum_opened == 1)
@@ -1007,7 +1010,7 @@ void body::calculate_aver_over_velocity()
     string message = "";
     message = "Averaged over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(min, max);
     closeAOVSection();
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 
 }
 
@@ -1061,7 +1064,7 @@ void body::calculate_aver_over_time()
     message = "Averaged over epochs: " + to_string(min) + " " + " -> " + to_string(max) + "\n";
     message = message + "Saved to " + dataTable->getAverOverTimeFileName(min, max);
     closeAOTSection();
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 }
 
 
@@ -1090,7 +1093,7 @@ void body::calculate_spectral_index()
     message = message + "Chi2Red Saved to " + dataTable->getChi2RedFileName(min, max) + "\n";
     // --------------
     closeSPINDSection();
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 }
 
 void body::save_all_to_gnuplot_slot()
@@ -1099,7 +1102,7 @@ void body::save_all_to_gnuplot_slot()
     // - zapisujemy wiadomość -
     std::string message = "Saved all spectra to directory: " + dataTable->saveDirectory;
     // - wyświetlamy -
-    QMessageBox::information(&window, tr("Message to you!"), QString::fromStdString(message));
+    popupMessage("Message to you!", message);
 }
 
 // -- przeładowuje obecnie załadowane dane --
@@ -1107,7 +1110,7 @@ void body::reload_slot()
 {
     if (loaded_data == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!" ,"Please, load data first!");
         return;
     }
 
@@ -1262,7 +1265,7 @@ void body::export_file_for_dynamic_spectrum()
     // wiadomość końcowa
     string message = "";
     message = "Dynamic spectrum over channels " + to_string(min) + " -> " + to_string(max) + "\n" + "Saved to " + dataTable->getDynSpecFileName(min_epoch, max_epoch);
-    QMessageBox::information(&window, tr("Message to you"), QString::fromStdString(message));
+    popupMessage("Message to you", message);
 
     // -- zamykamy sekcje dynspec --
     closeWDSection();
@@ -1273,7 +1276,8 @@ void body::open_rms_section_slot()
     // -- obwarowanie warunkami --
     if (!dataTable->loadedData)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
+        left_hand_list->RMSSection->setChecked(false);
         return;
     }
     if (dynamic_spectrum_opened)
@@ -1373,7 +1377,7 @@ void body::openIntegrateSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1410,7 +1414,7 @@ void body::openAOVSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1449,7 +1453,7 @@ void body::openAOTSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1490,7 +1494,7 @@ void body::openSPINDSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1529,7 +1533,7 @@ void body::openWDSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1568,7 +1572,7 @@ void body::openCALSection()
     // jeśli dane nie są załadowane
     if (dataTable->loadedData == 0)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Please, load data first!"));
+        popupMessage("Error!", "Please, load data first!");
         return;
     }
     // zamykamy inne otwarte sekcje
@@ -1627,7 +1631,7 @@ std::vector <int> body::readMinMaxValuesFromChannels(QTextEdit &minChannelTE, QT
     // -- sprawdzamy, czy text edity sa wypelnione --
     if (mins.toStdString() == "" || maxs.toStdString() == "")
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        popupMessage("Error!", "Fill text editors with text!");
         return returnedValues;
     }
 
@@ -1639,7 +1643,7 @@ std::vector <int> body::readMinMaxValuesFromChannels(QTextEdit &minChannelTE, QT
     }
     catch(...)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        popupMessage("Error!", "Error while converting values");
         return returnedValues;
     }
 
@@ -1647,13 +1651,13 @@ std::vector <int> body::readMinMaxValuesFromChannels(QTextEdit &minChannelTE, QT
     // początkowy channel większy od końcowego
     if (min > max)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
+        popupMessage("Error!", "Min channel > max channel!");
         return returnedValues;
     }
     // początkowy channel mniejszy od 1
     if (min < 1)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
+        popupMessage("Error!", "Min channel < 1!");
         return returnedValues;
     }
     // koncowy channel większy od maksymalnej ilości kanałów
@@ -1678,7 +1682,7 @@ std::vector <int> body::readMinMaxValuesFromEpochs(QTextEdit &minEpochlTE, QText
     // -- sprawdzamy, czy text edity sa wypelnione --
     if (mins.toStdString() == "" || maxs.toStdString() == "")
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        popupMessage("Error!", "Fill text editors with text!");
         return returnedValues;
     }
 
@@ -1690,7 +1694,7 @@ std::vector <int> body::readMinMaxValuesFromEpochs(QTextEdit &minEpochlTE, QText
     }
     catch(...)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        popupMessage("Error!", "Error while converting values");
         return returnedValues;
     }
 
@@ -1698,13 +1702,13 @@ std::vector <int> body::readMinMaxValuesFromEpochs(QTextEdit &minEpochlTE, QText
     // początkowy channel większy od końcowego
     if (min > max)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel > max channel!"));
+        popupMessage("Error!", "Min channel > max channel!");
         return returnedValues;
     }
     // początkowy channel mniejszy od 1
     if (min < 1)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Min channel < 1!"));
+        popupMessage("Error!", "Min channel < 1!");
         return returnedValues;
     }
     // koncowy channel większy od maksymalnej ilości kanałów
@@ -1800,7 +1804,7 @@ double body::readNumberFromQTextEdit(QTextEdit *box)
     QString bufor = box->toPlainText();
     if (bufor.toStdString() == "")
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Fill text editors with text!"));
+        popupMessage("Error!", "Fill text editors with text!");
         return 0.0;
     }
     try
@@ -1809,8 +1813,14 @@ double body::readNumberFromQTextEdit(QTextEdit *box)
     }
     catch(...)
     {
-        QMessageBox::information(&window, tr("Error!"), tr("Error while converting values"));
+        popupMessage("Error!", "Error while converting values");
         return 0.0;
     }
     return returnedValue;
+}
+
+void body::popupMessage(std::string message_type, std::string message_text)
+{
+    CustomMessageBox ee(QString::fromStdString(message_type), QString::fromStdString(message_text));
+    ee.exec();
 }

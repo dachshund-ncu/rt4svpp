@@ -11,6 +11,7 @@ Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
     placeOnGrid();
     connectElementsToSlots();
     setUpPopupWindow();
+    customizeApperance();
 }
 
 void Rms_sec_widget::customizeApperance()
@@ -54,7 +55,50 @@ void Rms_sec_widget::customizeApperance()
             font-family: silka;
         }
     )";
-//    this->plotSettings->setStyleSheet(toolBarSS);
+    QString widget_ss = R"(
+        QWidget {
+            background-color: rgba(255,255,255,5%);
+        }
+    )";
+    RmsVsTime_w->setStyleSheet(widget_ss);
+    tsysVsTime_w->setStyleSheet(widget_ss);
+    intVsTime_w->setStyleSheet(widget_ss);
+    spectrumOnPopupWindow_w->setStyleSheet(widget_ss);
+
+    QString styleSheet_popup = R"(
+        QWidget {
+            background-color: #121212;
+            border-radius: 8px; /* border radius */
+        }
+        QPushButton {
+            background-color: transparent; /* background color */
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+
+        QPushButton:hover {
+            background-color: rgba(255,255,255,5%);
+        }
+        QPushButton:pressed {
+            background-color: rgba(255,255,255,18%);
+        }
+        QPushButton:checked {
+            background-color: rgba(255,255,255,18%);
+        }
+        QLabel {
+            background-color: transparent;
+            color: white; /* text color */
+            font-size: 15px; /* font size */
+            text-align: left;
+            font-family: silka;
+        }
+    )";
+    popupWindow->setAttribute(Qt::WA_StyledBackground);
+    popupWindow->setStyleSheet(styleSheet_popup);
 }
 void Rms_sec_widget::setUpButtons()
 {
@@ -287,11 +331,15 @@ void Rms_sec_widget::setUpPlottables()
 
 void Rms_sec_widget::placeOnGrid()
 {
+    RmsVsTime_layout->addWidget(RmsVsTime);
+    tsysVsTime_layout->addWidget(tsysVsTime);
+    intVsTime_layout->addWidget(intVsTime);
+
     // -- grid ma szerokość 16x16 --
     // -- dodajemy trzy ploty --
-    grid->addWidget(RmsVsTime, 0, 0, 8, 8);
-    grid->addWidget(tsysVsTime, 8, 0, 8, 8);
-    grid->addWidget(intVsTime, 0, 8, 8, 8);
+    grid->addWidget(RmsVsTime_w, 0, 0, 8, 8);
+    grid->addWidget(tsysVsTime_w, 8, 0, 8, 8);
+    grid->addWidget(intVsTime_w, 0, 8, 8, 8);
     // -- stokes params --
     plotSettingsGrid->addWidget(stokesParams, 0,0);
     plotSettingsGrid->addWidget(IOnRms,       1,0,1,1);
@@ -399,8 +447,10 @@ void Rms_sec_widget::setUpPopupWindow()
 {
     popupWindow->setVisible(false);
     popupWindow->setGeometry(300, 300, 1320, 720);
+
+    spectrumOnPopupWindow_layout->addWidget(spectrumOnPopupWindow);
     // -- dodajemy plot do gridu --
-    gridOfPopupWindow->addWidget(spectrumOnPopupWindow, 0, 0, 6,6);
+    gridOfPopupWindow->addWidget(spectrumOnPopupWindow_w, 0, 0, 6,6);
     gridOfPopupWindow->addWidget(flagOnPopupWindow, 6, 0, 1, 3);
     gridOfPopupWindow->addWidget(closePopupWIndow, 6, 3, 1,3);
     gridOfPopupWindow->addWidget(labelOnPopupWindow, 0, 6, 6, 3);
@@ -602,7 +652,7 @@ void Rms_sec_widget::setDarkMode()
 {
     // -- wykresy, tła --
     QPen spinesPen(Qt::white);
-    QPen background(Qt::black);
+    QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
     // -- dane --
     QPen dataPen(QColor(135,206,250));

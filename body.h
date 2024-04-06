@@ -240,6 +240,7 @@ private:
     bool checkIfFits(const char * filename);
     void setCheckedProperButtons();
     void customizeApperance();
+    void popupMessage(std::string message_type, std::string message_text);
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --

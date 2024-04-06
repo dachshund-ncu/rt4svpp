@@ -36,12 +36,15 @@ public:
     // -- lista --
     QListWidget * listOfObservations = new QListWidget(this);
     // -- ploty --
+    QWidget * singleSpectrumWidget_w = new QWidget(this);
+    QVBoxLayout * singleSpectrumWidget__layout = new QVBoxLayout(singleSpectrumWidget_w);
     QCustomPlot * SingleSpectrumWidget = new QCustomPlot(this);
     // -- kontenery --
     std::vector < int > epochsPlotted;
     // -- boole --
     bool listOfObservationsFIlled = 0;
 private:
+    void customizeApperance();
     void setUpButtons();
     void placeEverythingTogether();
     void setUpPlots();

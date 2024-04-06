@@ -7,7 +7,6 @@ TEMPLATE = app
 QTPLUGIN += qsvg
 
 SOURCES += \
-    UI/custom_widget.cpp \
     UI/varcoefscalcwidget.cpp \
     body.cpp \
     data/calibration.cpp \
@@ -35,7 +34,6 @@ SOURCES += \
 
 HEADERS += \
     UI/custom_ui_elements.h \
-    UI/custom_widget.h \
     UI/varcoefscalcwidget.h \
     body.h \
     data/spectral_container.h \

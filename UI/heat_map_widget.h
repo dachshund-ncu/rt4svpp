@@ -74,6 +74,8 @@ public:
 
     // -- zestay widgetów QCustomPlot --
     // - heat map -
+    QWidget * heatMapWidget_w = new QWidget(this);
+    QVBoxLayout * heatMapLayout = new QVBoxLayout(heatMapWidget_w);
     QCustomPlot * heatMapPlot = new QCustomPlot(this);
     QCPColorMap * heatMap = new QCPColorMap(heatMapPlot->xAxis, heatMapPlot->yAxis);
     QCPItemLine * x_axis_line = new QCPItemLine(heatMapPlot);
@@ -81,12 +83,18 @@ public:
     QCPItemRect * rectangle = new QCPItemRect(heatMapPlot);
     QCPColorGradient gradient;
     // - colorbar -
+    QWidget * colorbarWidget_w = new QWidget(this);
+    QVBoxLayout * colorbarLayout = new QVBoxLayout(colorbarWidget_w);
     QCustomPlot * colorbarWidget = new QCustomPlot(this);
     QCPColorScale * colorbar = new QCPColorScale(colorbarWidget);
     // - widmo -
+    QWidget * spectrum_w = new QWidget(this);
+    QVBoxLayout * spectrumLayout = new QVBoxLayout(spectrum_w);
     QCustomPlot * spectrumPlot = new QCustomPlot(this);
     QCPItemLine * spectrumVline = new QCPItemLine(spectrumPlot);
     // - krzywa blasku -
+    QWidget * lcs_w = new QWidget(this);
+    QVBoxLayout * lcsLayout = new QVBoxLayout(lcs_w);
     QCustomPlot * lcsPlot = new QCustomPlot(this);
     QCPErrorBars * errorBars = new QCPErrorBars(lcsPlot->xAxis, lcsPlot->yAxis);
     QCPItemLine * lcsVline = new QCPItemLine(lcsPlot);

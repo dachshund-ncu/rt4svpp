@@ -26,8 +26,14 @@ public:
     QPushButton * showSelectedSpectrum = new QPushButton(this);
     QPushButton * autoscaleGraphs = new QPushButton(this);
     // -- wykresy --
+    QWidget * RmsVsTime_w = new QWidget(this);
+    QVBoxLayout * RmsVsTime_layout = new QVBoxLayout(RmsVsTime_w);
     QCustomPlot * RmsVsTime = new QCustomPlot(this);
+    QWidget * tsysVsTime_w = new QWidget(this);
+    QVBoxLayout * tsysVsTime_layout = new QVBoxLayout(tsysVsTime_w);
     QCustomPlot * tsysVsTime = new QCustomPlot(this);
+    QWidget * intVsTime_w = new QWidget(this);
+    QVBoxLayout * intVsTime_layout = new QVBoxLayout(intVsTime_w);
     QCustomPlot * intVsTime = new QCustomPlot(this);
     // -- crosshairs --
     QCPItemLine * RmsXAxisLine = new QCPItemLine(RmsVsTime);
@@ -77,6 +83,8 @@ public:
     // -- popup window --
     QWidget * popupWindow = new QWidget();
     QGridLayout * gridOfPopupWindow = new QGridLayout(popupWindow);
+    QWidget * spectrumOnPopupWindow_w = new QWidget(this);
+    QVBoxLayout * spectrumOnPopupWindow_layout = new QVBoxLayout(spectrumOnPopupWindow_w);
     QCustomPlot * spectrumOnPopupWindow = new QCustomPlot(popupWindow);
     QPushButton * flagOnPopupWindow = new QPushButton(popupWindow);
     QPushButton * closePopupWIndow = new QPushButton(popupWindow);
