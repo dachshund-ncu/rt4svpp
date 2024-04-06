@@ -8,17 +8,20 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 
         QWidget {
             margin-left: 0px;
-            background-color: rgba(255,255,255,9%);
+            background-color: transparent;
             border-radius: 8px; /* border radius */
         }
         QToolButton {
             background-color: transparent; /* background color */
             color: white; /* text color */
-            padding: 4px; /* padding */
+            padding: 6px; /* padding */
             font-size: 15px; /* font size */
             border-radius: 8px; /* border radius */
             text-align: left;
             font-family: silka;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            /*border-left: 3px solid transparent;*/
         }
 
         QToolButton:hover {
@@ -28,7 +31,8 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
             background-color: rgba(255,255,255,18%);
         }
         QToolButton:checked {
-            background-color: rgba(255,255,255,18%);
+            /*border-left-color: #C2185B;*/
+            background-color: #C2185B;
         }
         QToolTip {
             background-color: #141414;
@@ -43,7 +47,7 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 
     this->setStyleSheet(styleSheet);
 
-    QSize *sz = new QSize(40,40);
+    QSize *sz = new QSize(25,25);
     this->setIconSize(*sz);
     makeProperSizeForButtons();
     makeProperLabelsForButtons();
@@ -52,6 +56,7 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
     addEverythingToWidget();
     //this->setMinimumSize(120, 600);
     //this->setMaximumSize(120, 720);
+
     this->setVisible(true);
 }
 
@@ -93,23 +98,23 @@ void vbox_mainw::makeProperLabelsForButtons()
     //int butSizeY = 40;
     //int butSizeX = 40;
     // ---
-    LoadAVRFiles->setToolTip("Load AVR files");
+//    LoadAVRFiles->setToolTip("Load AVR files");
     //LoadAVRFiles->setText("Load AVR files");
-    LoadAVRFiles->setIcon(QIcon(":/images/loadFitsAVRIcon.svg"));
+//    LoadAVRFiles->setIcon(QIcon(":/images/loadFitsAVRIcon.svg"));
     //LoadAVRFiles->setIconSize(QSize(butSizeX,butSizeY));
     //LoadAVRFiles->setMaximumSize(butSizeX,butSizeY);
     //LoadAVRFiles->setFlat(true);
     // ---
-    LoadFITSFiles->setToolTip("Load FITS files");
+//    LoadFITSFiles->setToolTip("Load FITS files");
     //LoadFITSFiles->setText("Load FITS files");
-    LoadFITSFiles->setIcon(QIcon(":/images/loadFitsFilesIcon.svg"));
+//    LoadFITSFiles->setIcon(QIcon(":/images/loadFitsFilesIcon.svg"));
 //    LoadFITSFiles->setIconSize(QSize(butSizeX,butSizeY));
 //    LoadFITSFiles->setMaximumSize(butSizeX,butSizeY);
     //LoadFITSFiles->setFlat(true);
     // ---
-    Reload->setToolTip("Reload");
+//    Reload->setToolTip("Reload");
     //Reload->setText("Reload");
-    Reload->setIcon(QIcon(":/images/reloadIcon.svg"));
+//    Reload->setIcon(QIcon(":/images/reloadIcon.svg"));
 //    Reload->setIconSize(QSize(butSizeX,butSizeY));
 //    Reload->setMaximumSize(butSizeX,butSizeY);
     //Reload->setFlat(true);
@@ -214,16 +219,17 @@ void vbox_mainw::setupLabels()
 
 void vbox_mainw::addEverythingToWidget()
 {
-    this->addAction(LoadAVRFiles);
-    this->addAction(LoadFITSFiles);
-    this->addAction(Reload);
+//    this->addAction(LoadAVRFiles);
+//    this->addAction(LoadFITSFiles);
+//    this->addAction(Reload);
 //    this->addSeparator();
-    this->addWidget(spacer1);
+
     this->addAction(DynamicSpectrum);
     this->addAction(SingleSpectrum);
     this->addAction(RMSSection);
+    this->addWidget(spacer1);
 //    this->addSeparator();
-    this->addWidget(spacer2);
+//    this->addWidget(spacer2);
 //    this->addAction(Integrate);
 //    this->addAction(AverOverVelocity);
 //    this->addAction(AverOverTime);
@@ -278,19 +284,19 @@ void vbox_mainw::addEverythingToWidget()
 void vbox_mainw::connectToSlots(QObject *parent)
 {
     QObject::connect(Quit, SIGNAL(triggered()), qApp, SLOT(quit()), Qt::QueuedConnection);
-    QObject::connect(LoadAVRFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_AVR()));
-    QObject::connect(LoadFITSFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_FITS()));
+//    QObject::connect(LoadAVRFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_AVR()));
+//    QObject::connect(LoadFITSFiles, SIGNAL(triggered()), parent, SLOT(load_time_series_FITS()));
 //    QObject::connect(Integrate, SIGNAL(triggered()), parent, SLOT(openIntegrateSection()));
     QObject::connect(SingleSpectrum, SIGNAL(triggered()), parent, SLOT(display_single_spectrum()));
     QObject::connect(DynamicSpectrum, SIGNAL(triggered()), parent, SLOT(display_dynamic_spectrum()));
 //    QObject::connect(AverOverVelocity, SIGNAL(triggered()), parent, SLOT(openAOVSection()));
 //    QObject::connect(AverOverTime, SIGNAL(triggered()), parent, SLOT(openAOTSection()));
 //    QObject::connect(SpectralIndex, SIGNAL(triggered()), parent, SLOT(openSPINDSection()));
-    QObject::connect(Reload, SIGNAL(triggered()), parent, SLOT(reload_slot()));
+//    QObject::connect(Reload, SIGNAL(triggered()), parent, SLOT(reload_slot()));
     //QObject::connect(Calibrate, SIGNAL(triggered()), parent, SLOT(openCALSection()));
 //    QObject::connect(ExportDynamicSpectrum, SIGNAL(triggered()), parent, SLOT(openWDSection()));
     QObject::connect(RMSSection, SIGNAL(triggered()), parent, SLOT(open_rms_section_slot()));
-    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
+//    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
 }
 // ---------------------------------------------------------------
 

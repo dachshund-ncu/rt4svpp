@@ -22,16 +22,16 @@ public:
 
     // dzieci - buttony
     // -- load --
-    QAction * LoadAVRFiles = new QAction(this);
-    QAction * LoadFITSFiles = new QAction(this);
-    QAction * Reload = new QAction(this);
+//    QAction * LoadAVRFiles = new QAction(this);
+//    QAction * LoadFITSFiles = new QAction(this);
+//    QAction * Reload = new QAction(this);
     // -- główne sekcje --
     QAction * DynamicSpectrum = new QAction(this);
     QAction * SingleSpectrum = new QAction(this);
     QAction * RMSSection = new QAction(this);
     // -- pomniejsze sekcje --
     spacer * spacer1 = new spacer();
-    spacer * spacer2 = new spacer();
+//    spacer * spacer2 = new spacer();
 //    QAction * Integrate = new QAction(this);
 //    QAction * AverOverVelocity = new QAction(this);
 //    QAction * AverOverTime = new QAction(this);

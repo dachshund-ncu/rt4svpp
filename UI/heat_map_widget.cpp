@@ -1081,7 +1081,8 @@ void heat_map_widget::setDarkMode()
     colorGraphs(dataPen, errorPen, dotPen);
     // ------------------------
     QPen spinesPen(Qt::white);
-    QPen background(Qt::black);
+//    QPen background(Qt::transparent);
+    QPen background(QColor(255,255,255, 9));
     colorCanvas(background, spinesPen);
 }
 
