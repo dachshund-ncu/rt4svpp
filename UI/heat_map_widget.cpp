@@ -257,7 +257,7 @@ void heat_map_widget::placeWidgets()
         grid->setColumnStretch(i, 1);
     for(int i = 0; i < grid->rowCount(); i++)
         grid->setRowStretch(i, 1);
-
+    grid->setSpacing(10);
 }
 
 void heat_map_widget::managePlottables()

@@ -15,7 +15,7 @@ public:
         setAttribute(Qt::WA_StyledBackground);
         QString styleSheet = R"(
             QWidget {
-                background-color: transparent;
+                background-color: rgba(255,255,255,3%);
                 border-radius: 8px; /* border radius */
             }
             QPushButton {

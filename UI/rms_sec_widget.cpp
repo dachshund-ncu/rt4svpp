@@ -340,6 +340,7 @@ void Rms_sec_widget::placeOnGrid()
     grid->addWidget(RmsVsTime_w, 0, 0, 8, 8);
     grid->addWidget(tsysVsTime_w, 8, 0, 8, 8);
     grid->addWidget(intVsTime_w, 0, 8, 8, 8);
+    grid->setSpacing(10);
     // -- stokes params --
     plotSettingsGrid->addWidget(stokesParams, 0,0);
     plotSettingsGrid->addWidget(IOnRms,       1,0,1,1);
@@ -374,6 +375,7 @@ void Rms_sec_widget::placeOnGrid()
     otherToolsGrid->addWidget(endIntegrateLabel,      2,0,1,3);
     otherToolsGrid->addWidget(RmsIntEnd,              2,3,1,1);
     otherToolsGrid->addWidget(recalculateIntegration, 3,0,1,4);
+
 
 //
 //    grid->addWidget(stokesParams, 8,8, 1,4);

@@ -57,6 +57,7 @@ void single_spec_widget::placeEverythingTogether()
     grid->setColumnStretch(1,2);
     grid->setColumnStretch(2,2);
     grid->setColumnStretch(3,2);
+    grid->setSpacing(10);
 }
 
 void single_spec_widget::fillListWithObservations()
