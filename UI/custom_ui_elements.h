@@ -19,9 +19,9 @@ public:
                 border-radius: 8px; /* border radius */
             }
             QPushButton {
-                background-color: transparent; /* background color */
+                background-color: rgba(255,255,255,3%); /* background color */
                 color: white; /* text color */
-                padding: 4px; /* padding */
+                padding: 12px; /* padding */
                 font-size: 15px; /* font size */
                 border-radius: 4px; /* border radius */
                 text-align: left;

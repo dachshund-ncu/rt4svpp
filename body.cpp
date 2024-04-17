@@ -23,13 +23,14 @@ using namespace CCfits;
 // -- konstruktor klasy programu --
 body::body(QWidget *parent, const char * nazwa)
 {
-    customizeApperance();
+
     Q_INIT_RESOURCE(resources);
+    customizeApperance();
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
-    window.setGeometry(300,300,150,720);
+    this->setGeometry(300, 300, 150, 720);
     // -- ustawiamy tytul okna --
-    window.setWindowTitle("RT4SV++");
+    this->setWindowTitle("RT4SV++");
     // -- setting up SUPER MEGA MENU BAR --
     createMenuEntries();
     makeActions();
@@ -67,12 +68,12 @@ body::body(QWidget *parent, const char * nazwa)
         if(dataTable->loadedData)
         {
             list_filename = string(nazwa);
-            window.setGeometry(window.x(), window.y(),1360,720);
+            this->setGeometry(this->geometry().x(), this->geometry().y() ,1360,720);
             display_dynamic_spectrum();
             dynspecWidget->setMapPressed(0,0);
             geometry_window_set = 1;
             loaded_data = true;
-            window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
+            this->setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
         }
         else
         {
@@ -81,6 +82,7 @@ body::body(QWidget *parent, const char * nazwa)
         selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
         selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
     }
+
     // -- domyślnie ustawiamy dark mode --
     set_dark_mode(true);
     // -- pokazujemy okno --
@@ -787,12 +789,12 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
 
     if (geometry_window_set == 0)
     {
-        window.setGeometry(window.x(), window.y(),1360,720);
+        this->setGeometry(this->geometry().x(), this->geometry().y(), 1360,720);
         display_dynamic_spectrum();
         geometry_window_set = 1;
     }
     dynspecWidget->setMapPressed(0,0);
-    window.setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
+    this->setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
     selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
     selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
 }

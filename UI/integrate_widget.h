@@ -14,8 +14,9 @@
 #include <string>
 #include <QtGui>
 #include <data/spectral_container.h>
+#include <UI/custom_ui_elements.h>
 
-class integrate_widget : public QWidget
+class integrate_widget : public customWidget
 {
 public:
     // konstruktor

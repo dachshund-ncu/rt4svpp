@@ -5,7 +5,9 @@ rms_selector::rms_selector()
     this->setWindowTitle("Choose new RMS Channels");
     this->setVisible(false);
     setUpWidgets();
+    this->setMaximumSize(300,300);
     this->setGeometry(300, 300, 300, 300);
+
 
 }
 
@@ -41,6 +43,16 @@ void rms_selector::setUpWidgets()
     rmsRange2Start->setMinimum(1);
     rmsRange2Stop->setMaximum(9999999);
     rmsRange2Stop->setMinimum(1);
+
+    rmsRange1Start->setMaximumSize(100,30);
+    rmsRange1Stop->setMaximumSize(100,30);
+    rmsRange2Start->setMaximumSize(100,30);
+    rmsRange2Stop->setMaximumSize(100,30);
+
+    rmsRange1Start->setMinimumSize(0,0);
+    rmsRange1Stop->setMinimumSize(0,0);
+    rmsRange2Start->setMinimumSize(0,0);
+    rmsRange2Stop->setMinimumSize(0,0);
 
     grid->setColumnStretch(0, 1);
     grid->setColumnStretch(1, 6);

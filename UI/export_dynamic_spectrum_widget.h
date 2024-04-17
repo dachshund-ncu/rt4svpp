@@ -10,8 +10,9 @@
 #include <QHBoxLayout>
 #include <QTextEdit>
 #include <QLabel>
+#include <UI/custom_ui_elements.h>
 
-class export_dynamic_spectrum_widget : public QWidget
+class export_dynamic_spectrum_widget : public customWidget
 {
 public:
     // konstruktor

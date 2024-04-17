@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
     // -- zaczynamy program --
     QApplication program (argc, argv);
     program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));
-    program.setStyle("GTK2");
 
     onWelcome();
 

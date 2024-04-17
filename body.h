@@ -26,6 +26,7 @@
 #include "UI/varcoefscalcwidget.h"
 #include "UI/rms_selector.h"
 #include "UI/custom_ui_elements.h"
+#include <QRect>
 using namespace std;
 
 class body : public QMainWindow

@@ -6,8 +6,9 @@
 #include <QLabel>
 #include <iostream>
 #include <string>
+#include <UI/custom_ui_elements.h>
 
-class contentViewer : public QWidget
+class contentViewer : public customWidget
 {
 public:
     contentViewer(QWidget * parent);

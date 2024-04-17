@@ -11,8 +11,9 @@
 #include <QSpinBox>
 #include <QLabel>
 #include <vector>
+#include <UI/custom_ui_elements.h>
 
-class rms_selector : public QWidget
+class rms_selector : public customWidget
 {
     Q_OBJECT
 public:

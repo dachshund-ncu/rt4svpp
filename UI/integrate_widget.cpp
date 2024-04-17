@@ -17,8 +17,8 @@ void integrate_widget::setUpWidget(const char * name)
     startingChannelInt->setMinimumSize(0,0);
     endingChannelInt->setMinimumSize(0,0);
     // - rozmiary przycisków -
-    make->setMinimumSize(0,0);
-    cancel->setMinimumSize(0,0);
+    make->setMinimumSize(100,50);
+    cancel->setMinimumSize(100,50);
     // - teksty -
     startChannelLabel->setText("Start");
     endChannelLabel->setText("End");

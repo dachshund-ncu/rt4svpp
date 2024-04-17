@@ -7,8 +7,9 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QTextEdit>
+#include <UI/custom_ui_elements.h>
 
-class varCoefsCalcWidget : public QWidget
+class varCoefsCalcWidget : public customWidget
 {
     Q_OBJECT
 public:
