@@ -118,6 +118,7 @@ void body::customizeApperance()
             font-size: 12px; /* font size */
             text-align: left;
             font-family: silka;
+            color: white; /* text color */
         }
         QMenuBar::item:selected {
             background-color: rgba(255,255,255,9%);
