@@ -25,5 +25,8 @@
         <file>images/FLAGicon.svg</file>
         <file>images/Rotate_m_icon.svg</file>
         <file>images/Rotate_p_icon.svg</file>
+        <file>images/flag-regular.svg</file>
+        <file>images/rotate-left-solid.svg</file>
+        <file>images/rotate-right-solid.svg</file>
     </qresource>
 </RCC>

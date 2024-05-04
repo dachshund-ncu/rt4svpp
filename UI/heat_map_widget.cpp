@@ -95,46 +95,8 @@ void heat_map_widget::customizeApperance()
 
 void heat_map_widget::setButtonsProperties()
 {
-    // -- rozmiary --
-//    yDownBorder->setMaximumSize(10000,30);
-//    yUpBorder->setMaximumSize(10000,30);
-//    xDownBorder->setMaximumSize(10000,30);
-//    xUpBorder->setMaximumSize(10000,30);
-//    Ibut->setMaximumSize(10000,30);
-//    Vbut->setMaximumSize(10000,30);
-//    LHCbut->setMaximumSize(10000,30);
-//    RHCbut->setMaximumSize(10000,30);
-//    flag->setMaximumSize(10000,10000);
-//    makeLcsButton->setMaximumSize(10000,10000);
-//    recreateIButton->setMaximumSize(10000,10000);
-//    rotate->setMaximumSize(10000,10000);
-//    rotate_minus->setMaximumSize(10000,10000);
-//    saveEdition->setMaximumSize(10000,10000);
-
-//    yDownBorder->setMinimumSize(0,0);
-//    yUpBorder->setMinimumSize(0,0);
-//    xDownBorder->setMinimumSize(0,0);
-//    xUpBorder->setMinimumSize(0,0);
-//    Ibut->setMinimumSize(0,0);
-//    Vbut->setMinimumSize(0,0);
-//    LHCbut->setMinimumSize(0,0);
-//    RHCbut->setMinimumSize(0,0);
-//    flag->setMinimumSize(0,0);
-//    makeLcsButton->setMinimumSize(0,0);
-//    recreateIButton->setMinimumSize(0,0);
-//    rotate->setMinimumSize(0,0);
-//    rotate_minus->setMinimumSize(0,0);
-//    saveEdition->setMinimumSize(0,0);
     // -------------------------
     // -- teksty --
-//    yDownBorder->setText("Down");
-//    yUpBorder->setText("Up");
-//    xDownBorder->setText("->|");
-//    xUpBorder->setText("|<-");
-//    Ibut->setText("I");
-//    Vbut->setText("V");
-//    LHCbut->setText("LHC");
-//    RHCbut->setText("RHC");
     flag->setText("Flag");
     makeLcsButton->setText("Make LCS");
     recreateIButton->setText("Recal IV");
@@ -150,24 +112,21 @@ void heat_map_widget::setButtonsProperties()
     xUpBorder->setIcon(QIcon(":/images/RIGHTicon.svg"));
     xUpBorder->setToolTip("Set actually selected epoch as MAXIMUM on heat map");
     // --
-    Ibut->setIcon(QIcon(":/images/IDSicon2.svg"));
-    Vbut->setIcon(QIcon(":/images/VDSicon.svg"));
-    LHCbut->setIcon(QIcon(":/images/LHCDSicon.svg"));
-    RHCbut->setIcon(QIcon(":/images/RHDSicon.svg"));
+    Ibut->setText("I  ");
+    Vbut->setText("V  ");
+    LHCbut->setText("LHC");
+    RHCbut->setText("RHC");
     Ibut->setToolTip("Show STOKES I");
     Vbut->setToolTip("Show STOKES V");
     LHCbut->setToolTip("Show STOKES LHC");
     RHCbut->setToolTip("Show STOKES RHC");
     // --
-    flag->setIcon(QIcon(":/images/FLAGicon.svg"));
+    flag->setIcon(QIcon(":/images/flag-regular.svg"));
     flag->setToolTip("Flag selected epoch. You need to RELOAD for the flagging to take effect");
-    rotate->setIcon(QIcon(":/images/Rotate_p_icon.svg"));
+    rotate->setIcon(QIcon(":/images/rotate-left-solid.svg"));
     rotate->setToolTip("Rotate selected spectrum");
-    rotate_minus->setIcon(QIcon(":/images/Rotate_m_icon.svg"));
+    rotate_minus->setIcon(QIcon(":/images/rotate-right-solid.svg"));
     rotate_minus->setToolTip("Rotate selected spectrum, but in different direction");
-
-    rotate_minus->setText("Rotate-");
-
     // -- checkboxy --
     rotateAllPols->setChecked(true);
     setLogScale->setVisible(false);
@@ -189,15 +148,6 @@ void heat_map_widget::processTextEdits()
 void heat_map_widget::placeWidgets()
 {
     // -- rozmieszczamy przyciski --
-//    topDynSpecButtons->addWidget(Ibut);
-//    topDynSpecButtons->addWidget(Vbut);
-//    topDynSpecButtons->addWidget(LHCbut);
-//    topDynSpecButtons->addWidget(RHCbut);
-//    // --
-//    topDynSpecButtons->addWidget(yDownBorder);
-//    topDynSpecButtons->addWidget(yUpBorder);
-//    topDynSpecButtons->addWidget(xDownBorder);
-//    topDynSpecButtons->addWidget(xUpBorder);
     bottomToolBar->addAction(Ibut);
     bottomToolBar->addAction(Vbut);
     bottomToolBar->addAction(LHCbut);
@@ -219,24 +169,8 @@ void heat_map_widget::placeWidgets()
     bottomToolBar->addSeparator();
     bottomToolBar->addAction(makeLcsButton);
     // --
-//    bottomDynSpecButtons->addWidget(numberOfRotatedChannelsTexted);
-//    bottomDynSpecButtons->addWidget(recreateIButton);
-//    bottomDynSpecButtons->addWidget(flag);
-//    bottomDynSpecButtons->addWidget(rotate);
-//    bottomDynSpecButtons->addWidget(saveEdition);
-//    bottomDynSpecButtons->addWidget(rotate_minus);
-//    bottomDynSpecButtons->addWidget(makeLcsButton);
-//    checkboxesOnDynspec->addWidget(setLogScale);
-//    checkboxesOnDynspec->addWidget(rotateAllPols);
-//    bottomDynSpecButtons->addItem(checkboxesOnDynspec);
-    // --
-    //topDynSpecButtons->setSpacing(1);
     bottomDynSpecButtons->setSpacing(1);
     // --
-    //onDynSpecButtons->addLayout(bottomDynSpecButtons);
-    //onDynSpecButtons->addLayout(topDynSpecButtons);
-    //onDynSpecButtons->addWidget(bottomToolBar);
-
     heatMapLayout->addWidget(heatMapPlot);
     colorbarLayout->addWidget(colorbarWidget);
     spectrumLayout->addWidget(spectrumPlot);

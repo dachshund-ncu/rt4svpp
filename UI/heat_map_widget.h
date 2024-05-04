@@ -191,7 +191,6 @@ private:
     void colorCanvas(QPen background, QPen spines);
     void colorSpines(QCustomPlot * plot, QPen pendulum);
     void customizeApperance();
-
 };
 
 #endif // HEAT_MAP_WIDGET_H
