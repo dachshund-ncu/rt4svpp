@@ -81,6 +81,14 @@ public:
                 text-align: left;
                 font-family: silka;
             }
+            QCheckBox::indicator {
+                background-color: #000000;
+                padding: 4px; /* padding */
+                border-radius: 4px; /* border radius */
+            }
+            QCheckBox::indicator::checked {
+                background-color: #C2185B;
+            }
             QLabel {
                 background-color: transparent;
                 color: white; /* text color */
@@ -136,6 +144,29 @@ public:
             }
             QListWidget::item:selected {
                 background-color: #C2185B;
+            }
+            QSpinBox {
+                background-color: rgba(255,255,255,5%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background-color: transparent;
+                color: red; /* text color */
+                border: 1px solid rgba(255,255,255,5%);
+                padding: 2px;
+            }
+            QSpinBox::up-button:pressed, QSpinBox::down-button:pressed  {
+                background-color: #C2185B;
+            }
+            QSpinBox::up-arrow, QSpinBox::down-arrow {
+                color: white; /* text color */
+                padding: 2px;
             }
         )";
         this->setStyleSheet(styleSheet);
