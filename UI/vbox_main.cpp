@@ -16,12 +16,13 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
             color: white; /* text color */
             padding: 6px; /* padding */
             font-size: 15px; /* font size */
-            border-radius: 8px; /* border radius */
+            border-radius: 4px; /* border radius */
             text-align: left;
             font-family: silka;
             margin-top: 4px;
             margin-bottom: 4px;
-            /*border-left: 3px solid transparent;*/
+            border-left: 3px solid transparent;
+            border-image: linear-gradient(to bottom, #000 50%, transparent 50%) 100% 1;
         }
 
         QToolButton:hover {
@@ -31,8 +32,8 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
             background-color: rgba(255,255,255,18%);
         }
         QToolButton:checked {
-            /*border-left-color: #C2185B;*/
-            background-color: #C2185B;
+            border-left-color: #C2185B;
+            /*background-color: #C2185B;*/
         }
         QToolTip {
             background-color: #141414;

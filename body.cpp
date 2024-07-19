@@ -114,7 +114,7 @@ void body::customizeApperance()
         QMenuBar::item {
             background-color: transparent;
             padding: 8px; /* padding */
-            border-radius: 4px; /* border radius */
+            border-radius: 2px; /* border radius */
             font-size: 12px; /* font size */
             text-align: left;
             font-family: silka;
@@ -122,13 +122,14 @@ void body::customizeApperance()
         }
         QMenuBar::item:selected {
             background-color: rgba(255,255,255,9%);
+            border: 1px solid rgba(255,255,255, 15%);
         }
         QMenu {
             background-color: transparent;
             color: white; /* text color */
             padding: 4px; /* padding */
             font-size: 12px; /* font size */
-            border-radius: 4px; /* border radius */
+            border-radius: 2px; /* border radius */
             text-align: left;
             font-family: silka;
         }
@@ -136,16 +137,17 @@ void body::customizeApperance()
             color: white; /* text color */
             padding: 4px; /* padding */
             font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
+            border-radius: 2px; /* border radius */
             text-align: left;
             font-family: silka;
         }
         QMenu::item {
             padding: 8px 12px;
-            border-radius: 4px; /* border radius */
+            border-radius: 2px; /* border radius */
         }
         QMenu::item:selected {
             background-color: rgba(255,255,255,9%);
+            border: 1px solid rgba(255,255,255, 15%);
         }
         QMenu::item:checked {
             background-color: #C2185B;

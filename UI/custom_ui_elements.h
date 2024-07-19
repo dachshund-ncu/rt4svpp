@@ -30,12 +30,15 @@ public:
 
             QPushButton:hover {
                 background-color: rgba(255,255,255,5%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QPushButton:pressed {
                 background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QPushButton:checked {
                 background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QToolButton {
                 background-color: transparent; /* background color */
@@ -141,6 +144,7 @@ public:
             }
             QListWidget::item:hover {
                 background-color: rgba(255,255,255,5%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QListWidget::item:selected {
                 background-color: #C2185B;
