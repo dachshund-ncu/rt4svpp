@@ -232,8 +232,12 @@ void Rms_sec_widget::setUpPlottables()
     QFont f( "Arial", 10, QFont::Bold);
     RmsVsTime->legend->setVisible(true);
     RmsVsTime->legend->setFont(f);
+    RmsVsTime->legend->setBrush(QColor(255, 255, 255, 50));
+    RmsVsTime->legend->setBorderPen(QPen(Qt::transparent));
     intVsTime->legend->setVisible(true);
     intVsTime->legend->setFont(f);
+    intVsTime->legend->setBrush(QColor(255, 255, 255, 50));
+    intVsTime->legend->setBorderPen(QPen(Qt::transparent));
 
 
     // -- connecting the axis --

@@ -15,11 +15,11 @@ public:
         setAttribute(Qt::WA_StyledBackground);
         QString styleSheet = R"(
             QWidget {
-                background-color: rgba(255,255,255,3%);
+                background-color: rgba(255,255,255,5%);
                 border-radius: 8px; /* border radius */
             }
             QPushButton {
-                background-color: rgba(255,255,255,3%); /* background color */
+                background-color: rgba(255,255,255,5%); /* background color */
                 color: white; /* text color */
                 padding: 12px; /* padding */
                 font-size: 15px; /* font size */
@@ -29,7 +29,7 @@ public:
             }
 
             QPushButton:hover {
-                background-color: rgba(255,255,255,5%);
+                background-color: rgba(255,255,255,10%);
                 border: 1px solid rgba(255,255,255, 15%);
             }
             QPushButton:pressed {

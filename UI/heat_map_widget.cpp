@@ -78,6 +78,15 @@ void heat_map_widget::customizeApperance()
                 text-align: left;
                 font-family: silka;
             }
+            QTextEdit {
+                background-color: rgba(255,255,255,5%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
         )";
         QString widget_ss = R"(
             QWidget {
