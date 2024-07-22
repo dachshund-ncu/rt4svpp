@@ -7,7 +7,7 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
     QString styleSheet = R"(
 
         QWidget {
-            margin-left: 0px;
+            margin: 0px;
             background-color: transparent;
             border-radius: 8px; /* border radius */
         }
@@ -16,13 +16,12 @@ vbox_mainw::vbox_mainw(QObject *parent, const char * name)
             color: white; /* text color */
             padding: 6px; /* padding */
             font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
+            border-radius: 6px; /* border radius */
             text-align: left;
             font-family: silka;
             margin-top: 4px;
             margin-bottom: 4px;
             border-left: 3px solid transparent;
-            border-image: linear-gradient(to bottom, #000 50%, transparent 50%) 100% 1;
         }
 
         QToolButton:hover {
