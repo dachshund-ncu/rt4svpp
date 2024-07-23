@@ -1,51 +1,10 @@
 #include "vbox_main.h"
-#include <iostream>
 
 vbox_mainw::vbox_mainw(QObject *parent, const char * name)
 {
     this->setOrientation(Qt::Vertical);
-    QString styleSheet = R"(
-
-        QWidget {
-            margin: 0px;
-            background-color: transparent;
-            border-radius: 8px; /* border radius */
-        }
-        QToolButton {
-            background-color: transparent; /* background color */
-            color: white; /* text color */
-            padding: 6px; /* padding */
-            font-size: 15px; /* font size */
-            border-radius: 6px; /* border radius */
-            text-align: left;
-            font-family: silka;
-            margin-top: 4px;
-            margin-bottom: 4px;
-            border-left: 3px solid transparent;
-        }
-
-        QToolButton:hover {
-            background-color: rgba(255,255,255,9%);
-        }
-        QToolButton:pressed {
-            background-color: rgba(255,255,255,18%);
-        }
-        QToolButton:checked {
-            border-left-color: #C2185B;
-            /*background-color: #C2185B;*/
-        }
-        QToolTip {
-            background-color: #141414;
-            color: white; /* text color */
-            padding: 4px; /* padding */
-            font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
-            text-align: left;
-            font-family: silka;
-        }
-    )";
-
-    this->setStyleSheet(styleSheet);
+    this->setDarkMode();
+    // this->setLightMode();
 
     QSize *sz = new QSize(25,25);
     this->setIconSize(*sz);
@@ -299,6 +258,105 @@ void vbox_mainw::connectToSlots(QObject *parent)
 //    QObject::connect(DarthMode, SIGNAL(clicked()), parent, SLOT(darkModeSlot()));
 }
 // ---------------------------------------------------------------
+
+void vbox_mainw::setDarkMode(){
+    QString styleSheet = R"(
+
+        QWidget {
+            margin: 0px;
+            background-color: transparent;
+            border-radius: 8px; /* border radius */
+        }
+        QToolButton {
+            background-color: transparent; /* background color */
+            color: white; /* text color */
+            padding: 6px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 6px; /* border radius */
+            text-align: left;
+            font-family: silka;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+        }
+
+        QToolButton:hover {
+            background-color: rgba(255,255,255,9%);
+        }
+        QToolButton:pressed {
+            background-color: rgba(255,255,255,9%);
+        }
+        QToolButton:checked {
+            border-left-color: #C2185B;
+            background-color: rgba(255,255,255,9%);/*#C2185B;*/
+        }
+        QToolTip {
+            background-color: #141414;
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+    )";
+
+    this->setStyleSheet(styleSheet);
+}
+
+void vbox_mainw::setLightMode(){
+    QString styleSheet = R"(
+
+        QWidget {
+            margin: 0px;
+            background-color: transparent;
+            border-radius: 8px; /* border radius */
+        }
+        QToolButton {
+            background-color: rgba(0,0,0,18%); /* background color */
+            color: black; /* text color */
+            padding: 6px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 6px; /* border radius */
+            text-align: left;
+            font-family: silka;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+        }
+
+        QToolButton:hover {
+            background-color: rgba(0,0,0,27%);
+        }
+        QToolButton:pressed {
+            background-color: rgba(0,0,0,27%);
+        }
+        QToolButton:checked {
+            border-left-color: #C2185B;
+            background-color: rgba(0,0,0,27%);/*#C2185B;*/
+        }
+        QToolTip {
+            background-color: #141414;
+            color: white; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 4px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+    )";
+
+    this->setStyleSheet(styleSheet);
+}
+
+void vbox_mainw::darthMode(bool enabled){
+    if(enabled){
+        this->setDarkMode();
+    }
+    else{
+        this->setLightMode();
+    }
+}
 
 /*
 void openInt()

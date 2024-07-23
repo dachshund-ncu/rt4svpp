@@ -8,14 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <sstream>
-#include <algorithm>
-#include <iomanip>
-#include <deque>
-#include <stdlib.h>
 #include <string>
-#include <chrono>
-#include <thread>
 #include <CCfits/CCfits>
 
 using namespace std;
@@ -26,6 +19,7 @@ body::body(QWidget *parent, const char * nazwa)
 
     Q_INIT_RESOURCE(resources);
     customizeApperance();
+    customizeApperanceLight();
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
     this->setGeometry(300, 300, 150, 720);
@@ -165,8 +159,82 @@ void body::customizeApperance()
     dynSpecM->setStyleSheet(menuSS);
     singSpecM->setStyleSheet(menuSS);
     rmsSecM->setStyleSheet(menuSS);
+}
+
+void body::customizeApperanceLight(){
+    /*
+     * Aims to customize apperance of the main window of the app
+     */
+    QString styleSheet_widget = R"(
+        QWidget {
+            background-color: #FFFFFF;
+            border-radius: 4px; /* border radius */
+        }
+    )";
+    QString styleSheet_mw = R"(
+        QWidget {
+            background-color: #FFFFFF;
+            border-radius: 4px; /* border radius */
+        }
+    )";
+    QString menuSS = R"(
+        QMenuBar {
+            background-color: transparent;
+        }
+        QMenuBar::item {
+            background-color: #FFFFFF;
+            padding: 8px; /* padding */
+            border-radius: 2px; /* border radius */
+            font-size: 12px; /* font size */
+            text-align: left;
+            font-family: silka;
+            color: black; /* text color */
+        }
+        QMenuBar::item:selected {
+            background-color: rgba(0,0,0,9%);
+            border: 1px solid rgba(0,0,0, 15%);
+        }
+        QMenu {
+            background-color: #FFFFFF;
+            color: black; /* text color */
+            padding: 4px; /* padding */
+            font-size: 12px; /* font size */
+            border-radius: 2px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+        QAction{
+            color: black; /* text color */
+            padding: 4px; /* padding */
+            font-size: 15px; /* font size */
+            border-radius: 2px; /* border radius */
+            text-align: left;
+            font-family: silka;
+        }
+        QMenu::item {
+            padding: 8px 12px;
+            border-radius: 2px; /* border radius */
+        }
+        QMenu::item:selected {
+            background-color: rgba(0,0,0,9%);
+            border: 1px solid rgba(0,0,0, 15%);
+        }
+        QMenu::item:checked {
+            background-color: #C2185B;
+        }
+    )";
 
 
+    this->setCentralWidget(&window);
+    this->window.setStyleSheet(styleSheet_widget);
+    this->setStyleSheet(styleSheet_mw);
+
+    superMegaMenuBar->setStyleSheet(menuSS);
+    filesM->setStyleSheet(menuSS);
+    advancedM->setStyleSheet(menuSS);
+    dynSpecM->setStyleSheet(menuSS);
+    singSpecM->setStyleSheet(menuSS);
+    rmsSecM->setStyleSheet(menuSS);
 }
 
 void body::setCheckedProperButtons()
@@ -1372,12 +1440,21 @@ void body::darkModeAction()
 
 void body::set_dark_mode(bool mode)
 {
+    this->darthMode(mode);
     dynspecWidget->darthMode(mode);
     ssWidget->darthMode(mode);
     rms_sec_w->darthMode(mode);
+    left_hand_list->darthMode(mode);
 }
 
-
+void body::darthMode(bool mode){
+    if (mode){
+        this->customizeApperance();
+    }
+    else{
+        this->customizeApperanceLight();
+    }
+}
 
 // -----------------------------------------------------------------------------------
 void body::openIntegrateSection()

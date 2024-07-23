@@ -241,7 +241,9 @@ private:
     bool checkIfFits(const char * filename);
     void setCheckedProperButtons();
     void customizeApperance();
+    void customizeApperanceLight();
     void popupMessage(std::string message_type, std::string message_text);
+    void darthMode(bool mode = false);
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --

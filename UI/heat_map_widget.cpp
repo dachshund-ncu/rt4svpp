@@ -104,6 +104,73 @@ void heat_map_widget::customizeApperance()
         this->rightLabel->setStyleSheet(toolBarSS);
 }
 
+void heat_map_widget::customizeApperanceLight(){
+    QString toolBarSS = R"(
+            QWidget {
+                background-color: transparent;
+            }
+            QLabel {
+                background-color: transparent;
+                color: white; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QToolButton {
+                background-color: transparent; /* background color */
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QToolButton:hover {
+                background-color: rgba(0,0,0,27%);
+            }
+            QToolButton:pressed {
+                background-color: rgba(0,0,0,27%);
+            }
+            QToolButton:checked {
+                border-left-color: #C2185B;
+                background-color: rgba(0,0,0,27%);/*#C2185B;*/
+            }
+            QToolTip {
+                background-color: #141414;
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QTextEdit {
+                background-color: rgba(0,0,0,9%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+        )";
+    QString widget_ss = R"(
+            QWidget {
+                background-color: rgba(0,0,0,9%);
+            }
+        )";
+
+    //        heatMapWidget_w->setAttribute()
+    heatMapWidget_w->setStyleSheet(widget_ss);
+    colorbarWidget_w->setStyleSheet(widget_ss);
+    spectrum_w->setStyleSheet(widget_ss);
+    lcs_w->setStyleSheet(widget_ss);
+    this->bottomToolBar->setStyleSheet(toolBarSS);
+    this->leftLabel->setStyleSheet(toolBarSS);
+    this->rightLabel->setStyleSheet(toolBarSS);
+}
+
 void heat_map_widget::setButtonsProperties()
 {
     // -------------------------
@@ -1045,6 +1112,7 @@ void heat_map_widget::setDarkMode()
     QPen background(Qt::transparent);
 //    QPen background(QColor(255,255,255, 9));
     colorCanvas(background, spinesPen);
+    customizeApperance();
 }
 
 void heat_map_widget::setLightMode()
@@ -1058,8 +1126,9 @@ void heat_map_widget::setLightMode()
     colorGraphs(dataPen, errorPen, dotPen);
     // ------------------------
     QPen spinesPen(Qt::black);
-    QPen background(Qt::white);
+    QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
+    customizeApperanceLight();
 }
 
 void heat_map_widget::darthMode(bool enabled)

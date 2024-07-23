@@ -59,6 +59,7 @@ public:
 public:
     //void appendWidget(QWidget * widget);
     //void deleteWidgetFromList(QWidget * widget);
+    void darthMode(bool enabled = false);
 public slots:
     // -- integrate --
     //void openInt();
@@ -72,6 +73,8 @@ private:
     void addEverythingToWidget();
     void connectToSlots(QObject * parent);
     void closeAnySection();
+    void setLightMode();
+    void setDarkMode();
 };
 
 #endif // VBOX_MAIN_H
