@@ -111,7 +111,7 @@ void heat_map_widget::customizeApperanceLight(){
             }
             QLabel {
                 background-color: transparent;
-                color: white; /* text color */
+                color: black; /* text color */
                 font-size: 15px; /* font size */
                 text-align: left;
                 font-family: silka;
@@ -1112,6 +1112,7 @@ void heat_map_widget::setDarkMode()
     QPen background(Qt::transparent);
 //    QPen background(QColor(255,255,255, 9));
     colorCanvas(background, spinesPen);
+    this->setDarkModeW();
     customizeApperance();
 }
 
@@ -1128,6 +1129,7 @@ void heat_map_widget::setLightMode()
     QPen spinesPen(Qt::black);
     QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
+    this->setLightModeW();
     customizeApperanceLight();
 }
 
