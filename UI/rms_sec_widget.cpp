@@ -11,7 +11,6 @@ Rms_sec_widget::Rms_sec_widget(spectral_container * dataTable)
     placeOnGrid();
     connectElementsToSlots();
     setUpPopupWindow();
-    customizeApperance();
 }
 
 void Rms_sec_widget::customizeApperance()
@@ -19,87 +18,18 @@ void Rms_sec_widget::customizeApperance()
     /*
      * Customizes apperance of this widget
      */
-    QString toolBarSS = R"(
-        QWidget {
-            background-color: transparent;
-        }
-        QLabel {
-            background-color: transparent;
-        }
-        QToolButton {
-            background-color: transparent; /* background color */
-            color: white; /* text color */
-            padding: 4px; /* padding */
-            font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
-            text-align: left;
-            font-family: silka;
-        }
-
-        QToolButton:hover {
-            background-color: rgba(255,255,255,45);
-        }
-        QToolButton:pressed {
-            background-color: rgba(255,255,255,120);
-        }
-        QToolButton:checked {
-            background-color: rgba(255,255,255,120);
-        }
-        QToolTip {
-            background-color: #141414;
-            color: white; /* text color */
-            padding: 4px; /* padding */
-            font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
-            text-align: left;
-            font-family: silka;
-        }
-    )";
-    QString widget_ss = R"(
-        QWidget {
-            background-color: rgba(255,255,255,5%);
-        }
-    )";
-    RmsVsTime_w->setStyleSheet(widget_ss);
-    tsysVsTime_w->setStyleSheet(widget_ss);
-    intVsTime_w->setStyleSheet(widget_ss);
-    spectrumOnPopupWindow_w->setStyleSheet(widget_ss);
-
-    QString styleSheet_popup = R"(
-        QWidget {
-            background-color: #121212;
-            border-radius: 8px; /* border radius */
-        }
-        QPushButton {
-            background-color: transparent; /* background color */
-            color: white; /* text color */
-            padding: 4px; /* padding */
-            font-size: 15px; /* font size */
-            border-radius: 4px; /* border radius */
-            text-align: left;
-            font-family: silka;
-        }
-
-        QPushButton:hover {
-            background-color: rgba(255,255,255,5%);
-        }
-        QPushButton:pressed {
-            background-color: rgba(255,255,255,18%);
-        }
-        QPushButton:checked {
-            background-color: rgba(255,255,255,18%);
-        }
-        QLabel {
-            background-color: transparent;
-            color: white; /* text color */
-            font-size: 15px; /* font size */
-            text-align: left;
-            font-family: silka;
-        }
-    )";
-    popupWindow->setAttribute(Qt::WA_StyledBackground);
-    popupWindow->setStyleSheet(styleSheet_popup);
+    this->setDarkModeW();
+    setCustomSSDarkOnPopupWindow();
 }
+
+void Rms_sec_widget::customizeApperanceLight(){
+    /*
+     * Customizes apperance of this widget for light mode
+     */
+    this->setLightModeW();
+    setCustomSSLightOnPopupWindow();
+}
+
 void Rms_sec_widget::setUpButtons()
 {
     // -- rozmiary --
@@ -677,6 +607,7 @@ void Rms_sec_widget::setDarkMode()
     tsysCshLabel->setColor(Qt::white);
     tintCshLabel->setColor(Qt::white);
     // --------------
+    customizeApperance();
     // replotujemy
     replotGraphs();
 }
@@ -684,7 +615,7 @@ void Rms_sec_widget::setDarkMode()
 void Rms_sec_widget::setLightMode()
 {
     QPen spinesPen(Qt::black);
-    QPen background(Qt::white);
+    QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
     QPen dataPen(QColor(0,0,255));
     RmsVsTime->graph(0)->setPen(dataPen);
@@ -702,6 +633,7 @@ void Rms_sec_widget::setLightMode()
     tsysCshLabel->setColor(Qt::black);
     tintCshLabel->setColor(Qt::black);
     // --------------
+    customizeApperanceLight();
     // replotujemy
     replotGraphs();
 }
@@ -1130,6 +1062,7 @@ void Rms_sec_widget::showCrosshairSlot()
     if (!showCross->isChecked())
     {
         RmsXAxisLine->setVisible(false);
+
         RmsYAxisLine->setVisible(false);
         tsysXAxisLine->setVisible(false);
         tsysYAxisLine->setVisible(false);
@@ -1145,3 +1078,330 @@ void Rms_sec_widget::showCrosshairSlot()
     }
 }
 
+void Rms_sec_widget::setCustomSSDarkOnPopupWindow(){
+    QString ssDark = R"(
+            QWidget {
+                background-color: #121212;
+                border-radius: 8px; /* border radius */
+            }
+            QPushButton {
+                background-color: rgba(255,255,255,5%); /* background color */
+                color: white; /* text color */
+                padding: 12px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(255,255,255,10%);
+                border: 1px solid rgba(255,255,255, 15%);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
+            }
+            QPushButton:checked {
+                background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
+            }
+            QToolButton {
+                background-color: transparent; /* background color */
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QToolButton:hover {
+                background-color: rgba(255,255,255,5%);
+            }
+            QToolButton:pressed {
+                background-color: rgba(255,255,255,10%);
+            }
+            QToolButton:checked {
+                background-color: rgba(255,255,255,10%);
+            }
+            QToolTip {
+                background-color: #141414;
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QTextEdit {
+                background-color: rgba(255,255,255,5%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QCheckBox {
+                background-color: transparent;
+                color: white; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QCheckBox::indicator {
+                background-color: #000000;
+                padding: 4px; /* padding */
+                border-radius: 4px; /* border radius */
+            }
+            QCheckBox::indicator::checked {
+                background-color: #C2185B;
+            }
+            QLabel {
+                background-color: transparent;
+                color: white; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QTabWidget::pane {
+                background-color: transparent; /* background color */
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QTabBar::tab {
+                background-color: transparent; /* background color */
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            QTabBar::tab:selected {
+                background-color: #C2185B;
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            QListWidget {
+                background-color: rgba(255,255,255,5%);
+            }
+            QListWidget::item {
+                background-color: transparent;
+                color: white; /* text color */
+                padding: 4px;
+                font-size: 12px;
+                font-family: silka;
+                padding: 8px 12px;
+                border-radius: 4px; /* border radius */
+            }
+            QListWidget::item:hover {
+                background-color: rgba(255,255,255,5%);
+                border: 1px solid rgba(255,255,255, 15%);
+            }
+            QListWidget::item:selected {
+                background-color: #C2185B;
+            }
+            QSpinBox {
+                background-color: rgba(255,255,255,5%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background-color: transparent;
+                color: red; /* text color */
+                border: 1px solid rgba(255,255,255,5%);
+                padding: 2px;
+            }
+            QSpinBox::up-button:pressed, QSpinBox::down-button:pressed  {
+                background-color: #C2185B;
+            }
+            QSpinBox::up-arrow, QSpinBox::down-arrow {
+                color: white; /* text color */
+                padding: 2px;
+            }
+        )";
+    this->popupWindow->setStyleSheet(ssDark);
+}
+
+void Rms_sec_widget::setCustomSSLightOnPopupWindow(){
+    QString ssLight = R"(
+            QWidget {
+                background-color: #DEE4E7;
+                border-radius: 8px; /* border radius */
+            }
+            QPushButton {
+                background-color: rgba(0,0,0,5%); /* background color */
+                color: black; /* text color */
+                padding: 12px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(0,0,0, 10%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QPushButton:pressed {
+                background-color: rgba(0,0,0, 18%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QPushButton:checked {
+                background-color: rgba(0,0,0, 18%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QToolButton {
+                background-color: transparent; /* background color */
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QToolButton:hover {
+                background-color: rgba(0,0,0,5%);
+            }
+            QToolButton:pressed {
+                background-color: rgba(0,0,0,10%);
+            }
+            QToolButton:checked {
+                background-color: rgba(0,0,0,10%);
+            }
+            QToolTip {
+                background-color: #141414;
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QTextEdit {
+                background-color: rgba(0,0,0,5%);
+                color: white; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QCheckBox {
+                background-color: transparent;
+                color: black; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QCheckBox::indicator {
+                background-color: rgba(255,255,255,100%);;
+                padding: 4px; /* padding */
+                border-radius: 4px; /* border radius */
+            }
+            QCheckBox::indicator::checked {
+                background-color: #C2185B;
+            }
+            QLabel {
+                background-color: transparent;
+                color: black; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+            QTabWidget::pane {
+                background-color: transparent; /* background color */
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+            QTabBar::tab {
+                background-color: transparent; /* background color */
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            QTabBar::tab:selected {
+                background-color: #C2185B;
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            QListWidget {
+                background-color: rgba(0,0,0,5%);
+            }
+            QListWidget::item {
+                background-color: transparent;
+                color: black; /* text color */
+                padding: 4px;
+                font-size: 12px;
+                font-family: silka;
+                padding: 8px 12px;
+                border-radius: 4px; /* border radius */
+            }
+            QListWidget::item:hover {
+                background-color: rgba(0,0,0,5%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QListWidget::item:selected {
+                background-color: #C2185B;
+            }
+            QSpinBox {
+                background-color: rgba(0,0,0,5%);
+                color: black; /* text color */
+                padding: 4px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 8px; /* border radius */
+                text-align: left;
+                font-family: silka;
+                padding: 8px 12px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background-color: transparent;
+                color: red; /* text color */
+                border: 1px solid rgba(0,0,0,5%);
+                padding: 2px;
+            }
+            QSpinBox::up-button:pressed, QSpinBox::down-button:pressed  {
+                background-color: #C2185B;
+            }
+            QSpinBox::up-arrow, QSpinBox::down-arrow {
+                color: black; /* text color */
+                padding: 2px;
+            }
+        )";
+    this->popupWindow->setStyleSheet(ssLight);
+}

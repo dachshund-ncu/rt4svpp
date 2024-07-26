@@ -159,6 +159,16 @@ void body::customizeApperance()
     dynSpecM->setStyleSheet(menuSS);
     singSpecM->setStyleSheet(menuSS);
     rmsSecM->setStyleSheet(menuSS);
+
+    // -- customize popup widgets apperance --
+    intWidget->setLightModeW();
+    averOverVelocityWidget->setDarkModeW();
+    averOverTimeWidget->setDarkModeW();
+    normalizationSelector->setDarkModeW();
+    lcsExtractorWidget->setDarkModeW();
+    SpectralIndexWidget->setDarkModeW();
+    exDynspWidget->setDarkModeW();
+    selectorOfRMS->setDarkModeW();
 }
 
 void body::customizeApperanceLight(){
@@ -167,13 +177,13 @@ void body::customizeApperanceLight(){
      */
     QString styleSheet_widget = R"(
         QWidget {
-            background-color: #FFFFFF;
+            background-color: #DEE4E7;
             border-radius: 4px; /* border radius */
         }
     )";
     QString styleSheet_mw = R"(
         QWidget {
-            background-color: #FFFFFF;
+            background-color: #DEE4E7;
             border-radius: 4px; /* border radius */
         }
     )";
@@ -182,7 +192,7 @@ void body::customizeApperanceLight(){
             background-color: transparent;
         }
         QMenuBar::item {
-            background-color: #FFFFFF;
+            background-color: #DEE4E7;
             padding: 8px; /* padding */
             border-radius: 2px; /* border radius */
             font-size: 12px; /* font size */
@@ -195,7 +205,7 @@ void body::customizeApperanceLight(){
             border: 1px solid rgba(0,0,0, 15%);
         }
         QMenu {
-            background-color: #FFFFFF;
+            background-color: #DEE4E7;
             color: black; /* text color */
             padding: 4px; /* padding */
             font-size: 12px; /* font size */
@@ -229,12 +239,24 @@ void body::customizeApperanceLight(){
     this->window.setStyleSheet(styleSheet_widget);
     this->setStyleSheet(styleSheet_mw);
 
+    // -- customize menus apperance --
     superMegaMenuBar->setStyleSheet(menuSS);
     filesM->setStyleSheet(menuSS);
     advancedM->setStyleSheet(menuSS);
     dynSpecM->setStyleSheet(menuSS);
     singSpecM->setStyleSheet(menuSS);
     rmsSecM->setStyleSheet(menuSS);
+
+    // -- customize popup widgets apperance --
+    intWidget->setLightModeW();
+    averOverVelocityWidget->setLightModeW();
+    averOverTimeWidget->setLightModeW();
+    normalizationSelector->setLightModeW();
+    lcsExtractorWidget->setLightModeW();
+    SpectralIndexWidget->setLightModeW();
+    exDynspWidget->setLightModeW();
+    selectorOfRMS->setLightModeW();
+
 }
 
 void body::setCheckedProperButtons()
@@ -1906,6 +1928,10 @@ double body::readNumberFromQTextEdit(QTextEdit *box)
 
 void body::popupMessage(std::string message_type, std::string message_text)
 {
-    CustomMessageBox ee(QString::fromStdString(message_type), QString::fromStdString(message_text));
+    CustomMessageBox ee(
+                QString::fromStdString(message_type),
+                QString::fromStdString(message_text),
+                nullptr,
+                this->dark_mode_enabled);
     ee.exec();
 }

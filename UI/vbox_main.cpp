@@ -313,7 +313,7 @@ void vbox_mainw::setLightMode(){
             border-radius: 8px; /* border radius */
         }
         QToolButton {
-            background-color: rgba(0,0,0,18%); /* background color */
+            background-color: transparent; /* background color */
             color: black; /* text color */
             padding: 6px; /* padding */
             font-size: 15px; /* font size */

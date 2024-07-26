@@ -11,11 +11,7 @@
 class customWidget : public QWidget
 {
 public:
-    QString styleSheetDark;
-    QString styleSheetLight;
-    customWidget(){
-        setAttribute(Qt::WA_StyledBackground);
-        styleSheetDark = R"(
+    QString styleSheetDark = R"(
             QWidget {
                 background-color: rgba(255,255,255,5%);
                 border-radius: 8px; /* border radius */
@@ -175,14 +171,13 @@ public:
                 padding: 2px;
             }
         )";
-
-        styleSheetLight = R"(
+    QString styleSheetLight = R"(
             QWidget {
                 background-color: rgba(0,0,0,5%);
                 border-radius: 8px; /* border radius */
             }
             QPushButton {
-                background-color: rgba(0,0,0,5%); /* background color */
+                background-color: rgba(0,0,0,9%); /* background color */
                 color: black; /* text color */
                 padding: 12px; /* padding */
                 font-size: 15px; /* font size */
@@ -233,7 +228,7 @@ public:
             }
             QTextEdit {
                 background-color: rgba(0,0,0,5%);
-                color: white; /* text color */
+                color: black; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
                 border-radius: 4px; /* border radius */
@@ -336,8 +331,13 @@ public:
                 padding: 2px;
             }
         )";
-
+    customWidget(){
+        setAttribute(Qt::WA_StyledBackground);
         this->setLightModeW();
+    }
+    customWidget(QWidget * parent){
+        customWidget();
+        this->setParent(parent);
     }
 
     void setLightModeW(){
@@ -347,7 +347,6 @@ public:
     void setDarkModeW(){
         this->setStyleSheet(this->styleSheetDark);
     }
-
 };
 
 
@@ -369,7 +368,11 @@ public:
 class CustomMessageBox : public QDialog
 {
 public:
-    CustomMessageBox(const QString& title, const QString& text, QWidget *parent = nullptr)
+    CustomMessageBox(
+            const QString& title,
+            const QString& text,
+            QWidget *parent = nullptr,
+            bool isDarkMode = true)
         : QDialog(parent)
     {
         setWindowFlags(Qt::FramelessWindowHint); // Remove window frame
@@ -391,7 +394,7 @@ public:
         mainLayout->addWidget(titleLabel);
         mainLayout->addWidget(messageLabel);
         mainLayout->addWidget(okButton);
-        QString styleSheet = R"(
+        QString styleSheetDark = R"(
             QWidget {
                 background-color: #121212;
                 border-radius: 8px; /* border radius */
@@ -407,13 +410,16 @@ public:
             }
 
             QPushButton:hover {
-                background-color: rgba(255,255,255,5%);
+                background-color: rgba(255,255,255,10%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QPushButton:pressed {
                 background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QPushButton:checked {
                 background-color: rgba(255,255,255,18%);
+                border: 1px solid rgba(255,255,255, 15%);
             }
             QLabel {
                 background-color: transparent;
@@ -423,7 +429,47 @@ public:
                 font-family: silka;
             }
         )";
-        setStyleSheet(styleSheet);
+        QString styleSheetLight = R"(
+            QWidget {
+                background-color: #DEE4E7;
+                border-radius: 8px; /* border radius */
+            }
+            QPushButton {
+                background-color: transparent; /* background color */
+                color: black; /* text color */
+                padding: 12px; /* padding */
+                font-size: 15px; /* font size */
+                border-radius: 4px; /* border radius */
+                text-align: left;
+                font-family: silka;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(0,0,0, 10%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QPushButton:pressed {
+                background-color: rgba(0,0,0, 18%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QPushButton:checked {
+                background-color: rgba(0,0,0, 18%);
+                border: 1px solid rgba(0,0,0, 15%);
+            }
+            QLabel {
+                background-color: transparent;
+                color: black; /* text color */
+                font-size: 15px; /* font size */
+                text-align: left;
+                font-family: silka;
+            }
+        )";
+        if (isDarkMode){
+            setStyleSheet(styleSheetDark);
+        }
+        else{
+            setStyleSheet(styleSheetLight);
+        }
         setWindowTitle(title);
     }
 };

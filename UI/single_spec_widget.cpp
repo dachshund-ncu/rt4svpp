@@ -6,7 +6,7 @@ single_spec_widget::single_spec_widget(spectral_container * dataTable) : dataTab
     placeEverythingTogether();
     connectEv();
     setUpGraphs();
-    customizeApperance();
+//    customizeApperance();
     this->setGeometry(300,300, 1260, 720);
 }
 
@@ -15,6 +15,16 @@ void single_spec_widget::customizeApperance()
     QString widget_ss = R"(
         QWidget {
             background-color: rgba(255,255,255,5%);
+        }
+    )";
+    singleSpectrumWidget_w->setStyleSheet(widget_ss);
+}
+
+void single_spec_widget::customizeApperanceLight()
+{
+    QString widget_ss = R"(
+        QWidget {
+            background-color: rgba(0,0,0,9%);
         }
     )";
     singleSpectrumWidget_w->setStyleSheet(widget_ss);
@@ -210,13 +220,17 @@ void single_spec_widget::setDarkMode()
     QPen spinesPen(Qt::white);
     QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
+    setDarkModeW();
+//    customizeApperance();
 }
 
 void single_spec_widget::setLightMode()
 {
     QPen spinesPen(Qt::black);
-    QPen background(Qt::white);
+    QPen background(Qt::transparent);
     colorCanvas(background, spinesPen);
+    setLightModeW();
+//    customizeApperanceLight();
 }
 
 void single_spec_widget::colorCanvas(QPen background, QPen spines)

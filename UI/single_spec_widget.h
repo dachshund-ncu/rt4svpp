@@ -45,6 +45,7 @@ public:
     bool listOfObservationsFIlled = 0;
 private:
     void customizeApperance();
+    void customizeApperanceLight();
     void setUpButtons();
     void placeEverythingTogether();
     void setUpPlots();
