@@ -161,7 +161,7 @@ void body::customizeApperance()
     rmsSecM->setStyleSheet(menuSS);
 
     // -- customize popup widgets apperance --
-    intWidget->setLightModeW();
+    intWidget->setDarkModeW();
     averOverVelocityWidget->setDarkModeW();
     averOverTimeWidget->setDarkModeW();
     normalizationSelector->setDarkModeW();
@@ -1467,6 +1467,7 @@ void body::set_dark_mode(bool mode)
     ssWidget->darthMode(mode);
     rms_sec_w->darthMode(mode);
     left_hand_list->darthMode(mode);
+
 }
 
 void body::darthMode(bool mode){

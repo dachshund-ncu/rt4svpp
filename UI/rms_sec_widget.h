@@ -92,6 +92,7 @@ public:
     bool popupWindowOpened = false;
     int indexOfTheSpectrum = 0;
     // --------------------------
+    bool darkMode = false;
     // -----------------------------------------------------
 private:
     void setUpButtons();

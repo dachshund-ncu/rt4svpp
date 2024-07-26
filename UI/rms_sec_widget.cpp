@@ -700,6 +700,8 @@ void Rms_sec_widget::darthMode(bool darthModeEnabled)
         setDarkMode();
     else
         setLightMode();
+    darkMode = darthModeEnabled;
+
 }
 
 void Rms_sec_widget::crossHairRmsVsTime(QMouseEvent* event)
@@ -828,7 +830,12 @@ void Rms_sec_widget::exportRmsVsTimeSlot()
 {
     dataTable->exportRmsData();
     string message = "Saved Rms vs Time to\n" + dataTable->getFileNameForExportedRms();
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString(message),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 
 void Rms_sec_widget::exportTintVsTimeSlot()
@@ -839,7 +846,12 @@ void Rms_sec_widget::exportTintVsTimeSlot()
     // --- wiadomość końcowa ---
     string message = "";
     message = "Integrated over channels " + std::to_string(min) + " -> " + std::to_string(max) + "\n" + "Saved to " + dataTable->getIntegrationFileName(min, max);
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString(message),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 
 }
 
@@ -847,7 +859,13 @@ void Rms_sec_widget::exportTsysVsTimeSlot()
 {
     dataTable->exportTsysData();
     string message = "Saved Tsys vs Time to\n" + dataTable->getFileNameForExportedTsys();
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    // QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString(message),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 
 void Rms_sec_widget::exportAllAboveSlot()

@@ -198,12 +198,22 @@ void single_spec_widget::savePlotsOnSingleSpectrumSlot()
         dataTable->saveSpectrum(i+1);
         message += dataTable->getFileNameForAsciiSave(i+1) + "\n";
     }
-    QMessageBox::information(this, tr("Message to you!"), QString::fromStdString(message));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString(message),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 void single_spec_widget::saveAllSpectraToGnuplotSlot()
 {
     dataTable->saveAllSpectra();
-    QMessageBox::information(this, tr("Message to you!"), tr("Saved all spectra succesfully!"));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString("Saved all spectra succesfully!"),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 
 void single_spec_widget::darthMode(bool enabled)
@@ -212,6 +222,7 @@ void single_spec_widget::darthMode(bool enabled)
         setDarkMode();
     else
         setLightMode();
+    this->darkMode = enabled;
     SingleSpectrumWidget->replot();
 }
 

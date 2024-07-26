@@ -965,7 +965,12 @@ void heat_map_widget::makeLCS()
     dataTable->averageOverVelocity4Pols(yIndex+1, yIndex+1, isotime->isChecked());
     string message = "";
     message = "Created lc over channel " + std::to_string(yIndex+1) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(yIndex+1, yIndex+1);
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString("Saved all spectra succesfully!"),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 
 void heat_map_widget::setLogScale_slot()
@@ -1143,6 +1148,7 @@ void heat_map_widget::darthMode(bool enabled)
     colorbarWidget->replot();
     spectrumPlot->replot();
     lcsPlot->replot();
+    this->darkMode = enabled;
 }
 
 void heat_map_widget::flagActualEpoch()

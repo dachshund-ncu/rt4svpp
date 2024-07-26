@@ -116,6 +116,7 @@ public:
     // -- inne --
     bool firstPlotDone = false;
     bool normalizationB = false;
+    bool darkMode = false;
 
     // -- custom widgets --
     contentViewer * cv = new contentViewer(this);

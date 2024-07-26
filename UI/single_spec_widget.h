@@ -43,6 +43,7 @@ public:
     std::vector < int > epochsPlotted;
     // -- boole --
     bool listOfObservationsFIlled = 0;
+    bool darkMode = false;
 private:
     void customizeApperance();
     void customizeApperanceLight();

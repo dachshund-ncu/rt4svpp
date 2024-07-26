@@ -333,7 +333,7 @@ public:
         )";
     customWidget(){
         setAttribute(Qt::WA_StyledBackground);
-        this->setLightModeW();
+        this->setDarkModeW();
     }
     customWidget(QWidget * parent){
         customWidget();
