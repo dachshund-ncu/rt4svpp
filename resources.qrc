@@ -28,5 +28,12 @@
         <file>images/flag-regular.svg</file>
         <file>images/rotate-left-solid.svg</file>
         <file>images/rotate-right-solid.svg</file>
+        <file>images/openSingleSpecIcon_black.svg</file>
+        <file>images/openDynSpecIcon_black.svg</file>
+        <file>images/exitIcon_black.svg</file>
+        <file>images/openRmsSection_black.svg</file>
+        <file>images/rotate-left-solid_black.svg</file>
+        <file>images/rotate-right-solid_black.svg</file>
+        <file>images/flag-regular_black.svg</file>
     </qresource>
 </RCC>

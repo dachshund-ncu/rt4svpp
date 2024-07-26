@@ -1,6 +1,6 @@
 #include "contentviewer.h"
 #include <QString>
-contentViewer::contentViewer(QWidget * parent = NULL)
+contentViewer::contentViewer(customWidget * parent)
 {
     this->setVisible(false);
     this->setWindowTitle("Obs. properties");

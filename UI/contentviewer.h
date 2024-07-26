@@ -4,14 +4,13 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <iostream>
 #include <string>
 #include <UI/custom_ui_elements.h>
 
-class contentViewer : public customWidget
+class contentViewer : public customPopupWidget
 {
 public:
-    contentViewer(QWidget * parent);
+    contentViewer(customWidget * parent = nullptr);
     // methods
     void setContent( std::string text );
     void show();

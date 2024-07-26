@@ -9,7 +9,7 @@
 #include <QTextEdit>
 #include <UI/custom_ui_elements.h>
 
-class varCoefsCalcWidget : public customWidget
+class varCoefsCalcWidget : public customPopupWidget
 {
     Q_OBJECT
 public:

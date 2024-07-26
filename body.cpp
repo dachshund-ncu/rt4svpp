@@ -885,7 +885,7 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
 
     if (geometry_window_set == 0)
     {
-        this->setGeometry(this->geometry().x(), this->geometry().y(), 1360,720);
+        this->setGeometry(this->geometry().x(), this->geometry().y(), 1460,720);
         display_dynamic_spectrum();
         geometry_window_set = 1;
     }

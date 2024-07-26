@@ -20,52 +20,24 @@ public:
     // konstruktor
     vbox_mainw(QObject *parent = 0, const char * name = 0);
 
-    // dzieci - buttony
-    // -- load --
-//    QAction * LoadAVRFiles = new QAction(this);
-//    QAction * LoadFITSFiles = new QAction(this);
-//    QAction * Reload = new QAction(this);
     // -- główne sekcje --
     QAction * DynamicSpectrum = new QAction(this);
     QAction * SingleSpectrum = new QAction(this);
     QAction * RMSSection = new QAction(this);
     // -- pomniejsze sekcje --
     spacer * spacer1 = new spacer();
-//    spacer * spacer2 = new spacer();
-//    QAction * Integrate = new QAction(this);
-//    QAction * AverOverVelocity = new QAction(this);
-//    QAction * AverOverTime = new QAction(this);
-//    QAction * SpectralIndex = new QAction(this);
-//    QAction * ExportDynamicSpectrum = new QAction(this);
     // -- dół --
     QAction * Quit = new QAction(this);
-
-    // layouty
-    //QGridLayout * VboxGrid = new QGridLayout(this);
-    //QGridLayout * persistentGrid = new QGridLayout(persistentButtons);
 
     // checkboxy
     QCheckBox * DarthMode = new QCheckBox("Darth Mode", this);
     QCheckBox * IsotimeInclude = new QCheckBox("Iso time", this);
 
-    // labele
-    //QLabel * LoadingSectionlabel = new QLabel(this);
-    //QLabel * VisualSectionLabel = new QLabel(this);
-    //QLabel * ExportAndAnalysisLabel = new QLabel(this);
-    //QLabel * OthersLabel = new QLabel(this);
-
     bool setctionOpened = 0;
 
 public:
-    //void appendWidget(QWidget * widget);
-    //void deleteWidgetFromList(QWidget * widget);
     void darthMode(bool enabled = false);
-public slots:
-    // -- integrate --
-    //void openInt();
-    //void closeInt();
-    // -- averOverVel --
-    // i tak dalej...
+
 private:
     void makeProperSizeForButtons();
     void makeProperLabelsForButtons();

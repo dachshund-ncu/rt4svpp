@@ -13,7 +13,7 @@
 #include <vector>
 #include <UI/custom_ui_elements.h>
 
-class rms_selector : public customWidget
+class rms_selector : public customPopupWidget
 {
     Q_OBJECT
 public:

@@ -81,9 +81,9 @@ public:
     bool selectable = false;
     // --------------------------
     // -- popup window --
-    customWidget * popupWindow = new customWidget();
+    customPopupWidget * popupWindow = new customPopupWidget();
     QGridLayout * gridOfPopupWindow = new QGridLayout(popupWindow);
-    QWidget * spectrumOnPopupWindow_w = new customWidget(popupWindow);
+    customWidget * spectrumOnPopupWindow_w = new customWidget(popupWindow);
     QVBoxLayout * spectrumOnPopupWindow_layout = new QVBoxLayout(spectrumOnPopupWindow_w);
     QCustomPlot * spectrumOnPopupWindow = new QCustomPlot(popupWindow);
     QPushButton * flagOnPopupWindow = new QPushButton(popupWindow);
@@ -115,8 +115,6 @@ private:
     void clearGraphSelections();
     void customizeApperance();
     void customizeApperanceLight();
-    void setCustomSSDarkOnPopupWindow();
-    void setCustomSSLightOnPopupWindow();
 
 private slots:
     void changeInteractions();
@@ -128,11 +126,6 @@ private slots:
     void crossHairRmsVsTime(QMouseEvent* event);
     void crossHairTsysVsTime(QMouseEvent* event);
     void crossHairTintVsTime(QMouseEvent* event);
-    // selekcja na wykresie
-//    void showSpectrumOnSelectRms(QMouseEvent* event);
-//    void showSpectrumOnSelectTsys(QMouseEvent* event);
-//    void showSoectrumOnSelextTint(QMouseEvent* event);
-    // export danych
     void exportRmsVsTimeSlot();
     void exportTsysVsTimeSlot();
     void exportTintVsTimeSlot();

@@ -16,7 +16,7 @@
 #include <data/spectral_container.h>
 #include <UI/custom_ui_elements.h>
 
-class integrate_widget : public customWidget
+class integrate_widget : public customPopupWidget
 {
 public:
     // konstruktor

@@ -21,22 +21,6 @@ heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * iso
 
 void heat_map_widget::customizeApperance()
 {
-//    setAutoFillBackground(false);
-//    setAttribute(Qt::WA_StyledBackground);
-//    QString styleSheet = R"(
-//        background-color: rgba(255,255,255, 9);
-//        heat_map_widget {
-//            background-color: rgba(255,255,255, 9);
-//        }
-//        QWidget {
-//            background-color: transparent;
-//            border-radius: 4px; /* border radius */
-//        }
-//        QLabel {
-//            background-color: transparent;
-//        }
-//    )";
-//    setStyleSheet(styleSheet);
         QString toolBarSS = R"(
             QWidget {
                 background-color: transparent;
@@ -102,6 +86,8 @@ void heat_map_widget::customizeApperance()
         this->bottomToolBar->setStyleSheet(toolBarSS);
         this->leftLabel->setStyleSheet(toolBarSS);
         this->rightLabel->setStyleSheet(toolBarSS);
+        this->cv->setDarkModeW();
+        setIconsDark();
 }
 
 void heat_map_widget::customizeApperanceLight(){
@@ -138,7 +124,7 @@ void heat_map_widget::customizeApperanceLight(){
             }
             QToolTip {
                 background-color: #141414;
-                color: white; /* text color */
+                color: light; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
                 border-radius: 4px; /* border radius */
@@ -147,7 +133,7 @@ void heat_map_widget::customizeApperanceLight(){
             }
             QTextEdit {
                 background-color: rgba(0,0,0,9%);
-                color: white; /* text color */
+                color: black; /* text color */
                 padding: 4px; /* padding */
                 font-size: 15px; /* font size */
                 border-radius: 4px; /* border radius */
@@ -169,7 +155,30 @@ void heat_map_widget::customizeApperanceLight(){
     this->bottomToolBar->setStyleSheet(toolBarSS);
     this->leftLabel->setStyleSheet(toolBarSS);
     this->rightLabel->setStyleSheet(toolBarSS);
+    this->cv->setLightModeW();
+    setIconsLight();
 }
+
+void heat_map_widget::setIconsLight(){
+    yDownBorder->setIcon(QIcon(":/images/DOWNicon.svg"));
+    yUpBorder->setIcon(QIcon(":/images/UPicon.svg"));
+    xDownBorder->setIcon(QIcon(":/images/LEFTicon.svg"));
+    xUpBorder->setIcon(QIcon(":/images/RIGHTicon.svg"));
+    flag->setIcon(QIcon(":/images/flag-regular_black.svg"));
+    rotate->setIcon(QIcon(":/images/rotate-left-solid_black.svg"));
+    rotate_minus->setIcon(QIcon(":/images/rotate-right-solid_black.svg"));
+}
+
+void heat_map_widget::setIconsDark(){
+    yDownBorder->setIcon(QIcon(":/images/DOWNicon.svg"));
+    yUpBorder->setIcon(QIcon(":/images/UPicon.svg"));
+    xDownBorder->setIcon(QIcon(":/images/LEFTicon.svg"));
+    xUpBorder->setIcon(QIcon(":/images/RIGHTicon.svg"));
+    flag->setIcon(QIcon(":/images/flag-regular.svg"));
+    rotate->setIcon(QIcon(":/images/rotate-left-solid.svg"));
+    rotate_minus->setIcon(QIcon(":/images/rotate-right-solid.svg"));
+}
+
 
 void heat_map_widget::setButtonsProperties()
 {
@@ -181,13 +190,10 @@ void heat_map_widget::setButtonsProperties()
     saveEdition->setText("Save");
     // -------------------------
     // -- action icons --
-    yDownBorder->setIcon(QIcon(":/images/DOWNicon.svg"));
+
     yDownBorder->setToolTip("Set actually selected channel's velocity as MINIMUM on heat map");
-    yUpBorder->setIcon(QIcon(":/images/UPicon.svg"));
     yUpBorder->setToolTip("Set actually selected channel's velocity as MAXIMUM on heat map");
-    xDownBorder->setIcon(QIcon(":/images/LEFTicon.svg"));
     xDownBorder->setToolTip("Set actually selected epoch as MINIMUM on heat map");
-    xUpBorder->setIcon(QIcon(":/images/RIGHTicon.svg"));
     xUpBorder->setToolTip("Set actually selected epoch as MAXIMUM on heat map");
     // --
     Ibut->setText("I  ");
@@ -199,11 +205,8 @@ void heat_map_widget::setButtonsProperties()
     LHCbut->setToolTip("Show STOKES LHC");
     RHCbut->setToolTip("Show STOKES RHC");
     // --
-    flag->setIcon(QIcon(":/images/flag-regular.svg"));
     flag->setToolTip("Flag selected epoch. You need to RELOAD for the flagging to take effect");
-    rotate->setIcon(QIcon(":/images/rotate-left-solid.svg"));
     rotate->setToolTip("Rotate selected spectrum");
-    rotate_minus->setIcon(QIcon(":/images/rotate-right-solid.svg"));
     rotate_minus->setToolTip("Rotate selected spectrum, but in different direction");
     // -- checkboxy --
     rotateAllPols->setChecked(true);
