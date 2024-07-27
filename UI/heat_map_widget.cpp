@@ -983,7 +983,7 @@ void heat_map_widget::makeLCS()
     message = "Created lc over channel " + std::to_string(yIndex+1) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(yIndex+1, yIndex+1);
     CustomMessageBox ee(
         "Message to you",
-        QString::fromStdString("Saved all spectra succesfully!"),
+        QString::fromStdString(message),
         nullptr,
         this->darkMode);
     ee.exec();
