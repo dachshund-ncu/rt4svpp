@@ -933,9 +933,15 @@ void heat_map_widget::saveEditedSpectra()
     // -- warunek podstawowy - sprawdza, czy została wykonana jakaś edycja na widmie dynamicznym (w domyśle rotacja albo przeliczenie I/V ) --
     if (!dataTable->madeRotation)
     {
-        QMessageBox::information(this, tr("Error!"), tr("There are no edited spectras, so nothing will be saved"));
+        CustomMessageBox ee(
+            "Message to you",
+            tr("There are no edited spectra, so nothing will be saved"),
+            nullptr,
+            this->darkMode);
+        ee.exec();
         return;
     }
+
     // -- okno do upewniania sie, ze na pewno chcesz --
     QMessageBox::StandardButton upewka;
     upewka = QMessageBox::question(this, "Are you sure?", QString::fromStdString("Do you realy want to save edited spectra?"), QMessageBox::Yes| QMessageBox::No);
@@ -944,6 +950,7 @@ void heat_map_widget::saveEditedSpectra()
         // -- jeśli klikniesz nie, nie pójdzie dalej --
         return;
     }
+
     // -- konstruujemy wiadomość --
     string message = "Saved edited spectra for: ";
     for (auto &i : dataTable->listOfModified)
@@ -953,7 +960,13 @@ void heat_map_widget::saveEditedSpectra()
     // -- faktycznie zapisujemy --
     dataTable->saveModifiedEpochs();
     // -- wyświetlamy wiadomość --
-    QMessageBox::information(this, tr("Message to you"), QString::fromStdString(message));
+    message = "Created lc over channel " + std::to_string(yIndex+1) + "\n" + "Saved to " + dataTable->getAverOverVelFileName(yIndex+1, yIndex+1);
+    CustomMessageBox ee(
+        "Message to you",
+        QString::fromStdString("Saved all spectra succesfully!"),
+        nullptr,
+        this->darkMode);
+    ee.exec();
 }
 
 void heat_map_widget::recal()
