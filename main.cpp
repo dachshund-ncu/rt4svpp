@@ -14,14 +14,12 @@ using namespace CCfits;
 
 #define version 1.46
 
-void onWelcome()
-{
+void onWelcome(){
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "-----> Welcome to RT4SV++ (RT4 Spectra Visualizer ++)" << std::endl;
 }
 
-void onHelp()
-{
+void onHelp(){
     std::cout << "-----> RT4SV++ help: " << std::endl;
     std::cout << "-----> Usage: " << std::endl;
     std::cout << "       rt4sv++ list_of_files" << std::endl;
@@ -33,14 +31,12 @@ void onHelp()
     std::cout << "-----------------------------------------" << std::endl;
 }
 
-void onVersion()
-{
+void onVersion(){
     std::cout << "-----> RT4SV++ version: " << version << std::endl;
     std::cout << "-----------------------------------------" << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     /*
      * This is MAIN function of the RT4SV++ app
      * It starts main object of the program - body (defined in body.h)
@@ -53,26 +49,20 @@ int main(int argc, char *argv[])
     // -- zaczynamy program --
     QApplication program (argc, argv);
     program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));
-
     onWelcome();
 
-    if(argc > 1)
-    {
-        for(int i = 1; i < argc; i++)
-        {
+    if(argc > 1){
+        for(int i = 1; i < argc; i++){
             std::string arg = std::string(argv[i]);
-            if(arg == "-v" || arg == "--version") // -v or --version
-            {
+            if(arg == "-v" || arg == "--version"){ // -v or --version
                 onVersion();
                 exit(0);
             }
-            else if (arg == "-h" || arg == "--help") // -h or --help
-            {
+            else if (arg == "-h" || arg == "--help"){ // -h or --help
                 onHelp();
                 exit(0);
             }
-            else // everything else
-            {
+            else{
                 body * okno = new body(nullptr, arg.c_str());
                 break;
             }
