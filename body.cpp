@@ -1,4 +1,5 @@
 ﻿#include "body.h"
+#include "libs/qcustomplot.h"
 #include <QObject>
 #include <QApplication>
 #include <QPushButton>
@@ -16,7 +17,6 @@ using namespace CCfits;
 // -- konstruktor klasy programu --
 body::body(QWidget *parent, const char * nazwa)
 {
-
     Q_INIT_RESOURCE(resources);
     customizeApperance();
     customizeApperanceLight();
@@ -119,7 +119,7 @@ void body::customizeApperance()
             border: 1px solid rgba(255,255,255, 15%);
         }
         QMenu {
-            background-color: transparent;
+            background-color: #121212;
             color: white; /* text color */
             padding: 4px; /* padding */
             font-size: 12px; /* font size */
@@ -336,7 +336,7 @@ void body::makeActions()
     rotatePlus->setText("Rotate +");
     rotateMinus->setText("Rotate -");
     save->setText("Save edited spectra");
-    recalIVA->setText("Recalibrate I and V from R/LHC");
+    recalIVA->setText("Recalibrate I and V from L/RHC");
     flagA->setText("Flag");
     makeLCS->setText("Export light curve");
     logScale->setText("Set log color scale");

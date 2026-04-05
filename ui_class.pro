@@ -57,3 +57,6 @@ INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 
 unix:!macx: LIBS += /usr/local/lib/ -lcfitsio
+
+CONFIG += release
+CONFIG -= debug

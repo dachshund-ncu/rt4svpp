@@ -2,8 +2,7 @@
 
 // -- konstruktor widgetu --
 // -- od razu ustala wskaźnik na kontener z danymi --
-heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * isotime)
-{
+heat_map_widget::heat_map_widget(spectral_container * dataTable, QCheckBox * isotime){
 
     this->setVisible(false);
     this->dataTable = dataTable;
