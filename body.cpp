@@ -22,7 +22,7 @@ body::body(QWidget *parent, const char * nazwa)
     customizeApperanceLight();
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
-    this->setGeometry(300, 300, 150, 720);
+    this->setGeometry(300, 300, 1360, 720);
     // -- ustawiamy tytul okna --
     this->setWindowTitle("RT4SV++");
     // -- setting up SUPER MEGA MENU BAR --
@@ -35,8 +35,9 @@ body::body(QWidget *parent, const char * nazwa)
     connectButtonsOnRmsSelection();
     // --
     window.layout()->setMenuBar(superMegaMenuBar);
-    grid->addWidget(left_hand_list, 0,0,9,1);
-    grid->setColumnStretch(0,1);
+    grid->addWidget(left_hand_list, 0, 0, 9, 1, Qt::AlignLeft);
+    grid->setColumnStretch(0, 0);
+    grid->setColumnStretch(1, 1);
 
     // -- setujemy widgety roznych sekcji --
     connectSectionsToSlots();
@@ -885,8 +886,8 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
 
     if (geometry_window_set == 0)
     {
-        this->setGeometry(this->geometry().x(), this->geometry().y(), 1460,720);
         display_dynamic_spectrum();
+        this->setMinimumSize(1360, 720);
         geometry_window_set = 1;
     }
     dynspecWidget->setMapPressed(0,0);
