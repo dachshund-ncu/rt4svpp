@@ -1,5 +1,4 @@
 ﻿#include "body.h"
-#include "libs/qcustomplot.h"
 #include <QObject>
 #include <QApplication>
 #include <QPushButton>

@@ -2,15 +2,15 @@
 #define SPECTRAL_CONTAINER_H
 
 /*
-Autor: Michał Durjasz
-Data pierwszego utworzenia: 31.09.2021
-Plik nagłówkowy klasy, króra opisuje strukturę danych
-Struktura ta to kontener z obserwacjami widmowymi
-Z uwagi na lepszy czas dostępu będą one zapisywane w kontenerze 2D std::vector
-Prawidłowe odwołanie do danej epoki to:
-widmo_nr_3 = spectraTable[2]
-kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
- */
+    Autor: Michał Durjasz
+    Data pierwszego utworzenia: 31.09.2021
+    Plik nagłówkowy klasy, króra opisuje strukturę danych
+    Struktura ta to kontener z obserwacjami widmowymi
+    Z uwagi na lepszy czas dostępu będą one zapisywane w kontenerze 2D std::vector
+    Prawidłowe odwołanie do danej epoki to:
+    widmo_nr_3 = spectraTable[2]
+    kanał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
+*/
 
 // -- biblioteki --
 #include <vector>

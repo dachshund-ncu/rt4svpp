@@ -1,5 +1,5 @@
 #include "spectral_container.h"
-//#include <CCfits/CCfits>
+
 // - metoda inicjująca klasę -
 spectral_container::spectral_container()
 {
