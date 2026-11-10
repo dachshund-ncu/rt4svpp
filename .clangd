@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: [-I/path/to/Qt/include, -DQT_CORE_LIB] # Add your specific Qt paths
+  Remove: [-fpreprocessed]
+Index:
+  Background: Build
