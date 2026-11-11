@@ -30,7 +30,8 @@ SOURCES += \
     UI/rms_sec_widget.cpp \
     UI/rms_selector.cpp \
     data/extractlcs.cpp \
-    UI/contentviewer.cpp
+    UI/contentviewer.cpp \
+    interface/cli.cpp
 
 HEADERS += \
     UI/custom_ui_elements.h \
@@ -46,7 +47,8 @@ HEADERS += \
     UI/single_spec_widget.h \
     UI/rms_sec_widget.h \
     UI/rms_selector.h \
-    UI/contentviewer.h
+    UI/contentviewer.h \
+    interface/cli.h
 
 RESOURCES += \
     resources.qrc
