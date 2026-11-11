@@ -13,7 +13,9 @@
 #include <QLabel>
 #include <QtGui>
 #include <QSize>
+#include <QToolBar>
 #include "UI/custom_ui_elements.h"
+
 class vbox_mainw : public QToolBar
 {
 public:

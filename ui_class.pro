@@ -58,5 +58,6 @@ DEPENDPATH += /usr/local/include
 
 unix:!macx: LIBS += /usr/local/lib/ -lcfitsio
 
+CONFIG += c++17
 CONFIG += release
 CONFIG -= debug

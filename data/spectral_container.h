@@ -14,13 +14,11 @@
 
 // -- biblioteki --
 #include <vector>
-#include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
-#include <QtWidgets>
 #include <CCfits/CCfits>
-#include <QMessageBox>
+#include <functional>
+#include <filesystem>
 
 // -- definicja klasy --
 class spectral_container
@@ -92,10 +90,22 @@ public:
     spectral_container();
     // zapełnia kontenery, w argumencie jest lista plików, wielokrotnie wzywa loadSingleSpectrumFromFile()
     // domyślnie, ta metoda będzie wywoływana gdy wywoła się program z listą w argumencie
-    void loadDataFromList(std::string listWithFilenames);
-    // to samo, tylko w argumencie przyjmuję listę plików QT
-    // domyślnie, ta metoda będzie wywoływana gdy wybierze się pliki za pomocną graficznego wybieraka
-    void loadDataFromList(QStringList qtListaPlikow);
+    using ProgressCallback = std::function<void(
+        std::size_t current,
+        std::size_t total
+    )>;
+
+    void loadDataFromList(
+        const std::vector<std::string>& filenames,
+        ProgressCallback progress = {}
+    );
+
+    void loadDataFromList(
+        const std::string& listFile,
+        ProgressCallback progress = {}
+    );
+
+
     // -- liczy całkę z wszystkich polaryzacji i zapisuje do pliku --
     void integrate4Pols(int min_channel, int max_channel, bool isotimeInclude);
     std::vector < std::vector < double > > getIntegrate(int min_channel, int max_channel);
@@ -175,6 +185,11 @@ private:
     std::string constructRASTR(double rah, double ram, double ras);
     std::string constructDECSTR(double decd, double decm, double decs);
     std::string makeProperFormatNumber(double number);
+    void loadFiles(
+        const std::vector<std::string>& filenames,
+        const std::filesystem::path& baseDirectory,
+        const ProgressCallback& progress
+    );
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS
@@ -245,8 +260,12 @@ private:
     // ---------------
     // -- flagowanie --
     void appendToFlaggedList(std::string flaggedFilename);
-    std::vector < std::string > readFlaggedFiles();
-    bool checkIfFlagged(std::string fileName, const std::vector < std::string > & flagTable);
+    std::vector < std::string > readFlaggedFiles(
+        const std::string & filename_w_flags = "flagged_obs.dat"
+    );
+    bool checkIfFlagged(
+        const std::string & fileName, 
+        const std::vector < std::string > & flagTable);
     // ----------------
     void fillNormalizationCoeffsWith1();
     // ----------------
