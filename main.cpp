@@ -12,7 +12,7 @@
 #include "interface/cli.h"
 #include "interface/cli_runner.h"
 
-#define RT4SV_VERSION "1.46"
+#define RT4SV_VERSION "1.48"
 
 int main(int argc, char* argv[])
 {
