@@ -8,14 +8,19 @@
 struct CliOptions {
     using Range = std::pair<int, int>;
 
+    static constexpr int ALL = -1;
+
     std::vector<std::string> inputFiles;
     std::string flaggedFile = "flagged_obs.dat";
+
     std::vector<Range> aovOperations;
     std::vector<Range> aotOperations;
+
     bool showHelp = false;
 
     bool hasOperations() const noexcept {
-        return !aovOperations.empty() || !aotOperations.empty();
+        return !aovOperations.empty() ||
+               !aotOperations.empty();
     }
 };
 

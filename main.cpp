@@ -4,33 +4,23 @@
 
 #include <CCfits/CCfits>
 
-#include <algorithm>
 #include <exception>
 #include <iostream>
 #include <string>
 
 #include "body.h"
 #include "interface/cli.h"
+#include "interface/cli_runner.h"
 
 #define RT4SV_VERSION "1.46"
 
-void onWelcome() {
-    std::cout
-        << "-----------------------------------------\n"
-        << "-----> Welcome to RT4SV++ "
-        << "(RT4 Spectra Visualizer ++)\n";
-}
-
-void onVersion() {
-    std::cout << "RT4SV++ version: "
-              << RT4SV_VERSION << '\n';
-}
-
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     const std::string programName =
         (argc > 0 && argv[0]) ? argv[0] : "rt4sv++";
 
-    // Version handling (not yet implemented in CliParser)
+    // Handle version before parsing.
+    // Version support can later be moved into CliParser.
     for (int i = 1; i < argc; ++i) {
         if (argv[i] == nullptr)
             continue;
@@ -38,12 +28,12 @@ int main(int argc, char* argv[]) {
         const std::string arg(argv[i]);
 
         if (arg == "-v" || arg == "--version") {
-            onVersion();
+            std::cout << "RT4SV++ version: "
+                      << RT4SV_VERSION << '\n';
             return 0;
         }
     }
 
-    // Parse command-line arguments
     CliOptions options;
 
     try {
@@ -51,8 +41,7 @@ int main(int argc, char* argv[]) {
         options = parser.parse(argc, argv);
     }
     catch (const std::exception& e) {
-        std::cerr << "RT4SV++: " << e.what() << "\n\n";
-        CliParser::printHelp(programName);
+        std::cerr << "Error: " << e.what() << '\n';
         return 1;
     }
 
@@ -61,32 +50,23 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    onWelcome();
-
-    // CLI data processing is not connected yet
+    // Headless CLI mode
     if (options.hasOperations()) {
-        std::cerr
-            << "Error: CLI data operations are "
-            << "not implemented yet.\n";
-        return 1;
+        CliRunner runner;
+        return runner.run(options);
     }
 
-    // Initialize GUI
+    // Interactive GUI mode
     Q_INIT_RESOURCE(resources);
     CCfits::FITS::setVerboseMode(false);
 
     QApplication app(argc, argv);
+
     app.setWindowIcon(
         QIcon(":/images/deathstaradder.svg")
     );
 
-    // Preserve legacy GUI input behavior
-    const std::string inputPath =
-        options.inputFiles.empty()
-            ? ""
-            : options.inputFiles.front();
-
-    body window(nullptr, inputPath.c_str());
+    body window(nullptr, options);
 
     return app.exec();
 }

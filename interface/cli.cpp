@@ -47,8 +47,10 @@ void CliParser::addInput(CliOptions& options, const std::string& path) {
     options.inputFiles.push_back(path);
 }
 
+
 CliOptions CliParser::parse(int argc, char* argv[]) const {
     CliOptions options;
+
     if (argc < 0 || (argc > 0 && argv == nullptr)) {
         throw std::invalid_argument("Invalid argc/argv");
     }
@@ -56,7 +58,8 @@ CliOptions CliParser::parse(int argc, char* argv[]) const {
     // Help takes precedence over malformed unrelated arguments.
     for (int i = 1; i < argc; ++i) {
         if (argv[i] != nullptr &&
-            (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")) {
+            (std::string(argv[i]) == "--help" ||
+             std::string(argv[i]) == "-h")) {
             options.showHelp = true;
             return options;
         }
@@ -64,50 +67,120 @@ CliOptions CliParser::parse(int argc, char* argv[]) const {
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i] == nullptr) {
-            throw std::invalid_argument("Null command-line argument");
+            throw std::invalid_argument(
+                "Null command-line argument"
+            );
         }
+
         const std::string arg(argv[i]);
 
         if (arg == "--input") {
             // Consume a shell-expanded list until the next option.
             const int first = i + 1;
-            while (i + 1 < argc && argv[i + 1] != nullptr &&
+
+            while (i + 1 < argc &&
+                   argv[i + 1] != nullptr &&
                    !isOption(argv[i + 1])) {
                 addInput(options, argv[++i]);
             }
+
             if (i + 1 < argc && argv[i + 1] == nullptr) {
-                throw std::invalid_argument("Null command-line argument");
-            }
-            if (i + 1 == first) {
-                throw std::invalid_argument("--input requires at least one filename");
-            }
-        } else if (arg == "--flagged_files") {
-            if (i + 1 >= argc || argv[i + 1] == nullptr ||
-                isOption(argv[i + 1]) || std::string(argv[i + 1]).empty()) {
-                throw std::invalid_argument("--flagged_files requires a filename");
-            }
-            options.flaggedFile = argv[++i];
-            if (options.flaggedFile.find_first_of("*?[]") != std::string::npos) {
                 throw std::invalid_argument(
-                    "Unexpanded wildcard pattern in --flagged_files: " + options.flaggedFile);
+                    "Null command-line argument"
+                );
             }
+
+            if (i + 1 == first) {
+                throw std::invalid_argument(
+                    "--input requires at least one filename"
+                );
+            }
+
+        } else if (arg == "--flagged_files") {
+
+            if (i + 1 >= argc ||
+                argv[i + 1] == nullptr ||
+                isOption(argv[i + 1]) ||
+                std::string(argv[i + 1]).empty()) {
+                throw std::invalid_argument(
+                    "--flagged_files requires a filename"
+                );
+            }
+
+            options.flaggedFile = argv[++i];
+
+            if (options.flaggedFile.find_first_of("*?[]")
+                != std::string::npos) {
+                throw std::invalid_argument(
+                    "Unexpanded wildcard pattern in "
+                    "--flagged_files: " + options.flaggedFile
+                );
+            }
+
         } else if (arg == "--aov" || arg == "--aot") {
-            if (i + 2 >= argc || argv[i + 1] == nullptr || argv[i + 2] == nullptr) {
-                throw std::invalid_argument(arg + " requires START and END integers");
+
+            // Accept either:
+            // --aov START END
+            // --aov all
+            // --aot START END
+            // --aot all
+
+            if (i + 1 >= argc || argv[i + 1] == nullptr) {
+                throw std::invalid_argument(
+                    arg + " requires ALL or START END"
+                );
             }
-            const auto range = parseRange(argv[i + 1], argv[i + 2]);
-            (arg == "--aov" ? options.aovOperations : options.aotOperations)
-                .push_back(range);
-            i += 2;
+
+            CliOptions::Range range;
+            const std::string next(argv[i + 1]);
+
+            if (next == "all") {
+
+                // Special range resolved after loading data.
+                range = {
+                    CliOptions::ALL,
+                    CliOptions::ALL
+                };
+
+                i += 1;
+
+            } else {
+
+                if (i + 2 >= argc ||
+                    argv[i + 2] == nullptr) {
+                    throw std::invalid_argument(
+                        arg + " requires START and END integers"
+                    );
+                }
+
+                range = parseRange(
+                    argv[i + 1],
+                    argv[i + 2]
+                );
+
+                i += 2;
+            }
+
+            (arg == "--aov"
+                ? options.aovOperations
+                : options.aotOperations).push_back(range);
+
         } else if (isOption(arg)) {
-            throw std::invalid_argument("Unknown option: " + arg);
+
+            throw std::invalid_argument(
+                "Unknown option: " + arg
+            );
+
         } else {
+
             addInput(options, arg);
         }
     }
+
     validate(options);
     return options;
 }
+
 
 void CliParser::validate(const CliOptions& options) {
     if (options.hasOperations() && options.inputFiles.empty()) {

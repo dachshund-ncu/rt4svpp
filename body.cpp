@@ -19,7 +19,10 @@
 using namespace std;
 using namespace CCfits;
 // -- konstruktor klasy programu --
-body::body(QWidget *parent, const char * nazwa)
+body::body(
+    QWidget* parent,
+    const CliOptions& options
+) : QMainWindow(parent)
 {
     Q_INIT_RESOURCE(resources);
     customizeApperance();
@@ -46,46 +49,80 @@ body::body(QWidget *parent, const char * nazwa)
     // -- setujemy widgety roznych sekcji --
     connectSectionsToSlots();
 
-    // -- probojemy czytac liste --
-    if ( strncmp(nazwa, "", 300) != 0)
+
+    // Load input files provided through CLI
+    if (!options.inputFiles.empty())
     {
-        if (checkIfFits(nazwa) )
+        const auto& files = options.inputFiles;
+
+        if (files.size() == 1 && !checkIfFits(files[0].c_str()))
         {
-            std::cout << "---> Fits file provided, loading..." << std::endl;
-            loadSpectra(std::vector<std::string>{nazwa});
+            std::cout
+                << "Loading observations list: "
+                << files[0] << std::endl;
+
+            loadSpectra(files[0]);
         }
         else
         {
-            std::cout << "--> List of files provided, loading..." << std::endl;
-            std::cout << "Loading list file " << "\"" << nazwa << "\"..." << std::endl;
-            loadSpectra(std::string(nazwa));
+            std::cout
+                << "Loading " << files.size()
+                << " file(s)..." << std::endl;
+
+            loadSpectra(files);
         }
 
-
-        if(dataTable->loadedData)
+        if (dataTable->loadedData &&
+            !dataTable->spectraTableI.empty() &&
+            !dataTable->spectraTableI[0].empty())
         {
-            list_filename = string(nazwa);
-            this->setGeometry(this->geometry().x(), this->geometry().y() ,1360,720);
-            display_dynamic_spectrum();
-            dynspecWidget->setMapPressed(0,0);
-            geometry_window_set = 1;
             loaded_data = true;
-            this->setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
+
+            list_filename =
+                files.size() == 1 ? files[0] : "";
+
+            this->setGeometry(
+                this->geometry().x(),
+                this->geometry().y(),
+                1360,
+                720
+            );
+
+            display_dynamic_spectrum();
+            dynspecWidget->setMapPressed(0, 0);
+
+            geometry_window_set = true;
+
+            this->setWindowTitle(
+                QString::fromStdString(
+                    "RT4SV++: " +
+                    dataTable->nameOfSource
+                )
+            );
+
+            selectorOfRMS->setValuesOfBoxes(
+                dataTable->rmsChannelsTab
+            );
+
+            selectorOfRMS->setMaximumValues(
+                static_cast<int>(
+                    dataTable->spectraTableI[0].size()
+                )
+            );
         }
         else
         {
-            std::cout << "Could not read list file \"" << nazwa << "\"" << std::endl;
+            std::cerr
+                << "Could not load input data."
+                << std::endl;
         }
-        selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
-        selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
     }
 
-    // -- domyślnie ustawiamy dark mode --
     set_dark_mode(true);
-    // -- pokazujemy okno --
     window.setVisible(true);
     this->show();
 }
+
 
 void body::customizeApperance()
 {
