@@ -10,12 +10,12 @@ spectral_container::spectral_container()
 // - metoda czytająca listę plików -
 void spectral_container::loadDataFromList(
     const std::string& listFile,
-    ProgressCallback progress
-)
+    ProgressCallback progress)
 {
     namespace fs = std::filesystem;
 
     const fs::path listPath = fs::absolute(listFile);
+    const fs::path workingDirectory = fs::current_path();
 
     std::ifstream file(listPath);
 
@@ -34,36 +34,44 @@ void spectral_container::loadDataFromList(
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
 
-        if (!line.empty())
-            filenames.push_back(line);
+        if (line.empty())
+            continue;
+
+        fs::path filePath(line);
+
+        // Resolve relative paths against the list directory.
+        if (filePath.is_relative())
+            filePath = listPath.parent_path() / filePath;
+
+        filenames.push_back(
+            filePath.lexically_normal().string()
+        );
     }
 
+    // Load files using the process working directory.
+    // Input paths are already resolved.
     loadFiles(
         filenames,
-        listPath.parent_path(),
+        workingDirectory,
         progress
     );
 }
 
+
 // - metoda czytająca listę plików -
 void spectral_container::loadDataFromList(
     const std::vector<std::string>& filenames,
-    ProgressCallback progress
-)
+    ProgressCallback progress)
 {
     namespace fs = std::filesystem;
 
-    fs::path baseDirectory = fs::current_path();
-
-    if (!filenames.empty())
-    {
-        baseDirectory = fs::absolute(
-            fs::path(filenames.front())
-        ).parent_path();
-    }
+    // Paths provided directly (including CLI-expanded globs)
+    // are resolved relative to the process working directory.
+    const fs::path baseDirectory = fs::current_path();
 
     loadFiles(filenames, baseDirectory, progress);
 }
+
 
 void spectral_container::loadFiles(
     const std::vector<std::string>& filenames,

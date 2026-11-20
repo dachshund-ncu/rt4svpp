@@ -15,6 +15,8 @@
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <functional>
+#include <QCoreApplication>
+#include <QEventLoop>
 
 using namespace std;
 using namespace CCfits;
@@ -54,7 +56,6 @@ body::body(
     if (!options.inputFiles.empty())
     {
         const auto& files = options.inputFiles;
-
         if (files.size() == 1 && !checkIfFits(files[0].c_str()))
         {
             std::cout
@@ -65,9 +66,13 @@ body::body(
         }
         else
         {
+            
+            
             std::cout
                 << "Loading " << files.size()
                 << " file(s)..." << std::endl;
+
+
 
             loadSpectra(files);
         }
@@ -1975,6 +1980,7 @@ void body::popupMessage(std::string message_type, std::string message_text)
     ee.exec();
 }
 
+
 void body::runLoading(
     const std::function<void(
         const spectral_container::ProgressCallback&
@@ -1993,10 +1999,13 @@ void body::runLoading(
 
     dialog.show();
 
+    QCoreApplication::processEvents(
+        QEventLoop::ExcludeUserInputEvents
+    );
+
     auto progress = [&dialog](
         std::size_t current,
-        std::size_t total
-    )
+        std::size_t total)
     {
         dialog.setMaximum(static_cast<int>(total));
         dialog.setValue(static_cast<int>(current));
@@ -2014,8 +2023,14 @@ void body::runLoading(
 
     loader(progress);
 
-    dialog.close();
+    dialog.setValue(dialog.maximum());
+    dialog.hide();
+
+    QCoreApplication::processEvents(
+        QEventLoop::ExcludeUserInputEvents
+    );
 }
+
 
 void body::loadSpectra(
     const std::vector<std::string>& filenames
