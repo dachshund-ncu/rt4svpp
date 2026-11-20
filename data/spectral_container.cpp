@@ -84,9 +84,22 @@ void spectral_container::loadFiles(
     clearAllTables();
     loadedData = false;
 
-    saveDirectory = baseDirectory.string();
+    saveDirectory = std::filesystem::current_path().string();
 
-    const auto flaggedFiles = readFlaggedFiles();
+    inputDirectory = baseDirectory;
+
+    if (!filenames.empty()) {
+        std::filesystem::path firstFile(filenames.front());
+
+        if (firstFile.is_relative())
+            firstFile = baseDirectory / firstFile;
+
+        inputDirectory = std::filesystem::absolute(firstFile)
+                            .lexically_normal()
+                            .parent_path();
+    }
+
+    const auto flaggedFiles = readFlaggedFiles(flaggedFileName);
     const std::size_t total = filenames.size();
 
     // Informujemy o rozpoczęciu
@@ -1116,39 +1129,99 @@ int spectral_container::lengthOfTheListFile(std::ifstream &lstfile)
     return licznik;
 }
 
-void spectral_container::flag(int epoch)
+void spectral_container::setFlaggedFile(
+    const std::string& filename)
 {
-    // -- nazwa oflagowanego pliku --
-    std::string flaggedFilename = getFileNameFromFullPath(fileNamesTab[epoch-1]);
-    appendToFlaggedList( flaggedFilename);
-    std::cout << "----> Flagged " << flaggedFilename << std::endl;
+    if (filename.empty()) {
+        throw std::invalid_argument(
+            "Flagged observations filename cannot be empty"
+        );
+    }
+
+    flaggedFileName = filename;
 }
 
-void spectral_container::appendToFlaggedList(std::string flaggedFilename)
+void spectral_container::flag(int epoch)
 {
-    std::ofstream flagfile;
-    flagfile.open((saveDirectory + "/" + "flagged_obs.dat").c_str(), std::ios_base::app );
-    if (flagfile.good())
-    {
-        flagfile << flaggedFilename << std::endl;
-        flagfile.close();
+    if (epoch < 1 ||
+        static_cast<std::size_t>(epoch) > fileNamesTab.size()) {
+        throw std::out_of_range("Invalid epoch number");
+    }
+
+    const std::string flaggedFilename =
+        getFileNameFromFullPath(fileNamesTab[epoch - 1]);
+
+    appendToFlaggedList(flaggedFilename);
+
+    std::cout << "----> Flagged "
+              << flaggedFilename << std::endl;
+}
+
+void spectral_container::appendToFlaggedList(
+    const std::string& flaggedFilename)
+{
+    namespace fs = std::filesystem;
+
+    const fs::path requestedPath(flaggedFileName);
+
+    const fs::path filePath =
+        requestedPath.is_absolute()
+            ? requestedPath
+            : (requestedPath == fs::path("flagged_obs.dat")
+                ? inputDirectory / requestedPath
+                : fs::current_path() / requestedPath);
+        std::ofstream file(filePath, std::ios::app);
+
+    if (!file.is_open()) {
+        throw std::runtime_error(
+            "Cannot write flagged observations: " +
+            filePath.string()
+        );
+    }
+
+    file << flaggedFilename << '\n';
+
+    if (!file) {
+        throw std::runtime_error(
+            "Failed to write flagged observation: " +
+            filePath.string()
+        );
     }
 }
 
-std::vector<std::string> spectral_container::readFlaggedFiles(
-    const std::string & filename_w_flags
-)
+std::vector<std::string>
+spectral_container::readFlaggedFiles(
+    const std::string& filename)
 {
-    std::vector<std::string> flaggedFiles;
+    namespace fs = std::filesystem;
+    const fs::path requestedPath(filename);
 
-    std::ifstream file(
-        std::filesystem::path(saveDirectory) / filename_w_flags
-    );
+    const fs::path filePath =
+        requestedPath.is_absolute()
+            ? requestedPath
+            : (requestedPath == fs::path("flagged_obs.dat")
+                ? inputDirectory / requestedPath
+                : fs::current_path() / requestedPath);
+
+    std::vector<std::string> flaggedFiles;
+    std::ifstream file(filePath);
+
+    if (!file.is_open()) {
+        // Absence of the default file is allowed.
+        if (filename == "flagged_obs.dat" &&
+            !fs::exists(filePath)) {
+            return flaggedFiles;
+        }
+
+        throw std::runtime_error(
+            "Cannot open flagged observations: " +
+            filePath.string()
+        );
+    }
 
     std::string line;
 
-    while (std::getline(file, line))
-    {
+    while (std::getline(file, line)) {
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
 
@@ -1156,20 +1229,29 @@ std::vector<std::string> spectral_container::readFlaggedFiles(
             flaggedFiles.push_back(line);
     }
 
+    if (file.bad()) {
+        throw std::runtime_error(
+            "Error reading flagged observations: " +
+            filePath.string()
+        );
+    }
+
     return flaggedFiles;
 }
 
 bool spectral_container::checkIfFlagged(
     const std::string& fileName,
-    const std::vector<std::string>& flagTable
-)
+    const std::vector<std::string>& flagTable)
 {
     namespace fs = std::filesystem;
+
     const auto basename = fs::path(fileName).filename();
-    for (const auto& flaggedFile : flagTable){
+
+    for (const auto& flaggedFile : flagTable) {
         if (basename == fs::path(flaggedFile).filename())
             return true;
     }
+
     return false;
 }
 

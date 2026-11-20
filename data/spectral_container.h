@@ -158,8 +158,12 @@ public:
     void recalculateRMS();
     // -----------------------------------
     void setNormalizationCoeffs(int startingChan, int endingChan);
-
+    void setFlaggedFile(const std::string& filename);
 private:
+    // -- flagging helper variables --
+    std::string flaggedFileName = "flagged_obs.dat";
+    std::filesystem::path inputDirectory;
+
     // --- additional for reading ---
     std::string getAllHeaderInformation
     (
@@ -259,9 +263,9 @@ private:
     double calibrateEpoch(double calCoeff, double epochNR);
     // ---------------
     // -- flagowanie --
-    void appendToFlaggedList(std::string flaggedFilename);
+    void appendToFlaggedList(const std::string & flaggedFilename);
     std::vector < std::string > readFlaggedFiles(
-        const std::string & filename_w_flags = "flagged_obs.dat"
+        const std::string & filename = "flagged_obs.dat"
     );
     bool checkIfFlagged(
         const std::string & fileName, 

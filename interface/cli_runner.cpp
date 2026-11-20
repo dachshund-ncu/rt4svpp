@@ -140,16 +140,10 @@ int CliRunner::run(const CliOptions& options) const
     try {
         CCfits::FITS::setVerboseMode(false);
 
-        // Custom flagged-file handling is not yet connected
-        // to the spectral_container loading layer.
-        if (options.flaggedFile != "flagged_obs.dat") {
-            throw std::runtime_error(
-                "Custom --flagged_files is not "
-                "supported by the loading layer yet"
-            );
-        }
+
 
         spectral_container data;
+        data.setFlaggedFile(options.flaggedFile);
 
         // 1. Load observations.
         loadInput(data, options.inputFiles);

@@ -29,6 +29,8 @@ body::body(
     Q_INIT_RESOURCE(resources);
     customizeApperance();
     customizeApperanceLight();
+    dataTable->setFlaggedFile(options.flaggedFile);
+    
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
     this->setGeometry(300, 300, 1360, 720);
@@ -50,7 +52,6 @@ body::body(
 
     // -- setujemy widgety roznych sekcji --
     connectSectionsToSlots();
-
 
     // Load input files provided through CLI
     if (!options.inputFiles.empty())
