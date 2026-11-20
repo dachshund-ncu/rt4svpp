@@ -1,77 +1,92 @@
+
 #include <QApplication>
-#include <iostream>
-#include <QPushButton>
-#include <QMainWindow>
-#include <QLabel>
-#include <QtGui>
-#include "body.h"
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <stdlib.h>
+#include <QIcon>
+
 #include <CCfits/CCfits>
-#include <ctime>
-using namespace CCfits;
 
-#define version 1.46
+#include <algorithm>
+#include <exception>
+#include <iostream>
+#include <string>
 
-void onWelcome(){
-    std::cout << "-----------------------------------------" << std::endl;
-    std::cout << "-----> Welcome to RT4SV++ (RT4 Spectra Visualizer ++)" << std::endl;
+#include "body.h"
+#include "interface/cli.h"
+
+#define RT4SV_VERSION "1.46"
+
+void onWelcome() {
+    std::cout
+        << "-----------------------------------------\n"
+        << "-----> Welcome to RT4SV++ "
+        << "(RT4 Spectra Visualizer ++)\n";
 }
 
-void onHelp(){
-    std::cout << "-----> RT4SV++ help: " << std::endl;
-    std::cout << "-----> Usage: " << std::endl;
-    std::cout << "       rt4sv++ list_of_files" << std::endl;
-    std::cout << "       or " << std::endl;
-    std::cout << "       rt4sv++ [OPTIONS]" << std::endl;
-    std::cout << "       OPTIONS: " << std::endl;
-    std::cout << "       -h, --help      | Display this message " << std::endl;
-    std::cout << "       -v, --version   | Display version info " << std::endl;
-    std::cout << "-----------------------------------------" << std::endl;
+void onVersion() {
+    std::cout << "RT4SV++ version: "
+              << RT4SV_VERSION << '\n';
 }
 
-void onVersion(){
-    std::cout << "-----> RT4SV++ version: " << version << std::endl;
-    std::cout << "-----------------------------------------" << std::endl;
-}
+int main(int argc, char* argv[]) {
+    const std::string programName =
+        (argc > 0 && argv[0]) ? argv[0] : "rt4sv++";
 
-int main(int argc, char *argv[]){
-    /*
-     * This is MAIN function of the RT4SV++ app
-     * It starts main object of the program - body (defined in body.h)
-     * Also handles help and version printing, depending on arguments passed in argv
-     */
+    // Version handling (not yet implemented in CliParser)
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] == nullptr)
+            continue;
 
-    srand(time(NULL));
-    Q_INIT_RESOURCE(resources);
-    FITS::setVerboseMode(false);
-    // -- zaczynamy program --
-    QApplication program (argc, argv);
-    program.setWindowIcon(QIcon(":/images/deathstaradder.svg"));
-    onWelcome();
+        const std::string arg(argv[i]);
 
-    if(argc > 1){
-        for(int i = 1; i < argc; i++){
-            std::string arg = std::string(argv[i]);
-            if(arg == "-v" || arg == "--version"){ // -v or --version
-                onVersion();
-                exit(0);
-            }
-            else if (arg == "-h" || arg == "--help"){ // -h or --help
-                onHelp();
-                exit(0);
-            }
-            else{
-                body * okno = new body(nullptr, arg.c_str());
-                break;
-            }
+        if (arg == "-v" || arg == "--version") {
+            onVersion();
+            return 0;
         }
     }
-    else
-    {
-        body * okno = new body(nullptr, "");
+
+    // Parse command-line arguments
+    CliOptions options;
+
+    try {
+        CliParser parser;
+        options = parser.parse(argc, argv);
     }
-    return program.exec();
+    catch (const std::exception& e) {
+        std::cerr << "RT4SV++: " << e.what() << "\n\n";
+        CliParser::printHelp(programName);
+        return 1;
+    }
+
+    if (options.showHelp) {
+        CliParser::printHelp(programName);
+        return 0;
+    }
+
+    onWelcome();
+
+    // CLI data processing is not connected yet
+    if (options.hasOperations()) {
+        std::cerr
+            << "Error: CLI data operations are "
+            << "not implemented yet.\n";
+        return 1;
+    }
+
+    // Initialize GUI
+    Q_INIT_RESOURCE(resources);
+    CCfits::FITS::setVerboseMode(false);
+
+    QApplication app(argc, argv);
+    app.setWindowIcon(
+        QIcon(":/images/deathstaradder.svg")
+    );
+
+    // Preserve legacy GUI input behavior
+    const std::string inputPath =
+        options.inputFiles.empty()
+            ? ""
+            : options.inputFiles.front();
+
+    body window(nullptr, inputPath.c_str());
+
+    return app.exec();
 }
