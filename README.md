@@ -133,3 +133,18 @@ After creating this file, execute the command:
 sudo ldconfig
 ```
 Now the app should start
+
+
+## Build test
+```bash
+g++ -std=c++17 -Wall -Wextra \
+    tests/test_cli.cpp \
+    interface/cli.cpp \
+    -o build/test_cli
+```
+
+```bash
+./build/test_cli obs1.fits obs2.fits \
+    --aov 100 300 \
+    --aot 1 20
+```

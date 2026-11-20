@@ -30,7 +30,9 @@ SOURCES += \
     UI/rms_sec_widget.cpp \
     UI/rms_selector.cpp \
     data/extractlcs.cpp \
-    UI/contentviewer.cpp
+    UI/contentviewer.cpp \
+    interface/cli.cpp \
+    interface/cli_runner.cpp
 
 HEADERS += \
     UI/custom_ui_elements.h \
@@ -46,7 +48,9 @@ HEADERS += \
     UI/single_spec_widget.h \
     UI/rms_sec_widget.h \
     UI/rms_selector.h \
-    UI/contentviewer.h
+    UI/contentviewer.h \
+    interface/cli.h \
+    interface/cli_runner.h
 
 RESOURCES += \
     resources.qrc
@@ -58,5 +62,6 @@ DEPENDPATH += /usr/local/include
 
 unix:!macx: LIBS += /usr/local/lib/ -lcfitsio
 
+CONFIG += c++17
 CONFIG += release
 CONFIG -= debug

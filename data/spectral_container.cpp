@@ -1,5 +1,5 @@
 #include "spectral_container.h"
-//#include <CCfits/CCfits>
+
 // - metoda inicjująca klasę -
 spectral_container::spectral_container()
 {
@@ -8,122 +8,139 @@ spectral_container::spectral_container()
 
 
 // - metoda czytająca listę plików -
-void spectral_container::loadDataFromList(std::string listWithFilenames)
+void spectral_container::loadDataFromList(
+    const std::string& listFile,
+    ProgressCallback progress)
 {
-    // -- na początek - czyścimy kontenery --
-    clearAllTables();
+    namespace fs = std::filesystem;
 
-    // -- czytamy plik z listą --
-    std::ifstream filesList;
-    filesList.open(listWithFilenames.c_str());
+    const fs::path listPath = fs::absolute(listFile);
+    const fs::path workingDirectory = fs::current_path();
 
-    if (!filesList.good())
+    std::ifstream file(listPath);
+
+    if (!file.is_open())
     {
+        std::cerr << "Cannot open file list: "
+                  << listFile << std::endl;
         return;
     }
 
-    // -- pasek postępu (albo nierządu) --
-    QProgressDialog postep;
-    postep.setLabelText("Loading files, please wait");
-    postep.setMinimum(0);
-    postep.setMaximum(lengthOfTheListFile(filesList));
-    postep.setVisible(true);
-    int licznik = 0;
-    // -----------------------------------
+    std::vector<std::string> filenames;
+    std::string line;
 
-    // -- zdobywamy info o ścieżce całkowitej --
-    QFileInfo infotmp (QString::fromStdString(listWithFilenames));
-    saveDirectory = infotmp.absolutePath().toStdString();
-    // -----------------------------------------
-
-    // -- wczytujemy pliki z flagami --
-    std::vector < std::string > flaggedFiles = readFlaggedFiles();
-    // --------------------------------
-
-    // bufor
-    std::string bufor;
-
-    // pętla
-    filesList.seekg(0);
-    while (filesList.good())
+    while (std::getline(file, line))
     {
-        // czytamy jedną linię z listy plików
-        std::getline(filesList, bufor);
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
 
+        if (line.empty())
+            continue;
 
-        // -- dodatkowe zabezpieczenie --
-        if (bufor != "")
-        {
+        fs::path filePath(line);
 
-            if ( checkIfFlagged(bufor, flaggedFiles) )
-            {
-                std::cout << "----> File: " << getFileNameFromFullPath(bufor) << " is flagged and I will not read it." << std::endl;
-            }
-            else
-            {
-                loadSingleSpectrumFromFile(saveDirectory + "/" + bufor); // ładujemy plik z listy, w argumencie podajemy ABSOLUTNĄ ścieżkę
-            }
-        }
-        // do paska nierządu
-        licznik += 1;
-        postep.setValue(licznik);
-        QCoreApplication::processEvents();
+        // Resolve relative paths against the list directory.
+        if (filePath.is_relative())
+            filePath = listPath.parent_path() / filePath;
+
+        filenames.push_back(
+            filePath.lexically_normal().string()
+        );
     }
-    filesList.close();
 
-    // ustawiamy flagę loaded
-    loadedData = true;
-
-    // -- bubblesorting --
-    bubbleSortEpochs();
-    // -- filling normalization coeffs --
-    fillNormalizationCoeffsWith1();
+    // Load files using the process working directory.
+    // Input paths are already resolved.
+    loadFiles(
+        filenames,
+        workingDirectory,
+        progress
+    );
 }
 
+
 // - metoda czytająca listę plików -
-void spectral_container::loadDataFromList(QStringList qtListaPlikow)
+void spectral_container::loadDataFromList(
+    const std::vector<std::string>& filenames,
+    ProgressCallback progress)
 {
-    // -- na początek - czyścimy kontenery --
+    namespace fs = std::filesystem;
+
+    // Paths provided directly (including CLI-expanded globs)
+    // are resolved relative to the process working directory.
+    const fs::path baseDirectory = fs::current_path();
+
+    loadFiles(filenames, baseDirectory, progress);
+}
+
+
+void spectral_container::loadFiles(
+    const std::vector<std::string>& filenames,
+    const std::filesystem::path& baseDirectory,
+    const ProgressCallback& progress
+)
+{
+    namespace fs = std::filesystem;
+
     clearAllTables();
+    loadedData = false;
 
-    // -- pasek postępu (albo nierządu) --
-    QProgressDialog postep;
-    postep.setLabelText("Loading files, please wait");
-    postep.setMinimum(0);
-    postep.setMaximum(qtListaPlikow.size());
-    postep.setVisible(true);
-    // -----------------------------------
+    saveDirectory = std::filesystem::current_path().string();
 
-    // --------------------------------
-    // w liście zawsze będą absolutne ścieżki do plików
-    // dlatego ekstrahujemy z jej pierwszego elementu
-    QFileInfo info(qtListaPlikow[0]);
-    saveDirectory = info.absolutePath().toStdString();
-    // --------------------------------
+    inputDirectory = baseDirectory;
 
-    // -- wczytujemy pliki z flagami --
-    std::vector < std::string > flaggedFiles = readFlaggedFiles();
-    // --------------------------------
+    if (!filenames.empty()) {
+        std::filesystem::path firstFile(filenames.front());
 
-    // -- komunikat w terminalu --
-    std::cout << "---> Loading files from QT list:" << std::endl;
-    // -- i czytamy pliki zgodnie z listą --
-    for(int i = 0; i < qtListaPlikow.size(); i++)
-    {
-        if ( checkIfFlagged(qtListaPlikow[i].toStdString(), flaggedFiles) )
-            std::cout << "----> File: " << getFileNameFromFullPath( qtListaPlikow[i].toStdString()) << " is flagged and I will not read it." << std::endl;
-        else
-            loadSingleSpectrumFromFile(qtListaPlikow[i].toStdString());
-        postep.setValue(i);
-        QCoreApplication::processEvents();
+        if (firstFile.is_relative())
+            firstFile = baseDirectory / firstFile;
+
+        inputDirectory = std::filesystem::absolute(firstFile)
+                            .lexically_normal()
+                            .parent_path();
     }
-    // ustawiamy flagę loaded
-    loadedData = true;
 
-    // -- bubblesortnig --
+    const auto flaggedFiles = readFlaggedFiles(flaggedFileName);
+    const std::size_t total = filenames.size();
+
+    // Informujemy o rozpoczęciu
+    if (progress)
+        progress(0, total);
+
+    for (std::size_t i = 0; i < total; ++i)
+    {
+        fs::path filePath(filenames[i]);
+
+        // Ścieżki względne interpretujemy
+        // względem katalogu bazowego
+        if (filePath.is_relative())
+            filePath = baseDirectory / filePath;
+
+        filePath = filePath.lexically_normal();
+
+        const std::string fullPath = filePath.string();
+
+        if (checkIfFlagged(fullPath, flaggedFiles))
+        {
+            std::cout
+                << "----> File: "
+                << filePath.filename().string()
+                << " is flagged and will not be loaded."
+                << std::endl;
+        }
+        else
+        {
+            loadSingleSpectrumFromFile(fullPath);
+        }
+
+        // Jeden plik został przetworzony
+        if (progress)
+            progress(i + 1, total);
+    }
+
     bubbleSortEpochs();
-    // -- filling normalization coeffs --
     fillNormalizationCoeffsWith1();
+
+    loadedData = true;
 }
 
 
@@ -644,13 +661,12 @@ void spectral_container::bubbleSortEpochs()
      * This method bubble-sorts epochs, loaded previously
      * it's sad, that this method needs update every time new container is added
      * Maybe next time it will be better
-     * -> if loadedData is false, do nothing
      * -> else bubblesort all
      */
-    if(!loadedData || spectraTableI.size() < 2)
+    if(spectraTableI.size() < 2)
         return;
     std::cout << "-----------------------" << std::endl;
-    std::cout << "----> Bubble-sorting epochs..." << std::endl;
+    std::cout << "----> Sorting epochs..." << std::endl;
     // -- bubblesort begins --
     for(unsigned long int i = 0; i < spectraTableI.size()-1; i++)
     {
@@ -1113,61 +1129,129 @@ int spectral_container::lengthOfTheListFile(std::ifstream &lstfile)
     return licznik;
 }
 
+void spectral_container::setFlaggedFile(
+    const std::string& filename)
+{
+    if (filename.empty()) {
+        throw std::invalid_argument(
+            "Flagged observations filename cannot be empty"
+        );
+    }
+
+    flaggedFileName = filename;
+}
+
 void spectral_container::flag(int epoch)
 {
-    // -- nazwa oflagowanego pliku --
-    std::string flaggedFilename = getFileNameFromFullPath(fileNamesTab[epoch-1]);
-    appendToFlaggedList( flaggedFilename);
-    std::cout << "----> Flagged " << flaggedFilename << std::endl;
-    // -- okno do upewniania sie, ze na pewno chcesz --
+    if (epoch < 1 ||
+        static_cast<std::size_t>(epoch) > fileNamesTab.size()) {
+        throw std::out_of_range("Invalid epoch number");
+    }
 
-//    QMessageBox::StandardButton upewka;
-//    upewka = QMessageBox::question(nullptr, "Are you sure?", QString::fromStdString("Do you realy want to flag " + flaggedFilename + "?"), QMessageBox::Yes| QMessageBox::No);
-//    if (upewka == QMessageBox::No)
-//    {
-//        return;
-//    }
+    const std::string flaggedFilename =
+        getFileNameFromFullPath(fileNamesTab[epoch - 1]);
 
+    appendToFlaggedList(flaggedFilename);
+
+    std::cout << "----> Flagged "
+              << flaggedFilename << std::endl;
 }
 
-void spectral_container::appendToFlaggedList(std::string flaggedFilename)
+void spectral_container::appendToFlaggedList(
+    const std::string& flaggedFilename)
 {
-    std::ofstream flagfile;
-    flagfile.open((saveDirectory + "/" + "flagged_obs.dat").c_str(), std::ios_base::app );
-    if (flagfile.good())
-    {
-        flagfile << flaggedFilename << std::endl;
-        flagfile.close();
+    namespace fs = std::filesystem;
+
+    const fs::path requestedPath(flaggedFileName);
+
+    const fs::path filePath =
+        requestedPath.is_absolute()
+            ? requestedPath
+            : (requestedPath == fs::path("flagged_obs.dat")
+                ? inputDirectory / requestedPath
+                : fs::current_path() / requestedPath);
+        std::ofstream file(filePath, std::ios::app);
+
+    if (!file.is_open()) {
+        throw std::runtime_error(
+            "Cannot write flagged observations: " +
+            filePath.string()
+        );
+    }
+
+    file << flaggedFilename << '\n';
+
+    if (!file) {
+        throw std::runtime_error(
+            "Failed to write flagged observation: " +
+            filePath.string()
+        );
     }
 }
 
-std::vector < std::string > spectral_container::readFlaggedFiles()
+std::vector<std::string>
+spectral_container::readFlaggedFiles(
+    const std::string& filename)
 {
-    std::vector < std::string > returnedFlagFilesTable;
-    // -- otwieramy plik z flagami --
-    std::ifstream flagfile;
-    flagfile.open((saveDirectory + "/" + "flagged_obs.dat").c_str());
-    while(flagfile.good())
-    {
-        std::string bufor = "";
-        std::getline(flagfile, bufor);
-        returnedFlagFilesTable.push_back(bufor);
+    namespace fs = std::filesystem;
+    const fs::path requestedPath(filename);
+
+    const fs::path filePath =
+        requestedPath.is_absolute()
+            ? requestedPath
+            : (requestedPath == fs::path("flagged_obs.dat")
+                ? inputDirectory / requestedPath
+                : fs::current_path() / requestedPath);
+
+    std::vector<std::string> flaggedFiles;
+    std::ifstream file(filePath);
+
+    if (!file.is_open()) {
+        // Absence of the default file is allowed.
+        if (filename == "flagged_obs.dat" &&
+            !fs::exists(filePath)) {
+            return flaggedFiles;
+        }
+
+        throw std::runtime_error(
+            "Cannot open flagged observations: " +
+            filePath.string()
+        );
     }
-    flagfile.close();
-    return returnedFlagFilesTable;
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
+        if (!line.empty())
+            flaggedFiles.push_back(line);
+    }
+
+    if (file.bad()) {
+        throw std::runtime_error(
+            "Error reading flagged observations: " +
+            filePath.string()
+        );
+    }
+
+    return flaggedFiles;
 }
 
-bool spectral_container::checkIfFlagged(std::string fileName, const std::vector<std::string> &flagTable)
+bool spectral_container::checkIfFlagged(
+    const std::string& fileName,
+    const std::vector<std::string>& flagTable)
 {
-    std::string baseFileName = getFileNameFromFullPath(fileName);
+    namespace fs = std::filesystem;
 
-    for(auto &i : flagTable)
-    {
-        if(baseFileName == i)
+    const auto basename = fs::path(fileName).filename();
+
+    for (const auto& flaggedFile : flagTable) {
+        if (basename == fs::path(flaggedFile).filename())
             return true;
-        if((saveDirectory + "/" + baseFileName) == i)
-            return true;
     }
+
     return false;
 }
 

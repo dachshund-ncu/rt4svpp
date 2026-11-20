@@ -37,19 +37,10 @@ void spectral_container::saveSpectrum(int epoch)
 
 void spectral_container::saveAllSpectra()
 {
-    // pasek postępu
-    QProgressDialog postep;
-    postep.setLabelText("Saving files to ASCII, please wait");
-    postep.setMinimum(0);
-    postep.setMaximum((int) spectraTableI.size());
-    postep.setVisible(true);
-
     // wykonujemy prostą pętlę po wszystkich epokach
     for(int i = 0; i < (int) spectraTableI.size(); i++)
     {
         saveSpectrum(i+1); // epoka jest +1 bo tam przyjmujemy w argumencie numer epoki, numerowaney od 1
-        postep.setValue(i);
-        QCoreApplication::processEvents();
     }
 }
 

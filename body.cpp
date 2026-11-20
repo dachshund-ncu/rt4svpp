@@ -1,5 +1,4 @@
 ﻿#include "body.h"
-#include "libs/qcustomplot.h"
 #include <QObject>
 #include <QApplication>
 #include <QPushButton>
@@ -12,14 +11,26 @@
 #include <string>
 #include <CCfits/CCfits>
 
+#include <QProgressDialog>
+#include <QCoreApplication>
+#include <QEventLoop>
+#include <functional>
+#include <QCoreApplication>
+#include <QEventLoop>
+
 using namespace std;
 using namespace CCfits;
 // -- konstruktor klasy programu --
-body::body(QWidget *parent, const char * nazwa)
+body::body(
+    QWidget* parent,
+    const CliOptions& options
+) : QMainWindow(parent)
 {
     Q_INIT_RESOURCE(resources);
     customizeApperance();
     customizeApperanceLight();
+    dataTable->setFlaggedFile(options.flaggedFile);
+    
     window.setVisible(false);
     // -- ustawiamy rozmiary okna --
     this->setGeometry(300, 300, 1360, 720);
@@ -42,48 +53,82 @@ body::body(QWidget *parent, const char * nazwa)
     // -- setujemy widgety roznych sekcji --
     connectSectionsToSlots();
 
-    // -- probojemy czytac liste --
-    if ( strncmp(nazwa, "", 300) != 0)
+    // Load input files provided through CLI
+    if (!options.inputFiles.empty())
     {
-        if (checkIfFits(nazwa) )
+        const auto& files = options.inputFiles;
+        if (files.size() == 1 && !checkIfFits(files[0].c_str()))
         {
-            std::cout << "---> Fits file provided, loading..." << std::endl;
-            QStringList lista;
-            lista.append(QString(nazwa));
-            dataTable->loadDataFromList(lista);
+            std::cout
+                << "Loading observations list: "
+                << files[0] << std::endl;
+
+            loadSpectra(files[0]);
         }
         else
         {
-            std::cout << "--> List of files provided, loading..." << std::endl;
-            std::cout << "Loading list file " << "\"" << nazwa << "\"..." << std::endl;
-            dataTable->loadDataFromList(string(nazwa));
+            
+            
+            std::cout
+                << "Loading " << files.size()
+                << " file(s)..." << std::endl;
+
+
+
+            loadSpectra(files);
         }
 
-
-        if(dataTable->loadedData)
+        if (dataTable->loadedData &&
+            !dataTable->spectraTableI.empty() &&
+            !dataTable->spectraTableI[0].empty())
         {
-            list_filename = string(nazwa);
-            this->setGeometry(this->geometry().x(), this->geometry().y() ,1360,720);
-            display_dynamic_spectrum();
-            dynspecWidget->setMapPressed(0,0);
-            geometry_window_set = 1;
             loaded_data = true;
-            this->setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
+
+            list_filename =
+                files.size() == 1 ? files[0] : "";
+
+            this->setGeometry(
+                this->geometry().x(),
+                this->geometry().y(),
+                1360,
+                720
+            );
+
+            display_dynamic_spectrum();
+            dynspecWidget->setMapPressed(0, 0);
+
+            geometry_window_set = true;
+
+            this->setWindowTitle(
+                QString::fromStdString(
+                    "RT4SV++: " +
+                    dataTable->nameOfSource
+                )
+            );
+
+            selectorOfRMS->setValuesOfBoxes(
+                dataTable->rmsChannelsTab
+            );
+
+            selectorOfRMS->setMaximumValues(
+                static_cast<int>(
+                    dataTable->spectraTableI[0].size()
+                )
+            );
         }
         else
         {
-            std::cout << "Could not read list file \"" << nazwa << "\"" << std::endl;
+            std::cerr
+                << "Could not load input data."
+                << std::endl;
         }
-        selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
-        selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
     }
 
-    // -- domyślnie ustawiamy dark mode --
     set_dark_mode(true);
-    // -- pokazujemy okno --
     window.setVisible(true);
     this->show();
 }
+
 
 void body::customizeApperance()
 {
@@ -837,48 +882,36 @@ void body::kill_single_spectrum()
     updateBar();
 }
 
-void body::loadTimeSeriesWrapper(QFileDialog * dialog)
+void body::loadTimeSeriesWrapper(QFileDialog* dialog)
 {
-    string nazwa_pliku; // string z nazwa pliku
-    QStringList fileName1;// qstring z nazwa pliku
-    QString fileName;
     dialog->setFileMode(QFileDialog::ExistingFiles);
 
+    if (!dialog->exec())
+        return;
 
-    if(dialog->exec())
-    {
-        fileName1 = dialog->selectedFiles();
-    }
+    const QStringList selectedFiles = dialog->selectedFiles();
 
-    if (fileName1.size() > 0)
-    {
-        fileName = fileName1[0];
+    if (selectedFiles.isEmpty())
+        return;
 
-    }
-    else
+    std::vector<std::string> filenames;
+    filenames.reserve(selectedFiles.size());
+
+    for (const QString& filename : selectedFiles)
+        filenames.push_back(filename.toStdString());
+
+    QFileInfo info(selectedFiles.first());
+    working_directory = info.absolutePath().toStdString();
+
+    loadSpectra(filenames);
+
+    if (!dataTable->loadedData ||
+        dataTable->spectraTableI.empty())
     {
         return;
     }
 
-    nazwa_pliku = fileName.toStdString(); // ustalamy nazwe pliku
-    if (nazwa_pliku == "")
-    {
-        return;
-    }
-
-    QFileInfo info(fileName);
-
-    //cout << info.absolutePath().toStdString() << endl; // ustalamy sciezke dzialania programu
-    if (info.absolutePath().toStdString() != "")
-    {
-        working_directory = info.absolutePath().toStdString();
-        //cout << working_directory << endl;
-
-    }
-
-    dataTable->loadDataFromList(fileName1);
-    //cout << fileName1.size() << endl;
-    loaded_data = 1;
+    loaded_data = true;
 
     dynspecWidget->resetHeatMap();
     ssWidget->reset();
@@ -890,10 +923,24 @@ void body::loadTimeSeriesWrapper(QFileDialog * dialog)
         this->setMinimumSize(1360, 720);
         geometry_window_set = 1;
     }
-    dynspecWidget->setMapPressed(0,0);
-    this->setWindowTitle(QString::fromStdString("RT4SV++: " + dataTable->nameOfSource));
-    selectorOfRMS->setValuesOfBoxes(dataTable->rmsChannelsTab);
-    selectorOfRMS->setMaximumValues((int) dataTable->spectraTableI[0].size());
+
+    dynspecWidget->setMapPressed(0, 0);
+
+    this->setWindowTitle(
+        QString::fromStdString(
+            "RT4SV++: " + dataTable->nameOfSource
+        )
+    );
+
+    selectorOfRMS->setValuesOfBoxes(
+        dataTable->rmsChannelsTab
+    );
+
+    selectorOfRMS->setMaximumValues(
+        static_cast<int>(
+            dataTable->spectraTableI[0].size()
+        )
+    );
 }
 
 // -- to samo robi, co read time series - ale po wcisnieciu przycisku --
@@ -1216,13 +1263,9 @@ void body::reload_slot()
     if (dataTable->fileNamesTab.size() != 0)
     {
         // --- tymczasowo ---
-        QStringList tmpqstringlist;
-        for(unsigned long int wplw = 0; wplw < dataTable->fileNamesTab.size(); wplw++)
-        {
-            tmpqstringlist.push_back(QString::fromStdString(dataTable->fileNamesTab[wplw]));
-        }
+        const auto filenames = dataTable->fileNamesTab;
+        loadSpectra(filenames);
         // -------------------
-        dataTable->loadDataFromList(tmpqstringlist);
         // -- zapełniamy danymi sekcję RMS --
         rms_sec_w->fillWithData();
         // -- updatujemy widmo dynamiczne --
@@ -1937,3 +1980,77 @@ void body::popupMessage(std::string message_type, std::string message_text)
                 this->dark_mode_enabled);
     ee.exec();
 }
+
+
+void body::runLoading(
+    const std::function<void(
+        const spectral_container::ProgressCallback&
+    )>& loader
+)
+{
+    QProgressDialog dialog(this);
+
+    dialog.setWindowTitle("Loading spectra");
+    dialog.setLabelText("Preparing files...");
+    dialog.setRange(0, 1);
+    dialog.setValue(0);
+    dialog.setCancelButton(nullptr);
+    dialog.setMinimumDuration(0);
+    dialog.setWindowModality(Qt::WindowModal);
+
+    dialog.show();
+
+    QCoreApplication::processEvents(
+        QEventLoop::ExcludeUserInputEvents
+    );
+
+    auto progress = [&dialog](
+        std::size_t current,
+        std::size_t total)
+    {
+        dialog.setMaximum(static_cast<int>(total));
+        dialog.setValue(static_cast<int>(current));
+
+        dialog.setLabelText(
+            QString("Loading spectra: %1 / %2")
+                .arg(current)
+                .arg(total)
+        );
+
+        QCoreApplication::processEvents(
+            QEventLoop::ExcludeUserInputEvents
+        );
+    };
+
+    loader(progress);
+
+    dialog.setValue(dialog.maximum());
+    dialog.hide();
+
+    QCoreApplication::processEvents(
+        QEventLoop::ExcludeUserInputEvents
+    );
+}
+
+
+void body::loadSpectra(
+    const std::vector<std::string>& filenames
+)
+{
+    if (filenames.empty())
+        return;
+
+    runLoading([this, &filenames](const auto& progress)
+    {
+        dataTable->loadDataFromList(filenames, progress);
+    });
+}
+
+void body::loadSpectra(const std::string& listFile)
+{
+    runLoading([this, &listFile](const auto& progress)
+    {
+        dataTable->loadDataFromList(listFile, progress);
+    });
+}
+

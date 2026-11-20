@@ -2,25 +2,23 @@
 #define SPECTRAL_CONTAINER_H
 
 /*
-Autor: Michał Durjasz
-Data pierwszego utworzenia: 31.09.2021
-Plik nagłówkowy klasy, króra opisuje strukturę danych
-Struktura ta to kontener z obserwacjami widmowymi
-Z uwagi na lepszy czas dostępu będą one zapisywane w kontenerze 2D std::vector
-Prawidłowe odwołanie do danej epoki to:
-widmo_nr_3 = spectraTable[2]
-kabnał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
- */
+    Autor: Michał Durjasz
+    Data pierwszego utworzenia: 31.09.2021
+    Plik nagłówkowy klasy, króra opisuje strukturę danych
+    Struktura ta to kontener z obserwacjami widmowymi
+    Z uwagi na lepszy czas dostępu będą one zapisywane w kontenerze 2D std::vector
+    Prawidłowe odwołanie do danej epoki to:
+    widmo_nr_3 = spectraTable[2]
+    kanał_nr_1024_w_widmie_nr_3 = spectraTable[2][1023]
+*/
 
 // -- biblioteki --
 #include <vector>
-#include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
-#include <QtWidgets>
 #include <CCfits/CCfits>
-#include <QMessageBox>
+#include <functional>
+#include <filesystem>
 
 // -- definicja klasy --
 class spectral_container
@@ -92,10 +90,22 @@ public:
     spectral_container();
     // zapełnia kontenery, w argumencie jest lista plików, wielokrotnie wzywa loadSingleSpectrumFromFile()
     // domyślnie, ta metoda będzie wywoływana gdy wywoła się program z listą w argumencie
-    void loadDataFromList(std::string listWithFilenames);
-    // to samo, tylko w argumencie przyjmuję listę plików QT
-    // domyślnie, ta metoda będzie wywoływana gdy wybierze się pliki za pomocną graficznego wybieraka
-    void loadDataFromList(QStringList qtListaPlikow);
+    using ProgressCallback = std::function<void(
+        std::size_t current,
+        std::size_t total
+    )>;
+
+    void loadDataFromList(
+        const std::vector<std::string>& filenames,
+        ProgressCallback progress = {}
+    );
+
+    void loadDataFromList(
+        const std::string& listFile,
+        ProgressCallback progress = {}
+    );
+
+
     // -- liczy całkę z wszystkich polaryzacji i zapisuje do pliku --
     void integrate4Pols(int min_channel, int max_channel, bool isotimeInclude);
     std::vector < std::vector < double > > getIntegrate(int min_channel, int max_channel);
@@ -148,8 +158,12 @@ public:
     void recalculateRMS();
     // -----------------------------------
     void setNormalizationCoeffs(int startingChan, int endingChan);
-
+    void setFlaggedFile(const std::string& filename);
 private:
+    // -- flagging helper variables --
+    std::string flaggedFileName = "flagged_obs.dat";
+    std::filesystem::path inputDirectory;
+
     // --- additional for reading ---
     std::string getAllHeaderInformation
     (
@@ -175,6 +189,11 @@ private:
     std::string constructRASTR(double rah, double ram, double ras);
     std::string constructDECSTR(double decd, double decm, double decs);
     std::string makeProperFormatNumber(double number);
+    void loadFiles(
+        const std::vector<std::string>& filenames,
+        const std::filesystem::path& baseDirectory,
+        const ProgressCallback& progress
+    );
     void loadSingleSpectrumFromFile(std::string spectrumFileName);     // wielokrotnie wzywana metoda, w argumencie ma absolutną ścieżkę do pojedynczego pliku
     void loadSingleSpectrum(std::ifstream & file, int index_of_file);    // metoda wczytywania pliku AVR
     void loadSingleSpectrum(CCfits::FITS & file, int index_of_file);    // metoda wczytywania pliku FITS
@@ -244,9 +263,13 @@ private:
     double calibrateEpoch(double calCoeff, double epochNR);
     // ---------------
     // -- flagowanie --
-    void appendToFlaggedList(std::string flaggedFilename);
-    std::vector < std::string > readFlaggedFiles();
-    bool checkIfFlagged(std::string fileName, const std::vector < std::string > & flagTable);
+    void appendToFlaggedList(const std::string & flaggedFilename);
+    std::vector < std::string > readFlaggedFiles(
+        const std::string & filename = "flagged_obs.dat"
+    );
+    bool checkIfFlagged(
+        const std::string & fileName, 
+        const std::vector < std::string > & flagTable);
     // ----------------
     void fillNormalizationCoeffsWith1();
     // ----------------

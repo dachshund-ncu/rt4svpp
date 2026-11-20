@@ -27,6 +27,8 @@
 #include "UI/rms_selector.h"
 #include "UI/custom_ui_elements.h"
 #include <QRect>
+#include "interface/cli.h"
+
 using namespace std;
 
 class body : public QMainWindow
@@ -35,7 +37,10 @@ class body : public QMainWindow
     Q_OBJECT
 
 public:
-    body(QWidget *parent = nullptr, const char * nazwa = "");
+    explicit body(
+        QWidget* parent = nullptr,
+        const CliOptions& options = CliOptions{}
+    );
 
     // NEW STUFF
     // ------------------------------
@@ -244,6 +249,14 @@ private:
     void customizeApperanceLight();
     void popupMessage(std::string message_type, std::string message_text);
     void darthMode(bool mode = false);
+    void loadSpectra(const std::vector<std::string>& filenames);
+    void loadSpectra(const std::string& listFile);
+    void runLoading(
+        const std::function<void(
+            const spectral_container::ProgressCallback&
+        )>& loader
+    );
+    
 public slots:
     // -- METODY - do przyciskow --
     // -- ladowanie danych --
