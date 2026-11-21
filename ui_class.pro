@@ -65,3 +65,6 @@ unix:!macx: LIBS += /usr/local/lib/ -lcfitsio
 CONFIG += c++17
 CONFIG += release
 CONFIG -= debug
+QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_LFLAGS_RELEASE += -flto
+QMAKE_CXXFLAGS_RELEASE += -flto
