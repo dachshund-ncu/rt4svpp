@@ -61,3 +61,4 @@ pl.edu.umk.astro.RT4SVpp.yml
 README-FLATPAK.md
 build_flatpak_bundle.sh
 flatpak-repo
+dist/*
