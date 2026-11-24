@@ -55,12 +55,12 @@ HEADERS += \
 RESOURCES += \
     resources.qrc
 
-unix:!macx: LIBS += -L /usr/local/lib/ -lCCfits
+unix:!macx {
+    LIBS += -lCCfits -lcfitsio
 
-INCLUDEPATH += /usr/local/include
-DEPENDPATH += /usr/local/include
-
-unix:!macx: LIBS += /usr/local/lib/ -lcfitsio
+    target.path = /usr/bin
+    INSTALLS += target
+}
 
 CONFIG += c++17
 CONFIG += release
