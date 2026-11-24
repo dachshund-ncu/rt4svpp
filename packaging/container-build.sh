@@ -112,7 +112,7 @@ Section: science
 Priority: optional
 Architecture: amd64
 Maintainer: RT4SV++ maintainers <noreply@github.com>
-Depends: $DEPS, qt6-qpa-plugins
+Depends: $DEPS, qt6-qpa-plugins, libqt6svg6
 Recommends: qt6-wayland
 Description: Radio telescope spectra visualizer
  RT4SV++ GUI and CLI for NCU 32-m telescope FITS observations.
