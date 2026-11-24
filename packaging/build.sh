@@ -57,6 +57,7 @@ podman run --rm \
   --env "RT4SVPP_VERSION=$VERSION" \
   --env "RT4SVPP_DISTRO=$DISTRO" \
   --env "RT4SVPP_RELEASE=$RELEASE" \
+  --env "RT4SVPP_ICON=${RT4SVPP_ICON:-}" \
   "$IMAGE" \
   bash /project/packaging/container-build.sh
 

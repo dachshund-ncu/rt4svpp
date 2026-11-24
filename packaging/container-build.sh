@@ -52,7 +52,30 @@ make "INSTALL_ROOT=$STAGE" install
 BIN="$STAGE/usr/bin/rt4sv++"
 test -x "$BIN" || { echo "Not installed: $BIN" >&2; exit 1; }
 
-# Optional desktop integration, no hard-coded icon resource needed.
+# Install the real Deathstaradder icon alongside a desktop launcher.
+# Override the discovered image if necessary:
+# RT4SVPP_ICON=images/deathstaradder.png ./packaging/build.sh ubuntu 24.04
+if [[ -n "${RT4SVPP_ICON:-}" ]]; then
+  ICON_SOURCE="${RT4SVPP_ICON#./}"
+else
+  ICON_SOURCE="$(find . -type f \
+    \( -iname '*deathstaradder*.png' -o -iname '*deathstaradder*.svg' \) \
+    -print -quit)"
+fi
+if [[ ! -f "$ICON_SOURCE" ]]; then
+  echo "Deathstaradder icon not found: ${ICON_SOURCE:-<no matching .png/.svg file>}" >&2
+  echo 'Put deathstaradder.png or deathstaradder.svg in your repo, or set RT4SVPP_ICON.' >&2
+  exit 1
+fi
+ICON_EXT="${ICON_SOURCE##*.}"
+ICON_EXT="${ICON_EXT,,}"
+case "$ICON_EXT" in
+  png) ICON_INSTALL_DIR='/usr/share/icons/hicolor/256x256/apps' ;;
+  svg) ICON_INSTALL_DIR='/usr/share/icons/hicolor/scalable/apps' ;;
+  *) echo "Unsupported icon format: .$ICON_EXT (use PNG or SVG)" >&2; exit 1 ;;
+esac
+install -Dm644 "$ICON_SOURCE" "$STAGE$ICON_INSTALL_DIR/rt4svpp.$ICON_EXT"
+printf '==> Installing icon %s as %s\n' "$ICON_SOURCE" "$ICON_INSTALL_DIR/rt4svpp.$ICON_EXT"
 mkdir -p "$STAGE/usr/share/applications"
 cat > "$STAGE/usr/share/applications/rt4svpp.desktop" <<'DESKTOP'
 [Desktop Entry]
@@ -60,7 +83,7 @@ Type=Application
 Name=RT4SV++
 Comment=NCU radio telescope spectra visualizer
 Exec=rt4sv++ %F
-Icon=applications-science
+Icon=rt4svpp
 Terminal=false
 Categories=Science;Education;
 DESKTOP
@@ -102,6 +125,7 @@ elif [[ "$RT4SVPP_DISTRO" == fedora ]]; then
   mkdir -p "$TOP"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
   cp "$BIN" "$TOP/SOURCES/rt4sv++"
   cp "$STAGE/usr/share/applications/rt4svpp.desktop" "$TOP/SOURCES/rt4svpp.desktop"
+  cp "$STAGE$ICON_INSTALL_DIR/rt4svpp.$ICON_EXT" "$TOP/SOURCES/rt4svpp.$ICON_EXT"
   cat > "$TOP/SPECS/rt4svpp.spec" <<'SPEC'
 %global debug_package %{nil}
 Name: rt4svpp
@@ -113,6 +137,7 @@ URL: https://github.com/dachshund-ncu/rt4svpp
 BuildArch: x86_64
 Source0: rt4sv++
 Source1: rt4svpp.desktop
+Source2: rt4svpp.%{_icon_ext}
 
 %description
 RT4SV++ GUI and CLI for NCU 32-m telescope FITS observations.
@@ -124,15 +149,20 @@ RT4SV++ GUI and CLI for NCU 32-m telescope FITS observations.
 %install
 install -Dm755 %{SOURCE0} %{buildroot}%{_bindir}/rt4sv++
 install -Dm644 %{SOURCE1} %{buildroot}%{_datadir}/applications/rt4svpp.desktop
+install -Dm644 %{SOURCE2} %{buildroot}%{_datadir}/icons/hicolor/%{_icon_size}/apps/rt4svpp.%{_icon_ext}
 
 %files
 %{_bindir}/rt4sv++
 %{_datadir}/applications/rt4svpp.desktop
+%{_datadir}/icons/hicolor/%{_icon_size}/apps/rt4svpp.%{_icon_ext}
 SPEC
   # RPM permits only numeric, dot-separated Version fields in this workflow.
+  if [[ "$ICON_EXT" == svg ]]; then ICON_SIZE=scalable; else ICON_SIZE=256x256; fi
   rpmbuild -bb "$TOP/SPECS/rt4svpp.spec" \
     --define "_topdir $TOP" \
-    --define "_version $RT4SVPP_VERSION"
+    --define "_version $RT4SVPP_VERSION" \
+    --define "_icon_ext $ICON_EXT" \
+    --define "_icon_size $ICON_SIZE"
   find "$TOP/RPMS" -type f -name '*.rpm' -exec cp -v '{}' /out/ \;
   rpm -qp --requires "$TOP"/RPMS/x86_64/*.rpm | head -30
 fi
